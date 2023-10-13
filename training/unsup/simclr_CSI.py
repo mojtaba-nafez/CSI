@@ -95,8 +95,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
 
         losses['cls'].update(0, batch_size)
         losses['sim'].update(loss_sim.item(), batch_size)
-        losses['shift'].update(loss_shift.item(), batch_size)
-
+        # losses['shift'].update(loss_shift.item(), batch_size)
+        losses['shift'] = 0
         if count % 50 == 0:
             log_('[Epoch %3d; %3d] [Time %.3f] [Data %.3f] [LR %.5f]\n'
                  '[LossC %f] [LossSim %f] [LossShift %f]' %
