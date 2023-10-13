@@ -99,17 +99,17 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         losses['shift'] = 0
         if count % 50 == 0:
             log_('[Epoch %3d; %3d] [Time %.3f] [Data %.3f] [LR %.5f]\n'
-                 '[LossC %f] [LossSim %f] [LossShift %f]' %
+                 '[LossC %f] [LossSim %f]' %
                  (epoch, count, batch_time.value, data_time.value, lr,
-                  losses['cls'].value, losses['sim'].value, losses['shift'].value))
+                  losses['cls'].value, losses['sim'].value))
 
-    log_('[DONE] [Time %.3f] [Data %.3f] [LossC %f] [LossSim %f] [LossShift %f]' %
+    log_('[DONE] [Time %.3f] [Data %.3f] [LossC %f] [LossSim %f]' %
          (batch_time.average, data_time.average,
-          losses['cls'].average, losses['sim'].average, losses['shift'].average))
+          losses['cls'].average, losses['sim'].average))
 
     if logger is not None:
         logger.scalar_summary('train/loss_cls', losses['cls'].average, epoch)
         logger.scalar_summary('train/loss_sim', losses['sim'].average, epoch)
-        logger.scalar_summary('train/loss_shift', losses['shift'].average, epoch)
+        # logger.scalar_summary('train/loss_shift', losses['shift'].average, epoch)
         logger.scalar_summary('train/batch_time', batch_time.average, epoch)
 
