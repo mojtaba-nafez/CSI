@@ -20,6 +20,7 @@ elif P.mode in ['ood', 'ood_pre']:
         from evals.ood_pre_2 import eval_ood_detection as eval_ood_detection_2
         from evals.ood_pre_3 import eval_ood_detection as eval_ood_detection_3
     print(P)
+    '''
     with torch.no_grad():
         auroc_dict = eval_ood_detection(P, model, test_loader, ood_test_loader, P.ood_score,
                                         train_loader=train_loader, simclr_aug=simclr_aug)
@@ -48,7 +49,7 @@ elif P.mode in ['ood', 'ood_pre']:
 
     bests = map('{:.4f}'.format, bests)
     print('\t'.join(bests))
-
+    '''
 
     
     with torch.no_grad():
@@ -80,7 +81,7 @@ elif P.mode in ['ood', 'ood_pre']:
     bests = map('{:.4f}'.format, bests)
     print('\t'.join(bests))
 
-
+    '''
     
     with torch.no_grad():
         auroc_dict = eval_ood_detection_3(P, model, test_loader, ood_test_loader, P.ood_score,
@@ -110,7 +111,7 @@ elif P.mode in ['ood', 'ood_pre']:
 
     bests = map('{:.4f}'.format, bests)
     print('\t'.join(bests))
-    
+    '''
 
 else:
     raise NotImplementedError()
