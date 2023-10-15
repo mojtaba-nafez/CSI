@@ -70,6 +70,8 @@ def get_classifier(mode, n_classes=10):
         classifier = Pretrain_ResNet152_Model(num_classes=n_classes)
     elif mode =='pretrain-resnet18':
         classifier = Pretrain_ResNet18_Model(num_classes=n_classes)
+    elif mode == 'pretrain-resnet152-corruption':
+        classifier = Pretrain_ResNet152_Corruption_Model(num_classes=n_classes)
     elif mode == 'resnet34':
         classifier = ResNet34(num_classes=n_classes)
     elif mode == 'resnet50':
