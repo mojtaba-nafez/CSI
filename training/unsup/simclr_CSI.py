@@ -3,7 +3,7 @@ import time
 import torch.optim
 
 import models.transform_layers as TL
-from training.contrastive_loss import get_similarity_matrix, NT_xent
+from training.contrastive_loss import get_similarity_matrix, Supervised_NT_xent
 from utils.utils import AverageMeter, normalize
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
@@ -75,7 +75,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
+        loss_sim = Supervised_NT_xent(sim_matrix, labels, temperature=0.5) * P.sim_lambda
 
         loss_shift = criterion(outputs_aux['shift'], shift_labels)
 
