@@ -75,7 +75,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        loss_sim = Supervised_NT_xent(sim_matrix, labels, temperature=0.5) * P.sim_lambda
+        loss_sim = Supervised_NT_xent(sim_matrix, shift_labels, temperature=0.5) * P.sim_lambda
 
         loss_shift = criterion(outputs_aux['shift'], shift_labels)
 
