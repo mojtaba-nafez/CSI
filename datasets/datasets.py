@@ -66,6 +66,7 @@ def get_transform(image_size=None):
     if image_size:  # use pre-specified image size
         train_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
+            transforms.AugMix(),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
         ])
@@ -75,6 +76,7 @@ def get_transform(image_size=None):
         ])
     else:  # use default image size
         train_transform = transforms.Compose([
+            transforms.AugMix(),
             transforms.ToTensor(),
         ])
         test_transform = transforms.ToTensor()
@@ -315,6 +317,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             """
             fake_transform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),
+                transforms.AugMix(),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
             ])
