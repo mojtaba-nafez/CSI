@@ -130,6 +130,54 @@ class PreActBottleneck(nn.Module):
         out += shortcut
         return out
 
+def conv3x3(in_channels, out_channels, stride=1):
+    return nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+
+class SEBlock(nn.Module):
+    def __init__(self, channel, reduction=16):
+        super(SEBlock, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y.expand_as(x)
+
+class SEResidualBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, in_planes, planes, stride=1, activation=F.relu):
+        super(SEResidualBlock, self).__init__()
+        self.conv1 = conv3x3(in_planes, planes, stride)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.activation = activation
+        self.se_block = SEBlock(planes)
+
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_planes != self.expansion * planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, self.expansion * planes, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(self.expansion * planes)
+            )
+
+    def forward(self, x):
+        out = self.activation(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        out = self.se_block(out)
+        out += self.shortcut(x)
+        out = self.activation(out)
+        return out
+
+
 
 class ResNet(BaseModel):
     def __init__(self, block, num_blocks, num_classes=10, activation="relu"):
@@ -312,6 +360,9 @@ class Pretrain_ResNet152_Corruption(BaseModel):
         z_n = F.normalize(z1, dim=-1)
         return z_n
 
+
+def SEResNet18(num_classes, activation=None):
+    return ResNet(SEResidualBlock, [2, 2, 2, 2], num_classes=num_classes, activation=activation)
 
 def ResNet18(num_classes, activation=None):
     return ResNet(BasicBlock, [2,2,2,2], num_classes=num_classes, activation=activation)
