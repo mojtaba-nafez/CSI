@@ -196,6 +196,9 @@ class AttentionModule(nn.Module):
         return x * y
 
 class ResidualAttentionBlock(nn.Module):
+    
+    expansion = 1  # Add this line
+    
     def __init__(self, in_planes, planes, stride=1):
         super(ResidualAttentionBlock, self).__init__()
         self.conv1 = conv3x3(in_planes, planes, stride)
