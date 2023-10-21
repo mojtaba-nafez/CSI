@@ -66,7 +66,7 @@ def get_transform(image_size=None):
     if image_size:  # use pre-specified image size
         train_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
-            transforms.AugMix(),
+            transforms.RandomApply([transforms.AugMix(2)], p=0.5),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
         ])
@@ -76,7 +76,7 @@ def get_transform(image_size=None):
         ])
     else:  # use default image size
         train_transform = transforms.Compose([
-            transforms.AugMix(),
+            transforms.RandomApply([transforms.AugMix(2)], p=0.5),
             transforms.ToTensor(),
         ])
         test_transform = transforms.ToTensor()
@@ -147,6 +147,13 @@ def mvtecad_dataset(P, category, root = "./mvtec_anomaly_detection", image_size=
 
 def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                             base_path = './tiny-imagenet-200', fake_root="./fake_mvtecad", root="./mvtec_anomaly_detection" ,count=-1, cls_list=None, labels=None):
+    
+    augmix_tranform = transforms.Compose([
+                transforms.Resize((image_size[0],image_size[1])),
+                transforms.RandomApply([transforms.AugMix(2)], p=0.5),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor()
+            ])
     categories = ['toothbrush', 'zipper', 'transistor', 'tile', 'grid', 'wood', 'pill', 'bottle', 'capsule', 'metal_nut', 'hazelnut', 'screw', 'carpet', 'leather', 'cable']
     if P.dataset=='head-ct' or P.dataset=='breastmnist' or  P.dataset=='mnist' or P.dataset=='fashion-mnist' or P.dataset=='Tomor_Detection':
         tiny_transform = transforms.Compose([
@@ -286,7 +293,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             cutpast_train_set = get_subclass_dataset(P, cutpast_train_set, classes=cls_list, count=cutpast_count)
         print("len(cutpast_train_set) after set_count: ", len(cutpast_train_set))
 
-        imagenet_exposure = ImageNetExposure(root=base_path, count=tiny_count, transform=tiny_transform)
+        imagenet_exposure = ImageNetExposure(root=base_path, count=tiny_count, transform=augmix_tranform)
         if P.dataset=="cifar10":
             """
             tiny_transform = transforms.Compose([
@@ -317,7 +324,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             """
             fake_transform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),
-                transforms.AugMix(),
+                transforms.RandomApply([transforms.AugMix(2)], p=0.5),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
             ])
@@ -325,7 +332,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             fc = [int(fake_count / len(cls_list)) for i in range(len(cls_list))]
             if sum(fc) != fake_count:
                 fc[0] += abs(fake_count - sum(fc))            
-            train_ds_cifar10_fake = FakeCIFAR10(root=fake_root, category=cls_list, transform=fake_transform, count=fc)
+            train_ds_cifar10_fake = FakeCIFAR10(root=fake_root, category=cls_list, transform=augmix_tranform, count=fc)
             if len(train_ds_cifar10_fake) > 0:
                 print("number of fake data:", len(train_ds_cifar10_fake), "shape:", train_ds_cifar10_fake[0][0].shape)
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_cifar10_fake, imagenet_exposure])
