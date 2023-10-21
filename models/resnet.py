@@ -178,6 +178,47 @@ class SEResidualBlock(nn.Module):
         return out
 
 
+class AttentionModule(nn.Module):
+    def __init__(self, in_planes, out_planes, reduction=16):
+        super(AttentionModule, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(out_planes, out_planes // reduction),
+            nn.ReLU(inplace=True),
+            nn.Linear(out_planes // reduction, out_planes),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y
+
+class ResidualAttentionBlock(nn.Module):
+    def __init__(self, in_planes, planes, stride=1):
+        super(ResidualAttentionBlock, self).__init__()
+        self.conv1 = conv3x3(in_planes, planes, stride)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = nn.BatchNorm2d(planes)
+
+        self.attention = AttentionModule(in_planes, planes)
+
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_planes != planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(planes)
+            )
+
+    def forward(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        out = self.attention(out)
+        out += self.shortcut(x)
+        out = F.relu(out)
+        return out
 
 class ResNet(BaseModel):
     def __init__(self, block, num_blocks, num_classes=10, activation="relu"):
@@ -363,6 +404,9 @@ class Pretrain_ResNet152_Corruption(BaseModel):
 
 def SEResNet18(num_classes, activation=None):
     return ResNet(SEResidualBlock, [2, 2, 2, 2], num_classes=num_classes, activation=activation)
+
+def ResidualAttentionNet18(num_classes=10):
+    return ResNet(ResidualAttentionBlock, [2,2,2,2], num_classes)
 
 def ResNet18(num_classes, activation=None):
     return ResNet(BasicBlock, [2,2,2,2], num_classes=num_classes, activation=activation)
