@@ -405,7 +405,7 @@ class Pretrain_ResNet152_Corruption(BaseModel):
 def SEResNet18(num_classes, activation=None):
     return ResNet(SEResidualBlock, [2, 2, 2, 2], num_classes=num_classes, activation=activation)
 
-def ResidualAttentionNet18(num_classes=10):
+def ResidualAttentionNet18(num_classes=10, activation=F.relu):
     return ResNet(ResidualAttentionBlock, [2,2,2,2], num_classes)
 
 def ResNet18(num_classes, activation=None):
