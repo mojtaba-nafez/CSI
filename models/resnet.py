@@ -199,7 +199,7 @@ class ResidualAttentionBlock(nn.Module):
     
     expansion = 1  # Add this line
     
-    def __init__(self, in_planes, planes, stride=1):
+    def __init__(self, in_planes, planes, stride=1, activation='relu'):
         super(ResidualAttentionBlock, self).__init__()
         self.conv1 = conv3x3(in_planes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -222,6 +222,7 @@ class ResidualAttentionBlock(nn.Module):
         out += self.shortcut(x)
         out = F.relu(out)
         return out
+
 
 class ResNet(BaseModel):
     def __init__(self, block, num_blocks, num_classes=10, activation="relu"):
