@@ -77,39 +77,22 @@ def Supervised_NT_xent(sim_matrix, labels, temperature=0.5, chunk=2, eps=1e-8, m
 
     return loss
 
-def AnomalyContrastiveLoss(sim_matrix, temperature=0.5, eps=1e-8):
-    """
-    Compute the custom contrastive loss.
-    - sim_matrix: (B', B') tensor for B' = B * 2 (first 2B are image samples, next 2B are exposure samples)
-    """
-    device = sim_matrix.device
-    B = sim_matrix.size(0) // 4  # Dividing by 4 because of 2B images and 2B exposures
+def AnomalyContrastiveLoss(sim_matrix, temperature):
+    # Assuming that the first half of the data is images and the second half is exposures
+    n = sim_matrix.shape[0] // 4
+    image_sim = sim_matrix[:2 * n, :2 * n]
+    exposure_sim = sim_matrix[2 * n:, 2 * n:]
+    
+    # For images: pull augmentations and other images, push exposures
+    pos_image = torch.exp(image_sim / temperature)
+    neg_image = torch.exp(image_sim[:, 2 * n:] / temperature)
+    loss_image = -torch.log(pos_image / (pos_image + neg_image.sum(dim=-1, keepdim=True))).mean()
+    
+    # For exposures: pull only its augmentations, push images and other exposures
+    pos_exposure = torch.exp(torch.diag(exposure_sim) / temperature)
+    neg_exposure = torch.exp(exposure_sim / temperature) + torch.exp(exposure_sim[:, :2 * n] / temperature)
+    neg_exposure[range(2 * n, 4 * n), range(2 * n)] = 0  # exclude self similarity
+    loss_exposure = -torch.log(pos_exposure / (pos_exposure + neg_exposure.sum(dim=-1))).mean()
 
-    # Create masks for each type of pair
-    image_mask = torch.zeros(B * 4, B * 4).to(device)
-    image_mask[:B*2, :B*2] = 1  # First 2B samples are images
-
-    exposure_mask = torch.zeros(B * 4, B * 4).to(device)
-    exposure_mask[B*2:, B*2:] = 1  # Last 2B samples are exposures
-
-    image_exposure_mask = torch.zeros(B * 4, B * 4).to(device)
-    image_exposure_mask[:B*2, B*2:] = 1
-    image_exposure_mask[B*2:, :B*2] = 1
-
-    # Exclude self-similarity
-    diag_mask = torch.eye(B * 4).to(device)
-    image_mask -= diag_mask
-    exposure_mask -= diag_mask
-
-    # Compute similarity scores
-    sim_matrix_exp = torch.exp(sim_matrix / temperature)
-
-    # Compute losses
-    loss_image = -torch.log(torch.sum(sim_matrix_exp * image_mask, dim=1) / (torch.sum(sim_matrix_exp, dim=1) - torch.diag(sim_matrix_exp) + eps) + eps)
-    loss_exposure = -torch.log(torch.sum(sim_matrix_exp * exposure_mask, dim=1) / (torch.sum(sim_matrix_exp, dim=1) - torch.diag(sim_matrix_exp) + eps) + eps)
-    loss_image_exposure = torch.sum(sim_matrix_exp * image_exposure_mask, dim=1)  # This pushes image and exposure chunks away from each other
-
-    # Combine and average the losses
-    avg_loss = (torch.sum(loss_image) + torch.sum(loss_exposure) - torch.sum(loss_image_exposure)) / (4 * B)
-
-    return avg_loss
+    total_loss = loss_image + loss_exposure
+    return total_loss
