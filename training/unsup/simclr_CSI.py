@@ -3,7 +3,7 @@ import time
 import torch.optim
 
 import models.transform_layers as TL
-from training.contrastive_loss import get_similarity_matrix, Supervised_NT_xent
+from training.contrastive_loss import get_similarity_matrix, Supervised_NT_xent, AnomalyContrastiveLoss
 from utils.utils import AverageMeter, normalize
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
@@ -60,27 +60,40 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
         
-        images1 = torch.cat([images1, exposure_images1])
-        images2 = torch.cat([images2, exposure_images2])
-        #images1 = torch.cat([P.shift_trans(images1, k) for k in range(P.K_shift)])
-        #images2 = torch.cat([P.shift_trans(images2, k) for k in range(P.K_shift)])
-        #shift_labels = torch.cat([torch.ones_like(labels) * k for k in range(P.K_shift)], 0)  # B -> 4B
-        shift_labels_con = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
-        shift_labels = shift_labels_con.repeat(2)
-        
-        images_pair = torch.cat([images1, images2], dim=0)  # 8B
-        images_pair = simclr_aug(images_pair)  # transform
+        # Separate tensors for images and exposures, without concatenating them
+        image_shift_labels = torch.ones_like(labels)  # Labels for images, assuming 1
+        exposure_shift_labels = torch.zeros_like(labels)  # Labels for exposures, assuming 0
 
-        _, outputs_aux = model(images_pair, simclr=True, penultimate=False, shift=True)
+        # Create 4B tensor by concatenating images1 with images2 and exposure_images1 with exposure_images2
+        images_pair = torch.cat([images1, images2], dim=0)  # 2B for images
+        exposure_images_pair = torch.cat([exposure_images1, exposure_images2], dim=0)  # 2B for exposures
 
+        # Combine both image and exposure pairs for a 4B tensor
+        total_images_pair = torch.cat([images_pair, exposure_images_pair], dim=0)  # 4B total
+
+        # Apply the same transformation to both image and exposure pairs
+        total_images_pair = simclr_aug(total_images_pair)  # transform
+
+        # Forward pass
+        _, outputs_aux = model(total_images_pair, simclr=True, penultimate=False, shift=True)
+
+        # Normalize the output features for SimCLR
         simclr = normalize(outputs_aux['simclr'])  # normalize
-        sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        loss_sim = Supervised_NT_xent(sim_matrix, shift_labels_con, temperature=0.5) * P.sim_lambda
 
+        # Compute the similarity matrix
+        sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
+
+        # Use your new AnomalyContrastiveLoss here
+        anomaly_contrastive_loss = AnomalyContrastiveLoss(sim_matrix, temperature=0.5)  # You might need to adapt the arguments
+
+        # Compute the shift loss as before
+        shift_labels = torch.cat([image_shift_labels, exposure_shift_labels], 0)  # B -> 2B
+        shift_labels = shift_labels.repeat(2)  # 2B -> 4B
         loss_shift = criterion(outputs_aux['shift'], shift_labels)
 
+
         ### total loss ###
-        loss = loss_sim + loss_shift
+        loss = anomaly_contrastive_loss + loss_shift
 
         optimizer.zero_grad()
         loss.backward()
@@ -110,4 +123,3 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         logger.scalar_summary('train/loss_sim', losses['sim'].average, epoch)
         logger.scalar_summary('train/loss_shift', losses['shift'].average, epoch)
         logger.scalar_summary('train/batch_time', batch_time.average, epoch)
-

@@ -77,3 +77,39 @@ def Supervised_NT_xent(sim_matrix, labels, temperature=0.5, chunk=2, eps=1e-8, m
 
     return loss
 
+def AnomalyContrastiveLoss(sim_matrix, temperature=0.5, eps=1e-8):
+    """
+    Compute the custom contrastive loss.
+    - sim_matrix: (B', B') tensor for B' = B * 2 (first 2B are image samples, next 2B are exposure samples)
+    """
+    device = sim_matrix.device
+    B = sim_matrix.size(0) // 4  # Dividing by 4 because of 2B images and 2B exposures
+
+    # Create masks for each type of pair
+    image_mask = torch.zeros(B * 4, B * 4).to(device)
+    image_mask[:B*2, :B*2] = 1  # First 2B samples are images
+
+    exposure_mask = torch.zeros(B * 4, B * 4).to(device)
+    exposure_mask[B*2:, B*2:] = 1  # Last 2B samples are exposures
+
+    image_exposure_mask = torch.zeros(B * 4, B * 4).to(device)
+    image_exposure_mask[:B*2, B*2:] = 1
+    image_exposure_mask[B*2:, :B*2] = 1
+
+    # Exclude self-similarity
+    diag_mask = torch.eye(B * 4).to(device)
+    image_mask -= diag_mask
+    exposure_mask -= diag_mask
+
+    # Compute similarity scores
+    sim_matrix_exp = torch.exp(sim_matrix / temperature)
+
+    # Compute losses
+    loss_image = -torch.log(torch.sum(sim_matrix_exp * image_mask, dim=1) / (torch.sum(sim_matrix_exp, dim=1) - torch.diag(sim_matrix_exp) + eps) + eps)
+    loss_exposure = -torch.log(torch.sum(sim_matrix_exp * exposure_mask, dim=1) / (torch.sum(sim_matrix_exp, dim=1) - torch.diag(sim_matrix_exp) + eps) + eps)
+    loss_image_exposure = torch.sum(sim_matrix_exp * image_exposure_mask, dim=1)  # This pushes image and exposure chunks away from each other
+
+    # Combine and average the losses
+    avg_loss = (torch.sum(loss_image) + torch.sum(loss_exposure) - torch.sum(loss_image_exposure)) / (4 * B)
+
+    return avg_loss
