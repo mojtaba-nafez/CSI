@@ -78,8 +78,10 @@ def Supervised_NT_xent(sim_matrix, labels, temperature=0.5, chunk=2, eps=1e-8, m
     return loss
 
 def AnomalyContrastiveLoss(sim_matrix, temperature):
-    # Assuming that the first half of the data is images and the second half is exposures
+    # Validate the size of sim_matrix
     n = sim_matrix.shape[0] // 4
+    assert sim_matrix.shape == (4 * n, 4 * n)
+    
     image_sim = sim_matrix[:2 * n, :2 * n]
     exposure_sim = sim_matrix[2 * n:, 2 * n:]
     
@@ -91,8 +93,9 @@ def AnomalyContrastiveLoss(sim_matrix, temperature):
     # For exposures: pull only its augmentations, push images and other exposures
     pos_exposure = torch.exp(torch.diag(exposure_sim) / temperature)
     neg_exposure = torch.exp(exposure_sim / temperature) + torch.exp(exposure_sim[:, :2 * n] / temperature)
-    neg_exposure[range(2 * n, 4 * n), range(2 * n)] = 0  # exclude self similarity
+    torch.diagonal(neg_exposure, offset=0, dim1=0, dim2=1).fill_(0)  # exclude self similarity
     loss_exposure = -torch.log(pos_exposure / (pos_exposure + neg_exposure.sum(dim=-1))).mean()
 
     total_loss = loss_image + loss_exposure
     return total_loss
+

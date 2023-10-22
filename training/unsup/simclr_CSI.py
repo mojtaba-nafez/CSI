@@ -82,7 +82,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
 
         # Compute the similarity matrix
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-
+        print(sim_matrix.shape)
+        
         # Use your new AnomalyContrastiveLoss here
         anomaly_contrastive_loss = AnomalyContrastiveLoss(sim_matrix, temperature=0.5)  # You might need to adapt the arguments
 
