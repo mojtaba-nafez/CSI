@@ -105,7 +105,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         batch_time.update(time.time() - check)
 
         losses['cls'].update(0, batch_size)
-        losses['sim'].update(loss_sim.item(), batch_size)
+        losses['sim'].update(anomaly_contrastive_loss.item(), batch_size)
         losses['shift'].update(loss_shift.item(), batch_size)
 
         if count % 50 == 0:
