@@ -66,7 +66,7 @@ def get_transform(image_size=None):
     if image_size:  # use pre-specified image size
         train_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
-            transforms.RandomApply([transforms.AugMix(2)], p=0.5),
+            transforms.RandomApply([transforms.AugMix()], p=0.9),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
         ])
@@ -76,7 +76,7 @@ def get_transform(image_size=None):
         ])
     else:  # use default image size
         train_transform = transforms.Compose([
-            transforms.RandomApply([transforms.AugMix(2)], p=0.5),
+            transforms.RandomApply([transforms.AugMix()], p=0.9),
             transforms.ToTensor(),
         ])
         test_transform = transforms.ToTensor()
@@ -150,7 +150,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
     
     augmix_tranform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),
-                transforms.RandomApply([transforms.AugMix(2)], p=0.5),
+                transforms.RandomApply([transforms.AugMix()], p=0.9),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
             ])
@@ -324,7 +324,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             """
             fake_transform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),
-                transforms.RandomApply([transforms.AugMix(2)], p=0.5),
+                transforms.RandomApply([transforms.AugMix()], p=0.9),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
             ])
