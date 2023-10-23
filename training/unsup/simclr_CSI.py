@@ -51,8 +51,16 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         ### SimCLR loss ###
         if P.dataset != 'imagenet':
             batch_size = images.size(0)
+            
             images = images.to(device)
             exposure_images = exposure_images.to(device)
+            
+            exposure_images_1 = exposure_images + (torch.randn(exposure_images.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
+            exposure_images = torch.cat([exposure_images_1, exposure_images])
+
+            images_1 = images + (torch.randn(images.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
+            images = torch.cat([images_1, images])
+            
             if P.cl_no_hflip:
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
