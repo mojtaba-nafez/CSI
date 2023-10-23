@@ -43,7 +43,7 @@ def NT_xent(sim_matrix, temperature=0.5, chunk=2, eps=1e-8):
 
     return loss
 
-def NT_xent_loss(similarity_matrix, adv_type):
+def NT_xent_loss(similarity_matrix):
 
     N2 = len(similarity_matrix)
     N = int(len(similarity_matrix) / 3)
