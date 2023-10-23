@@ -3,7 +3,7 @@ import time
 import torch.optim
 
 import models.transform_layers as TL
-from training.contrastive_loss import get_similarity_matrix, NT_xent
+from training.contrastive_loss import get_similarity_matrix, NT_xent, NT_xent_loss
 from utils.utils import AverageMeter, normalize
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
@@ -51,16 +51,9 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         ### SimCLR loss ###
         if P.dataset != 'imagenet':
             batch_size = images.size(0)
-            
             images = images.to(device)
             exposure_images = exposure_images.to(device)
-            
-            exposure_images_1 = exposure_images + (torch.randn(exposure_images.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
-            exposure_images = torch.cat([exposure_images_1, exposure_images])
-
-            images_1 = images + (torch.randn(images.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
-            images = torch.cat([images_1, images])
-            
+        
             if P.cl_no_hflip:
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
@@ -71,22 +64,27 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
         
+        noisy_img = images1 + (torch.randn(images1.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
+        noisy_exposure_images =  exposure_images1 + (torch.randn(exposure_images1.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
+
         images1 = torch.cat([images1, exposure_images1])
         images2 = torch.cat([images2, exposure_images2])
+        images3 = torch.cat([noisy_img, noisy_exposure_images])
+
         #images1 = torch.cat([P.shift_trans(images1, k) for k in range(P.K_shift)])
         #images2 = torch.cat([P.shift_trans(images2, k) for k in range(P.K_shift)])
         #shift_labels = torch.cat([torch.ones_like(labels) * k for k in range(P.K_shift)], 0)  # B -> 4B
         shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
-        shift_labels = shift_labels.repeat(2)
+        shift_labels = shift_labels.repeat(3)
         
-        images_pair = torch.cat([images1, images2], dim=0)  # 8B
+        images_pair = torch.cat([images1, images2, images3], dim=0)  # 8B
         images_pair = simclr_aug(images_pair)  # transform
 
         _, outputs_aux = model(images_pair, simclr=True, penultimate=False, shift=True)
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
+        loss_sim = NT_xent_loss(sim_matrix, temperature=0.5) * P.sim_lambda
 
         loss_shift = criterion(outputs_aux['shift'], shift_labels)
 
