@@ -34,7 +34,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     check = time.time()
     train_exposure_loader_iterator = iter(train_exposure_loader)
     print("len(train_exposure_loader_iterator), len(loader): ", len(train_exposure_loader_iterator), len(loader))
-    print("cl_no_hflip=", P.cl_no_hflip)
+    # print("cl_no_hflip=", P.cl_no_hflip)
     for n, (images, labels) in enumerate(loader):
         try:
             exposure_images, _ = next(train_exposure_loader_iterator)
