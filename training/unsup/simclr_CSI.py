@@ -53,6 +53,11 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             batch_size = images.size(0)
             images = images.to(device)
             exposure_images = exposure_images.to(device)
+            if P.noisy_data=='outlier':
+                exposure_images = exposure_images + (torch.randn(exposure_images.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
+            else:
+                images = images + (torch.randn(images.size()).to(device) * P.noise_std + P.noise_mean)*P.noise_scale
+
             if P.cl_no_hflip:
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
@@ -72,8 +77,10 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         shift_labels = shift_labels.repeat(2)
         
         images_pair = torch.cat([images1, images2], dim=0)  # 8B
-        images_pair = simclr_aug(images_pair)  # transform
+        
 
+
+        images_pair = simclr_aug(images_pair)  # transform
         _, outputs_aux = model(images_pair, simclr=True, penultimate=False, shift=True)
 
         simclr = normalize(outputs_aux['simclr'])  # normalize

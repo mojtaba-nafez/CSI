@@ -44,6 +44,9 @@ def parse_args(default=False):
                         default=32, type=int)
     parser.add_argument('--save_step', help='None: multi-class, Not None: one-class',
                         default=20, type=int) 
+    parser.add_argument('--noisy_data', help='Dataset',
+                        choices=['outlier', 'inlier'],
+                        default="inlier", type=str)
 
     parser.add_argument('--noise_mean', help='',
                         default=0.0, type=float)
