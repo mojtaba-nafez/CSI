@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data.dataset import Subset
 from torchvision import datasets, transforms
+import torchvision.transforms.functional as TF
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import ImageFolder
 
@@ -271,10 +272,27 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 High_CutPasteUnion(),
             ])
         else:
-            train_transform_cutpasted = transforms.Compose([
-                transforms.Resize((image_size[0], image_size[1])),
-                CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
-            ])
+            if P.exposure_noise_type is None or P.exposure_noise_type == 'cutpaste':
+                train_transform_cutpasted = transforms.Compose([
+                    transforms.Resize((image_size[0], image_size[1])),
+                    CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
+                ])
+            elif P.exposure_noise_type == 'blur':
+                blur_sigma = (P.exposure_blur_sigma_min, P.exposure_blur_sigma_max)
+                train_transform_cutpasted = transform.Compoe([
+                    transforms.Resize((image_size[0],image_size[1])),
+                    transforms.GaussianBlur(kernel_size=P.exposure_blur_kernel_size, 
+                                            sigma=blur_sigma),
+                    transforms.ToTensor()
+                ])
+            elif P.exposure_noise_type == 'rotation':
+                angles = [90, 180, 270]
+                rotation_list = [transforms.Lambda(lambda x: TF.rotate(x, angle)) for angle in angles]
+                train_transform_cutpasted = transform.Compose([
+                    transforms.Resize((image_size[0],image_size[1])),
+                    transforms.RandomChoice(rotation_list),
+                    transforms.ToTensor()
+                ])
         
         cutpast_train_set, _, _, _ = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=train_transform_cutpasted)
         print("len(cutpast_train_set) before set_count: ", len(cutpast_train_set))
@@ -327,6 +345,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             if len(train_ds_cifar10_fake) > 0:
                 print("number of fake data:", len(train_ds_cifar10_fake), "shape:", train_ds_cifar10_fake[0][0].shape)
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_cifar10_fake, imagenet_exposure])
+
         elif P.dataset=="cifar10-versus-100":
             cls_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
             fake_transform = transforms.Compose([

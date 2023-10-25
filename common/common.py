@@ -45,6 +45,15 @@ def parse_args(default=False):
     parser.add_argument('--save_step', help='None: multi-class, Not None: one-class',
                         default=20, type=int) 
 
+    parser.add_argument('--exposure_noise_type', 
+                        choices=['blur', 'cutpaste', 'rotation'], 
+                        default=None, type=float)
+    parser.add_argument('--exposure_blur_sigma_min',
+                        default=0.1, type=float)
+    parser.add_argument('--exposure_blur_sigma_max',
+                        default=2.0, type=float)
+    parser.add_argument('--exposure_blur_kernel_size',
+                        default=3, type=int)
     parser.add_argument('--noise_mean', help='',
                         default=0.0, type=float)
     parser.add_argument('--noise_std', help='',
