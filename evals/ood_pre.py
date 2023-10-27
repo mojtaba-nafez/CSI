@@ -152,7 +152,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     P.desired_attack = "PGD"
     P.PGD_constant = 2.5
     P.alpha = (P.PGD_constant * P.eps) / P.steps
-    
+
     auroc_dict = dict()
     for ood in ood_loaders.keys():
         auroc_dict[ood] = dict()
@@ -216,10 +216,10 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
 
 
     print('Pre-compute features...')
-    feats_id = get_features(P, P.dataset, model, id_loader, attack=P.in_attack, prefix=prefix, **kwargs)  # (N, T, d)
+    feats_id = get_features(P, P.dataset, model, id_loader, attack=P.in_attack, is_ood=False, prefix=prefix, **kwargs)  # (N, T, d)
     feats_ood = dict()
     for ood, ood_loader in ood_loaders.items():
-        feats_ood[ood] = get_features(P, ood, model, ood_loader, attack=P.out_attack, prefix=prefix, **kwargs)
+        feats_ood[ood] = get_features(P, ood, model, ood_loader, attack=P.out_attack, is_ood=False, prefix=prefix, **kwargs)
 
     print(f'Compute OOD scores... (score: {ood_score})')
     scores_id = get_scores(P, feats_id, ood_score).numpy()
@@ -270,7 +270,7 @@ def get_scores(P, feats_dict, ood_score):
 
 
 def get_features(P, data_name, model, loader, interp=False, prefix='',
-                 simclr_aug=None, sample_num=1, layers=('simclr', 'shift'), attack=False):
+                 simclr_aug=None, sample_num=1, layers=('simclr', 'shift'), attack=False, is_ood=False):
 
     if not isinstance(layers, (list, tuple)):
         layers = [layers]
@@ -286,7 +286,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
     left = [layer for layer in layers if layer not in feats_dict.keys()]
     if len(left) > 0:
         _feats_dict = _get_features(P, model, loader, interp, P.dataset == 'imagenet',
-                                    simclr_aug, sample_num, layers=left, attack=attack)
+                                    simclr_aug, sample_num, layers=left, attack=attack, is_ood=is_ood)
 
         for layer, feats in _feats_dict.items():
             path = prefix + f'_{data_name}_{layer}.pth'
@@ -297,7 +297,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
 
 
 def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=None,
-                  sample_num=1, layers=('simclr', 'shift'), attack=False):
+                  sample_num=1, layers=('simclr', 'shift'), attack=False, is_ood=False):
 
     if not isinstance(layers, (list, tuple)):
         layers = [layers]
