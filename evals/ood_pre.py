@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import numpy as np
 
 import models.transform_layers as TL
-from utils import set_random_seed, normalize, get_auroc
+from utils.utils import set_random_seed, normalize, get_auroc
 
 from adv_evaluation.adv_attacks import PGD
 
