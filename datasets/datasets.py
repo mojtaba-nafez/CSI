@@ -482,7 +482,7 @@ def get_breastmnist_train(anomaly_class_indx, path, transform):
     return train_dataset
 
 
-def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=False, eval=False, train_transform_cutpasted=None, labels=None):
+def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=True, eval=False, train_transform_cutpasted=None, labels=None):
     if dataset in ['imagenet', 'cub', 'stanford_dogs', 'flowers102',
                    'places365', 'food_101', 'caltech_256', 'dtd', 'pets']:
         if eval:
