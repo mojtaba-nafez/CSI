@@ -140,8 +140,8 @@ def main():
         cls_list = get_superclass_list(P.dataset)
         P.n_superclasses = len(cls_list)
         full_test_set = deepcopy(test_set)  # test set of full classes
-        train_set = get_subclass_dataset(train_set, classes=cls_list[P.one_class_idx])
-        test_set = get_subclass_dataset(test_set, classes=cls_list[P.one_class_idx])
+        train_set = get_subclass_dataset(P, train_set, classes=cls_list[P.one_class_idx])
+        test_set = get_subclass_dataset(P, test_set, classes=cls_list[P.one_class_idx])
     kwargs = {'pin_memory': False, 'num_workers': 4}
     train_loader = DataLoader(train_set, shuffle=True, batch_size=P.batch_size, **kwargs)
     test_loader = DataLoader(test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
@@ -154,7 +154,7 @@ def main():
     ood_test_loader = dict()
     for ood in P.ood_dataset:
         if P.one_class_idx is not None:
-            ood_test_set = get_subclass_dataset(full_test_set, classes=cls_list[ood])
+            ood_test_set = get_subclass_dataset(P, full_test_set, classes=cls_list[ood])
             ood = f'one_class_{ood}'
         else:
             ood_test_set = get_dataset(P, dataset=ood, test_only=True, image_size=P.image_size, eval=True)
