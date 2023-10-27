@@ -6,7 +6,7 @@ from arguments import parse_args
 import models.classifier as C
 from datasets import get_dataset, get_superclass_list, get_subclass_dataset
 from copy import deepcopy
-from evaluation.eval import evaluate
+from evals.ood_pre import eval_ood_detection as evaluate
 
 
 def main():
