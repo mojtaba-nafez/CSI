@@ -8,8 +8,10 @@ import torch.nn.functional as F
 import numpy as np
 
 import models.transform_layers as TL
+#from utils import set_random_seed, normalize, get_auroc
 from utils.utils import set_random_seed, normalize, get_auroc
 
+# from adv_evaluation.pgd import PGD
 from evals.pgd import PGD
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -145,7 +147,9 @@ class DifferentiableScoreModel(nn.Module):
 
         return scores
 
+
 def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
+
     P.K_shift = 1
     P.desired_attack = "PGD"
     P.PGD_constant = 2.5
