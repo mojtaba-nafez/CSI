@@ -166,6 +166,12 @@ def set_random_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
+def get_auroc(scores_id, scores_ood):
+    scores = np.concatenate([scores_id, scores_ood])
+    labels = np.concatenate([np.ones_like(scores_id), np.zeros_like(scores_ood)])
+    return roc_auc_score(labels, scores)
+
+
 
 def normalize(x, dim=1, eps=1e-8):
     return x / (x.norm(dim=dim, keepdim=True) + eps)
