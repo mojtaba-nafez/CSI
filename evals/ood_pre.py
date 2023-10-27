@@ -9,9 +9,142 @@ import numpy as np
 import models.transform_layers as TL
 from utils.utils import set_random_seed, normalize
 from evals.evals import get_auroc
+from evals.adv_attacks import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 hflip = TL.HorizontalFlipLayer().to(device)
+
+
+def make_model_gradient(model, action):
+    for param in model.parameters():
+        param.requires_grad = action
+
+
+class DifferentiableScoreModel(nn.Module):
+
+    def __init__(self, P, device, model, simclr_aug):
+        super(DifferentiableScoreModel, self).__init__()
+        self.P = P
+        self.device = device
+        self.model = model
+        self.simclr_aug = simclr_aug
+    
+    def get_scores(self, feats_dict, x):
+        P = self.P
+        device = self.device
+        # convert to gpu tensor
+        feats_sim = feats_dict['simclr'].to(device)
+        feats_shi = feats_dict['shift'].to(device)
+        N = feats_sim.size(0)
+
+        # compute scores
+        scores = []
+        for f_sim, f_shi in zip(feats_sim, feats_shi):
+            f_sim = [f.mean(dim=0, keepdim=True).requires_grad_() for f in f_sim.chunk(P.K_shift)]  # list of (1, d)
+            f_shi = [f.mean(dim=0, keepdim=True).requires_grad_() for f in f_shi.chunk(P.K_shift)]  # list of (1, 4)
+            score = torch.zeros(1, requires_grad=True).to(device)
+            for shi in range(P.K_shift):
+                score = score + (f_sim[shi] * P.axis[shi].to(device)).sum(dim=1).requires_grad_().max() * torch.tensor(
+                    P.weight_sim[shi], requires_grad=True).to(device)
+                score = score + f_shi[shi][:, shi] * torch.tensor(P.weight_shi[shi], requires_grad=True).to(device)
+
+            score = score / P.K_shift
+            scores.append(score)
+        scores = torch.stack(scores).reshape(-1)
+
+        assert scores.dim() == 1 and scores.size(0) == N  # (N)
+        return scores.cpu()
+
+ 
+    def get_features(self, data_name, model, data_batch,
+                     simclr_aug=None, sample_num=1, layers=('simclr', 'shift')):
+        P = self.P
+        if not isinstance(layers, (list, tuple)):
+            layers = [layers]
+
+        # load pre-computed features if exists
+        feats_dict = dict()
+
+        # pre-compute features and save to the path
+        left = [layer for layer in layers if layer not in feats_dict.keys()]
+        if len(left) > 0:
+            _feats_dict = self._get_features(model, data_batch,
+                                             simclr_aug, sample_num, layers=left)
+
+            for layer, feats in _feats_dict.items():
+                feats_dict[layer] = feats
+
+        return feats_dict
+
+    def _get_features(self, model, data_batch, simclr_aug=None,
+                      sample_num=1, layers=('simclr', 'shift')):
+        P = self.P
+        device = self.device
+        if not isinstance(layers, (list, tuple)):
+            layers = [layers]
+        # check if arguments are valid
+        assert simclr_aug is not None
+        # compute features in full dataset
+        model.eval()
+        feats_all = {layer: [] for layer in layers}  # initialize: empty list
+        x = data_batch.to(device)  # gpu tensor
+        # compute features in one batch
+        feats_batch = {layer: [] for layer in layers}  # initialize: empty list
+        for seed in range(sample_num):
+            set_random_seed(seed)
+            if P.K_shift > 1:
+                x_t = torch.cat([P.shift_trans(hflip(x), k) for k in range(P.K_shift)])
+            else:
+                x_t = x  # No shifting: SimCLR
+            x_t = simclr_aug(x_t)
+            kwargs = {layer: True for layer in layers}  # only forward selected layers
+            _, output_aux = model(x_t, **kwargs)
+            # add features in one batch
+            for layer in layers:
+                feats = output_aux[layer].cpu()
+                feats_batch[layer] += feats.chunk(P.K_shift)  # (B, d) cpu tensor
+
+        # concatenate features in one batch
+        for key, val in feats_batch.items():
+            feats_batch[key] = torch.stack(val, dim=1)  # (B, T, d)
+
+        # add features in full dataset
+        for layer in layers:
+            feats_all[layer] += [feats_batch[layer]]
+
+        # concatenate features in full dataset
+        for key, val in feats_all.items():
+            feats_all[key] = torch.cat(val, dim=0)  # (N, T, d)
+
+        # reshape order
+
+        for key, val in feats_all.items():
+            N, T, d = val.size()  # T = K * T'
+            val = val.view(N, -1, P.K_shift, d)  # (N, T', K, d)
+            val = val.transpose(2, 1)  # (N, 4, T', d)
+            val = val.reshape(N, T, d)  # (N, T, d)
+            feats_all[key] = val
+
+        return feats_all
+
+    def forward(self, x):
+        P = self.P
+        simclr_aug = self.simclr_aug
+        kwargs = {
+            'simclr_aug': simclr_aug,
+            'sample_num': P.ood_samples,
+            'layers': P.ood_layer,
+        }
+
+        P = self.P
+        device = self.device
+        with torch.set_grad_enabled(True):
+            feats = self.get_features(P.dataset, self.model, x, **kwargs)  # (N, T, d)
+
+            scores = self.get_scores(feats, x)
+
+        return scores
+
 
 
 def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
@@ -71,14 +204,18 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     print(f'weight_sim:\t' + '\t'.join(map('{:.4f}'.format, P.weight_sim)))
     print(f'weight_shi:\t' + '\t'.join(map('{:.4f}'.format, P.weight_shi)))
 
+    ## Preprocessing is Ended
+    P, device, model, simclr_aug
+    score_model = DifferentiableScoreModel(P, device, model, simclr_aug)
+    P.attack = {'PGD': PGD(score_model, steps=P.steps, eps=P.eps, alpha=P.alpha)
+                }[P.desired_attack]
+
+
     print('Pre-compute features...')
-    feats_id = get_features(P, P.dataset, model, id_loader, prefix=prefix, **kwargs)  # (N, T, d)
+    feats_id = get_features(P, P.dataset, model, id_loader, attack=P.in_attack, prefix=prefix, **kwargs)  # (N, T, d)
     feats_ood = dict()
     for ood, ood_loader in ood_loaders.items():
-        if ood == 'interp':
-            feats_ood[ood] = get_features(P, ood, model, id_loader, interp=True, prefix=prefix, **kwargs)
-        else:
-            feats_ood[ood] = get_features(P, ood, model, ood_loader, prefix=prefix, **kwargs)
+        feats_ood[ood] = get_features(P, ood, model, ood_loader, attack=P.out_attack, prefix=prefix, **kwargs)
 
     print(f'Compute OOD scores... (score: {ood_score})')
     scores_id = get_scores(P, feats_id, ood_score).numpy()
@@ -129,7 +266,7 @@ def get_scores(P, feats_dict, ood_score):
 
 
 def get_features(P, data_name, model, loader, interp=False, prefix='',
-                 simclr_aug=None, sample_num=1, layers=('simclr', 'shift')):
+                 simclr_aug=None, sample_num=1, layers=('simclr', 'shift'), attack=False):
 
     if not isinstance(layers, (list, tuple)):
         layers = [layers]
@@ -145,7 +282,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
     left = [layer for layer in layers if layer not in feats_dict.keys()]
     if len(left) > 0:
         _feats_dict = _get_features(P, model, loader, interp, P.dataset == 'imagenet',
-                                    simclr_aug, sample_num, layers=left)
+                                    simclr_aug, sample_num, layers=left, attack=attack)
 
         for layer, feats in _feats_dict.items():
             path = prefix + f'_{data_name}_{layer}.pth'
@@ -156,7 +293,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
 
 
 def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=None,
-                  sample_num=1, layers=('simclr', 'shift')):
+                  sample_num=1, layers=('simclr', 'shift'), attack=False):
 
     if not isinstance(layers, (list, tuple)):
         layers = [layers]
@@ -171,14 +308,13 @@ def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=Non
     model.eval()
     feats_all = {layer: [] for layer in layers}  # initialize: empty list
     for i, (x, _) in enumerate(loader):
-        if interp:
-            x_interp = (x + last) / 2 if i > 0 else x  # omit the first batch, assume batch sizes are equal
-            last = x  # save the last batch
-            x = x_interp  # use interp as current batch
 
         if imagenet is True:
             x = torch.cat(x[0], dim=0)  # augmented list of x
-
+        if attack:
+            x = P.attack(x, is_normal=not is_ood)
+            torch.cuda.empty_cache()
+            gc.collect()
         x = x.to(device)  # gpu tensor
 
         # compute features in one batch

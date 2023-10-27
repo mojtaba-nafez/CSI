@@ -35,7 +35,11 @@ def parse_args(default=False):
                             "zigzag"
                         ],
                         default="brightness", type=str)
-                
+    parser.add_argument("--in_attack", help='save ood score for plotting histogram',
+                        default=False, action='store_true')
+    parser.add_argument("--out_attack", help='save ood score for plotting histogram',
+                        default=False, action='store_true')
+
     parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
                         default=None, type=int)
     parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
