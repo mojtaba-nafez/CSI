@@ -10,7 +10,7 @@ import numpy as np
 import models.transform_layers as TL
 from utils import set_random_seed, normalize, get_auroc
 
-from adv_evaluation.pgd import PGD
+from adv_evaluation.adv_attacks import PGD
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 hflip = TL.HorizontalFlipLayer().to(device)
@@ -150,7 +150,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     P.desired_attack = "PGD"
     P.PGD_constant = 2.5
     P.alpha = (P.PGD_constant * P.eps) / P.steps
-    
+
     auroc_dict = dict()
     for ood in ood_loaders.keys():
         auroc_dict[ood] = dict()
