@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 from tensorboardX import SummaryWriter
+from sklearn.metrics import roc_auc_score
 
 
 class Logger(object):
