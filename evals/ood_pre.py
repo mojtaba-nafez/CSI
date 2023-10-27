@@ -10,7 +10,7 @@ import numpy as np
 import models.transform_layers as TL
 from utils.utils import set_random_seed, normalize, get_auroc
 
-from evals.adv_attacks import PGD
+from evals.pgd import PGD
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 hflip = TL.HorizontalFlipLayer().to(device)
