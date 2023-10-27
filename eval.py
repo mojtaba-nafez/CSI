@@ -21,7 +21,7 @@ def parse_args(default=False):
     parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
                         default=None, type=int)
     parser.add_argument('--model', help='Model',
-                        choices=['resnet18', 'resnet18_imagenet'], default="resnet18", type=str)
+                        choices=['pretrain-resnet18', 'resnet18', 'resnet18_imagenet'], default="resnet18", type=str)
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
                         default=128, type=int)
 
