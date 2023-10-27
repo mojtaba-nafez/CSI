@@ -39,7 +39,12 @@ def parse_args(default=False):
                         default=False, action='store_true')
     parser.add_argument("--out_attack", help='save ood score for plotting histogram',
                         default=False, action='store_true')
+    parser.add_argument('--eps', type=float, default=0.0314,
+                        help='maximum perturbation of adversaries (8/255 for cifar-10)')
+    parser.add_argument('--steps', type=int, default=10,
+                        help='maximum iteration when generating adversarial examples')
 
+                        
     parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
                         default=None, type=int)
     parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
