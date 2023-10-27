@@ -219,7 +219,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     feats_id = get_features(P, P.dataset, model, id_loader, attack=P.in_attack, is_ood=False, prefix=prefix, **kwargs)  # (N, T, d)
     feats_ood = dict()
     for ood, ood_loader in ood_loaders.items():
-        feats_ood[ood] = get_features(P, ood, model, ood_loader, attack=P.out_attack, is_ood=False, prefix=prefix, **kwargs)
+        feats_ood[ood] = get_features(P, ood, model, ood_loader, attack=P.out_attack, is_ood=True, prefix=prefix, **kwargs)
 
     print(f'Compute OOD scores... (score: {ood_score})')
     scores_id = get_scores(P, feats_id, ood_score).numpy()
