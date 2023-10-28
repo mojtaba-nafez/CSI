@@ -54,13 +54,13 @@ class PGD(Attack):
             # outputs = torch.sum(self.get_logits(adv_images))
             outputs = self.get_logits(adv_images).to(self.device)
             if is_normal:
-                label = torch.zeros((outputs.shape[0],2)).to(self.device)
+                label = torch.zeros((outputs.shape[0],2))
                 label[:,1] = 1.0
-                outputs = loss(outputs, label.type(torch.LongTensor))
+                outputs = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device))
             else:
                 label = torch.zeros((outputs.shape[0],2)).to(self.device)
                 label[:,0] = 1.0
-                outputs = loss(outputs, label.type(torch.LongTensor))
+                outputs = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device))
             # Calculate loss
             '''
             if is_normal:
