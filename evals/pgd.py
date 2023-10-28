@@ -56,11 +56,11 @@ class PGD(Attack):
             if is_normal:
                 label = torch.zeros((outputs.shape[0],2))
                 label[:,1] = 1.0
-                outputs = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device))
+                cost = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device))
             else:
                 label = torch.zeros((outputs.shape[0],2)).to(self.device)
                 label[:,0] = 1.0
-                outputs = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device))
+                cost = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device))
             # Calculate loss
             '''
             if is_normal:
