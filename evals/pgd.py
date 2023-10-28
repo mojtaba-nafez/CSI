@@ -52,7 +52,7 @@ class PGD(Attack):
 
             adv_images.requires_grad = True
             # outputs = torch.sum(self.get_logits(adv_images))
-            outputs = self.get_logits(adv_images)
+            outputs = self.get_logits(adv_images).to(self.device)
             if is_normal:
                 label = torch.zeros((outputs.shape[0],2)).to(self.device)
                 label[:,1] = 1
