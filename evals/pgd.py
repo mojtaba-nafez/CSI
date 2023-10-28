@@ -65,12 +65,12 @@ class PGD(Attack):
                 label = torch.zeros(outputs.shape[0])
                 cost = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device)).to(self.device)
             # Calculate loss
-            '''
-            if is_normal:
-                cost = -outputs
-            else:
-                cost = outputs
-            '''
+            
+            #if is_normal:
+            #    cost = -outputs
+            #else:
+            #    cost = outputs
+            
             # Update adversarial images
             # cost.backward()
             grad = torch.autograd.grad(cost, adv_images,
