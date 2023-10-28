@@ -34,7 +34,7 @@ class PGD(Attack):
         self.random_start = random_start
         self.supported_mode = ['default', 'targeted']
     
-     def forward(self, images, is_normal=False):
+    def forward(self, images, is_normal=False):
         r"""
         Overridden.
         """
