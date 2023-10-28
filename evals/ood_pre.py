@@ -158,8 +158,8 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     P.K_shift = 1
     P.desired_attack = "PGD"
     P.PGD_constant = 2.5
-    # P.alpha = (P.PGD_constant * P.eps) / P.steps
-    P.alpha = 0
+    P.alpha = (P.PGD_constant * P.eps) / P.steps
+    
     print("Attack targets: ")
     if P.in_attack:
         print("- Normal")
