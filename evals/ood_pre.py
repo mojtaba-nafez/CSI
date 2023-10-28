@@ -142,13 +142,15 @@ class DifferentiableScoreModel(nn.Module):
         device = self.device
         with torch.set_grad_enabled(True):
             feats = self.get_features(P.dataset, self.model, x, **kwargs)  # (N, T, d)
-            print(feats['simclr'].shape)
-            print(x.shape)
-            print(feats['shift'].shape)
+            # print(feats['simclr'].shape)
+            # print(x.shape)
+            # print(feats['shift'].shape)
+            
             scores = self.get_scores(feats, x)
-
+            output = feats['shift'].mean(dim=1, keepdim=True).requires_grad_()
+            print("output.shape", output.shape)
         return scores
-
+        return output
 
 def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
 
