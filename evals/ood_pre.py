@@ -47,8 +47,8 @@ class DifferentiableScoreModel(nn.Module):
             f_shi = [f.mean(dim=0, keepdim=True).requires_grad_() for f in f_shi.chunk(P.K_shift)]  # list of (1, 4)
             score = torch.zeros(1, requires_grad=True).to(device)
             for shi in range(P.K_shift):
-                score = score + (f_sim[shi] * P.axis[shi].to(device)).sum(dim=1).requires_grad_().max() * torch.tensor(
-                    P.weight_sim[shi], requires_grad=True).to(device)
+                # score = score + (f_sim[shi] * P.axis[shi].to(device)).sum(dim=1).requires_grad_().max() * torch.tensor(
+                #    P.weight_sim[shi], requires_grad=True).to(device)
                 score = score + f_shi[shi][:, shi] * torch.tensor(P.weight_shi[shi], requires_grad=True).to(device)
 
             score = score / P.K_shift
@@ -265,7 +265,7 @@ def get_scores(P, feats_dict, ood_score):
         f_shi = [f.mean(dim=0, keepdim=True) for f in f_shi.chunk(P.K_shift)]  # list of (1, 4)
         score = 0
         for shi in range(P.K_shift):
-            score += (f_sim[shi] * P.axis[shi]).sum(dim=1).max().item() * P.weight_sim[shi]
+            # score += (f_sim[shi] * P.axis[shi]).sum(dim=1).max().item() * P.weight_sim[shi]
             score += f_shi[shi][:, shi].item() * P.weight_shi[shi]
         score = score / P.K_shift
         scores.append(score)
