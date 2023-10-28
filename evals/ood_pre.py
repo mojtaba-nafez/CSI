@@ -309,7 +309,7 @@ def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
         if imagenet is True:
             x = torch.cat(x[0], dim=0)  # augmented list of x
         if attack:
-            # x = P.attack(x, is_normal=not is_ood)
+            x = P.attack(x, is_normal=not is_ood)
             torch.cuda.empty_cache()
             gc.collect()
         x = x.to(device)  # gpu tensor
