@@ -69,7 +69,7 @@ class PGD(Attack):
                 cost = outputs
             '''
             # Update adversarial images
-            # cost.backward()
+            cost.backward()
             grad = torch.autograd.grad(cost, adv_images,
                                        retain_graph=False, create_graph=False)[0]
 
