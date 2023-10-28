@@ -52,7 +52,7 @@ class PGD(Attack):
 
             adv_images.requires_grad = True
             # outputs = torch.sum(self.get_logits(adv_images))
-            outputs = self.get_logits(adv_images)
+            outputs = torch.squeeze(self.get_logits(adv_images))
             print("outputs shape: ", outputs.shape)
             if is_normal:
                 label = torch.ones(outputs.shape[0])
