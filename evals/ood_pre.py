@@ -98,7 +98,7 @@ class DifferentiableScoreModel(nn.Module):
                 x_t = torch.cat([P.shift_trans(hflip(x), k) for k in range(P.K_shift)])
             else:
                 x_t = x  # No shifting: SimCLR
-            x_t = simclr_aug(x_t)
+            # x_t = simclr_aug(x_t)
             kwargs = {layer: True for layer in layers}  # only forward selected layers
             _, output_aux = model(x_t, **kwargs)
             # add features in one batch
