@@ -25,7 +25,7 @@ class PGD(Attack):
     """
 
     def __init__(self, model, eps=8 / 255,
-                 alpha=2 / 255, steps=10, random_start=True):
+                 alpha=2 / 255, steps=10, random_start=False):
         super().__init__("PGD", model)
         print("eps, alpha: ", eps, alpha)
         self.eps = eps
