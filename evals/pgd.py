@@ -60,7 +60,7 @@ class PGD(Attack):
             else:
                 label = torch.zeros((outputs.shape[0],2))
                 label[:,0] = 1.0
-                cost = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device))
+                cost = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device)).to(device)
             # Calculate loss
             '''
             if is_normal:
@@ -69,11 +69,11 @@ class PGD(Attack):
                 cost = outputs
             '''
             # Update adversarial images
-            cost.backward()
-            #grad = torch.autograd.grad(cost, adv_images,
-            #                           retain_graph=False, create_graph=False)[0]
+            # cost.backward()
+            grad = torch.autograd.grad(cost, adv_images,
+                                       retain_graph=False, create_graph=False)[0]
 
-            adv_images = adv_images.detach() + self.alpha * adv_images.grad.sign()
+            adv_images = adv_images.detach() + self.alpha * grad.sign()
             delta = torch.clamp(adv_images - images, min=-self.eps, max=self.eps)
             adv_images = torch.clamp(images + delta, min=0, max=1).detach()
 
