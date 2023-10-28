@@ -40,6 +40,7 @@ class PGD(Attack):
         """
         print("111111111111111111111")
         return images
+        '''
         print("!!!!!!!!!!!!!!!!!!!")
         images = images.clone().detach().to(self.device)
 
@@ -80,4 +81,5 @@ class PGD(Attack):
             adv_images = torch.clamp(images + delta, min=0, max=1).detach()
 
         return adv_images
+        '''
 
