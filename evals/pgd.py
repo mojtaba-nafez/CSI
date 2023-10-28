@@ -53,6 +53,7 @@ class PGD(Attack):
             adv_images.requires_grad = True
             # outputs = torch.sum(self.get_logits(adv_images))
             outputs = self.get_logits(adv_images)
+            print("outputs shape: ", outputs.shape)
             if is_normal:
                 label = torch.ones(outputs.shape[0])
                 cost = loss(outputs.to(self.device), label.type(torch.LongTensor).to(self.device)).to(self.device)
