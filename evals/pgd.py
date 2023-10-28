@@ -39,6 +39,7 @@ class PGD(Attack):
         Overridden.
         """
         return images
+        
         images = images.clone().detach().to(self.device)
 
         loss = nn.CrossEntropyLoss()

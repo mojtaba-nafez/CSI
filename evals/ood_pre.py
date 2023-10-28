@@ -308,7 +308,10 @@ def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
     for i, (x, targets) in enumerate(loader):
         if imagenet is True:
             x = torch.cat(x[0], dim=0)  # augmented list of x
-        
+        if attack:
+            x = P.attack(x, is_normal=not is_ood)
+            torch.cuda.empty_cache()
+            gc.collect()
         x = x.to(device)  # gpu tensor
         # compute features in one batch
         feats_batch = {layer: [] for layer in layers}  # initialize: empty list
