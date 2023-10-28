@@ -27,6 +27,7 @@ class DifferentiableScoreModel(nn.Module):
 
     def __init__(self, P, device, model, simclr_aug):
         super(DifferentiableScoreModel, self).__init__()
+        print(P)
         self.P = P
         self.device = device
         self.model = model
