@@ -13,7 +13,7 @@ from utils.utils import set_random_seed, normalize, get_auroc
 
 # from adv_evaluation.pgd import PGD
 from evals.pgd import PGD
-
+from evals.fgsm import FGSM
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 hflip = TL.HorizontalFlipLayer().to(device)
 
@@ -162,7 +162,6 @@ class DifferentiableScoreModel(nn.Module):
 def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
 
     P.K_shift = 1
-    P.desired_attack = "PGD"
     P.PGD_constant = 2.5
     P.alpha = (P.PGD_constant * P.eps) / P.steps
     
@@ -224,7 +223,8 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     ## Preprocessing is Ended
     P, device, model, simclr_aug
     score_model = DifferentiableScoreModel(P, device, model, simclr_aug)
-    P.attack = {'PGD': PGD(score_model, steps=P.steps, eps=P.eps, alpha=P.alpha)
+    P.attack = {'PGD': PGD(score_model, steps=P.steps, eps=P.eps, alpha=P.alpha),
+                'FGSM': FGSM(score_model, eps=P.eps)
                 }[P.desired_attack]
 
     if P.print_score:
