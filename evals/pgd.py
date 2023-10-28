@@ -38,8 +38,9 @@ class PGD(Attack):
         r"""
         Overridden.
         """
+        print("111111111111111111111")
         return images
-        
+        print("!!!!!!!!!!!!!!!!!!!")
         images = images.clone().detach().to(self.device)
 
         loss = nn.CrossEntropyLoss()
