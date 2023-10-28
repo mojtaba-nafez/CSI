@@ -148,7 +148,7 @@ class DifferentiableScoreModel(nn.Module):
             
             # scores = self.get_scores(feats, x)
             output = feats['shift'].mean(dim=1, keepdim=True).requires_grad_()
-            print("output.shape", output.shape)
+            # print("output.shape", output.shape)
         #return scores
         return output
 
