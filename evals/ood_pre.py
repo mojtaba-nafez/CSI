@@ -142,7 +142,9 @@ class DifferentiableScoreModel(nn.Module):
         device = self.device
         with torch.set_grad_enabled(True):
             feats = self.get_features(P.dataset, self.model, x, **kwargs)  # (N, T, d)
-
+            print(feats['simclr'].shape)
+            print(x.shape)
+            print(feats['shift'].shape)
             scores = self.get_scores(feats, x)
 
         return scores
