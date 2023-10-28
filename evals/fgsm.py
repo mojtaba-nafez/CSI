@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from attacks.attack import Attack
+from evals.attack import Attack
 
 class FGSM(Attack):
     r"""
