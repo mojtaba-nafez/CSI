@@ -408,7 +408,7 @@ class Attack(object):
         return target_labels.long().to(self.device)
 
     def __call__(self, inputs, is_normal=False, *args, **kwargs):
-        print("this is Attack forward(__call__), self._normalization_applied=", self._normalization_applied)
+        print("this is Attack forward(__call__), self._normalization_applied", self._normalization_applied)
         given_training = self.model.training
         self._change_model_mode(given_training)
 
