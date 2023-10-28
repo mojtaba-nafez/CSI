@@ -144,11 +144,11 @@ class DifferentiableScoreModel(nn.Module):
             feats = self.get_features(P.dataset, self.model, x, **kwargs)  # (N, T, d)
             # print(feats['simclr'].shape)
             # print(x.shape)
-            # print(feats['shift'].shape)
+            # print(feats['shift'].shape) # (100, 10, 2)
             
             # scores = self.get_scores(feats, x)
             output = feats['shift'].mean(dim=1, keepdim=True).requires_grad_()
-            # print("output.shape", output.shape)
+            # print("output.shape", output.shape) # (100, 1, 2)
         #return scores
         return output
 
