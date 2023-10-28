@@ -146,10 +146,10 @@ class DifferentiableScoreModel(nn.Module):
             # print(x.shape)
             # print(feats['shift'].shape)
             
-            scores = self.get_scores(feats, x)
+            # scores = self.get_scores(feats, x)
             output = feats['shift'].mean(dim=1, keepdim=True).requires_grad_()
             print("output.shape", output.shape)
-        return scores
+        #return scores
         return output
 
 def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
