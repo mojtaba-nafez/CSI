@@ -40,9 +40,7 @@ class PGD(Attack):
         """
 
         images = images.clone().detach().to(self.device)
-
         loss = nn.CrossEntropyLoss()
-
         adv_images = images.clone().detach()
 
         if self.random_start:
