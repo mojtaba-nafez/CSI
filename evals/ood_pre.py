@@ -183,7 +183,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     assert len(ood_scores) == 1  # assume single ood_score for simplicity
     ood_score = ood_scores[0]
 
-    base_path = os.path.split(P.load_path)[0]  # checkpoint directory
+    # base_path = os.path.split(P.load_path)[0]  # checkpoint directory
 
     kwargs = {
         'simclr_aug': simclr_aug,
