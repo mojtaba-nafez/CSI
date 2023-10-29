@@ -50,12 +50,13 @@ for epoch in range(start_epoch, P.epochs + 1 + P.swa_epochs):
 
     update_swa_model(swa_model, model, epoch, P.start_swa_epoch, P.swa_update_frequency)
     swa_scheduler.step()
-    
-    model.eval()
-    save_states = swa_model.state_dict()
-    save_checkpoint(epoch, save_states, optimizer.state_dict(), os.path.join(logger.logdir, 'swa_model')) 
-    
+        
     if (epoch % P.save_step == 0):
+        # Update batch normalization layers for SWA model
+        update_batch_norm(train_loader, swa_model)
+        save_states = swa_model.state_dict()
+        save_checkpoint(epoch, save_states, optimizer.state_dict(), os.path.join(logger.logdir, 'swa_model')) 
+    
         torch.cuda.empty_cache()
         from evals.ood_pre import eval_ood_detection
         P.load_path = os.path.join(logger.logdir, 'swa_model', 'last.model')
