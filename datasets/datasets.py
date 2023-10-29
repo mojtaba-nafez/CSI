@@ -843,6 +843,19 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
+    elif dataset=='cifar100-corruption':
+        n_classes = 100
+        transform = transforms.Compose([
+                transforms.Resize(32),
+                transforms.ToTensor(),
+        ])
+        test_set = CIFAR_CORRUCPION(transform=transform, cifar_corruption_label='CIFAR-100-C/labels.npy', cifar_corruption_data=P.cifar_corruption_data)
+        train_set = datasets.CIFAR100(DATA_PATH, train=True, download=download, transform=transform)
+        
+        train_set.targets = sparse2coarse(train_set.targets)
+
+        print("train_set shapes: ", train_set[0][0].shape)
+        print("test_set shapes: ", test_set[0][0].shape)
     
     elif dataset=='mnist-corruption':
         n_classes = 10
@@ -992,7 +1005,7 @@ def get_superclass_list(dataset):
         return FashionMNIST_SUPERCLASS
     elif dataset == 'mnist':
         return MNIST_SUPERCLASS
-    elif dataset == 'cifar100':
+    elif dataset == 'cifar100' or dataset=='cifar100-corruption':
         return CIFAR100_SUPERCLASS
     elif dataset == 'ucsd':
         return UCSD_SUPERCLASS
