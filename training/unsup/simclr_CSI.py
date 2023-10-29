@@ -11,7 +11,7 @@ hflip = TL.HorizontalFlipLayer().to(device)
 
 
 def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposure_loader=None, logger=None,
-          simclr_aug=None, linear=None, linear_optim=None):
+          simclr_aug=None, linear=None, linear_optim=None, swa_model=None, swa_scheduler=None, swa_start=200, swa_update_frequency=5):
 
     assert simclr_aug is not None
     assert P.sim_lambda == 1.0  # to avoid mistake
@@ -88,8 +88,19 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
-        scheduler.step(epoch - 1 + n / len(loader))
+        
+        # If SWA is to be used and the current epoch is beyond the start epoch
+        if swa_model and epoch > swa_start:
+            # Update the SWA weights after a set frequency
+            if (epoch - swa_start) % swa_update_frequency == 0:
+                swa_model.update_parameters(model)
+                swa_scheduler.step()
+            else:
+                scheduler.step(epoch - 1 + n / len(loader))
+        else:
+            # If SWA is not used, or it hasn't started yet, use the regular scheduler
+            scheduler.step(epoch - 1 + n / len(loader))
+        
         lr = optimizer.param_groups[0]['lr']
 
         batch_time.update(time.time() - check)

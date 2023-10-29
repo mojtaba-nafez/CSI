@@ -136,6 +136,12 @@ def parse_args(default=False):
                         action='store_true')
     parser.add_argument("--save_score", help='save ood score for plotting histogram',
                         action='store_true')
+    
+    
+    parser.add_argument('--swa-lr', type=float, default=0.001, help='Learning rate for SWA. Typically a fraction of the initial LR.')
+    parser.add_argument('--start-swa-epoch', type=int, default=200, help='Epoch number to start SWA.')
+    parser.add_argument('--swa-epochs', type=int, default=10, help='Epoch numbers to run SWA.')
+    parser.add_argument('--swa-update-frequency', type=int, default=1, help='Number of epochs after which to update SWA weights.')
 
     if default:
         return parser.parse_args('')  # empty string

@@ -22,7 +22,7 @@ else:
 linear_optim = torch.optim.Adam(linear.parameters(), lr=1e-3, betas=(.9, .999), weight_decay=P.weight_decay)
 
 # Initialize the SWA model
-swa_model = initialize_swa_model(model)
+swa_model = initialize_swa_model(model.cuda()).cuda()
 
 # Update your LR scheduler for SWA
 swa_scheduler = get_swa_scheduler(optimizer, P.swa_lr)
@@ -46,15 +46,14 @@ for epoch in range(start_epoch, P.epochs + 1 + P.swa_epochs):
         for param in model.parameters():
             param.requires_grad = True
 
-    train(P, epoch, model, criterion, optimizer, scheduler_warmup, train_loader, train_exposure_loader=train_exposure_loader, logger=logger, **kwargs)
-
-    update_swa_model(swa_model, model, epoch, P.start_swa_epoch, P.swa_update_frequency)
-    swa_scheduler.step()
+    train(P, epoch, model.cuda(), criterion, optimizer, scheduler_warmup, train_loader, train_exposure_loader=train_exposure_loader, logger=logger,
+          swa_model=swa_model.cuda(), swa_scheduler=swa_scheduler, swa_start=P.start_swa_epoch, swa_update_frequency=P.swa_update_frequency, **kwargs)
         
     if (epoch % P.save_step == 0):
         # Update batch normalization layers for SWA model
+        os.makedirs(os.path.join(logger.logdir, 'swa_model'), exist_ok=True)
         update_batch_norm(train_loader, swa_model)
-        save_states = swa_model.state_dict()
+        save_states = swa_model.module.state_dict()
         save_checkpoint(epoch, save_states, optimizer.state_dict(), os.path.join(logger.logdir, 'swa_model')) 
     
         torch.cuda.empty_cache()
@@ -102,5 +101,5 @@ else:
     save_states = model.state_dict()
     
 # Save SWA Model
-swa_save_states = swa_model.state_dict()
+swa_save_states = swa_model.module.state_dict()
 save_checkpoint(epoch, swa_save_states, optimizer.state_dict(), os.path.join(logger.logdir, 'swa_model'))
