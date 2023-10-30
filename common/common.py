@@ -7,7 +7,7 @@ def parse_args(default=False):
     parser = ArgumentParser(description='Pytorch implementation of CSI')
 
     parser.add_argument('--dataset', help='Dataset',
-                        choices=['cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'WBC', 'dtd', 'cifar10-corruption', 'mnist-corruption', 'Tomor_Detection', 'ucsd', 'mvtec-high-var', 'breastmnist', 'head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10', 'MVTecAD', 'dior'],
+                        choices=['svhn-10-corruption', 'mvtec-high-var-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'WBC', 'dtd', 'cifar10-corruption', 'mnist-corruption', 'Tomor_Detection', 'ucsd', 'mvtec-high-var', 'breastmnist', 'head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10', 'MVTecAD', 'dior'],
                         default="cifar10", type=str)
     parser.add_argument('--normal_labels', help='normal_labels for high variation',
                         default="0,1,2,3,4,5,6,7,8,9,10,11,12,13", type=str)
@@ -73,7 +73,7 @@ def parse_args(default=False):
     parser.add_argument('--activation_function', help='activation_function for resnet from scratch model.(note this argument is used just in resent18 from scratch)',
                         choices=['relu', 'gelu'], default="relu", type=str)
     parser.add_argument('--model', help='Model',
-                        choices=['resnet18-corruption', 'pretrain-resnet152-corruption', 'pretrain-resnet152', 'vit_fitymi', 'vit', 'resnet18', 'resnet18_imagenet', 'pretrain-resnet18', 'wide_resnet34_5'], default="resnet18", type=str)
+                        choices=['pretrain-wide-resnet', 'resnet18-corruption', 'pretrain-resnet152-corruption', 'pretrain-resnet152', 'vit_fitymi', 'vit', 'resnet18', 'resnet18_imagenet', 'pretrain-resnet18', 'wide_resnet34_5'], default="resnet18", type=str)
     parser.add_argument('--mode', help='Training mode',
                         default='simclr', type=str)
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
@@ -145,6 +145,7 @@ def parse_args(default=False):
                         action='store_true')
     parser.add_argument("--save_score", help='save ood score for plotting histogram',
                         action='store_true')
+    parser.add_argument('--timer', default=None, type=int)
 
     if default:
         return parser.parse_args('')  # empty string
