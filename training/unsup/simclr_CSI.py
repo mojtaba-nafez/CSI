@@ -64,7 +64,6 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         labels = labels.to(device)
         
         if 'sim' in P.train_mode and 'cls' not in P.train_mode:
-            print('sim - not cls')
             images1 = images1 
             images2 = images2
             
@@ -94,15 +93,12 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         if 'sim' in P.train_mode and 'cls' in P.train_mode:
             loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
             loss_shift = criterion(outputs_aux['shift'], shift_labels)
-            print('simcls--------')
             loss = loss_sim + loss_shift
         elif 'sim' in P.train_mode:
             loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
-            print('sim--------')
             loss = loss_sim
             loss_shift = loss_sim * 0
         elif 'cls' in P.train_mode:
-            print('cls--------')
             loss_shift = criterion(outputs_aux['shift'], shift_labels)
             loss = loss_shift
             loss_sim = loss_shift * 0
