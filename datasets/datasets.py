@@ -279,7 +279,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 ])
             elif P.exposure_noise_type == 'blur':
                 blur_sigma = (P.exposure_blur_sigma_min, P.exposure_blur_sigma_max)
-                train_transform_cutpasted = transform.Compoe([
+                train_transform_cutpasted = transforms.Compoe([
                     transforms.Resize((image_size[0],image_size[1])),
                     transforms.GaussianBlur(kernel_size=P.exposure_blur_kernel_size, 
                                             sigma=blur_sigma),
@@ -288,7 +288,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             elif P.exposure_noise_type == 'rotation':
                 angles = [90, 180, 270]
                 rotation_list = [transforms.Lambda(lambda x: TF.rotate(x, angle)) for angle in angles]
-                train_transform_cutpasted = transform.Compose([
+                train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0],image_size[1])),
                     transforms.RandomChoice(rotation_list),
                     transforms.ToTensor()
