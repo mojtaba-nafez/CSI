@@ -27,4 +27,6 @@ def update_batch_norm(train_loader, swa_model):
     """
     Update batch normalization layers for the SWA model.
     """
-    update_bn(train_loader, swa_model)
+    device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
+    swa_model.cuda()
+    update_bn(train_loader, swa_model, device)
