@@ -136,6 +136,13 @@ def parse_args(default=False):
                         action='store_true')
     parser.add_argument("--save_score", help='save ood score for plotting histogram',
                         action='store_true')
+    
+    parser.add_argument('--train-mode', choices=['sim', 'cls'], nargs='+',
+                        help='Select a train mode: "sim" or "cls". Multiple values can be provided.')
+    
+    parser.add_argument('--test-score-mode', choices=['sim', 'cls'], nargs='+',
+                        help='Select a test mode: "sim" or "cls". Multiple values can be provided.')
+
     parser.add_argument('--timer', default=None, type=int)
 
     if default:
