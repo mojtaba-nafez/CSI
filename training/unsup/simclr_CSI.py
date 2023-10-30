@@ -64,6 +64,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         labels = labels.to(device)
         
         if 'sim' in P.train_mode and 'cls' not in P.train_mode:
+            print('sim - not cls')
             images1 = images1 
             images2 = images2
             
@@ -79,23 +80,30 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         images_pair = torch.cat([images1, images2], dim=0)  # 8B
         images_pair = simclr_aug(images_pair)  # transform
 
-        _, outputs_aux = model(images_pair, simclr=True, penultimate=False, shift=True)
+        _, outputs_aux = model(images_pair, simclr=True, penultimate=False, shift=False)
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
+        
 
-        loss_shift = criterion(outputs_aux['shift'], shift_labels)
+        
 
         ### total loss ###
         loss = None
 
         if 'sim' in P.train_mode and 'cls' in P.train_mode:
+            loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
+            loss_shift = criterion(outputs_aux['shift'], shift_labels)
+            print('simcls--------')
             loss = loss_sim + loss_shift
         elif 'sim' in P.train_mode:
+            loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
+            print('sim--------')
             loss = loss_sim
             loss_shift = loss_shift * 0
         elif 'cls' in P.train_mode:
+            print('cls--------')
+            loss_shift = criterion(outputs_aux['shift'], shift_labels)
             loss = loss_shift
             loss_sim = loss_sim * 0
             
