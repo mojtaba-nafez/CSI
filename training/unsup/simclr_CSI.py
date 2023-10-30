@@ -63,13 +63,18 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
         
-        images1 = torch.cat([images1, exposure_images1])
-        images2 = torch.cat([images2, exposure_images2])
-        #images1 = torch.cat([P.shift_trans(images1, k) for k in range(P.K_shift)])
-        #images2 = torch.cat([P.shift_trans(images2, k) for k in range(P.K_shift)])
-        #shift_labels = torch.cat([torch.ones_like(labels) * k for k in range(P.K_shift)], 0)  # B -> 4B
-        shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
-        shift_labels = shift_labels.repeat(2)
+        if 'sim' in P.train_mode and 'cls' not in P.train_mode:
+            images1 = images1 
+            images2 = images2
+            
+            shift_labels = torch.cat([torch.ones_like(labels)], 0)  # B -> 4B
+            shift_labels = shift_labels.repeat(2)
+        else
+            images1 = torch.cat([images1, exposure_images1])
+            images2 = torch.cat([images2, exposure_images2])
+
+            shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
+            shift_labels = shift_labels.repeat(2)
         
         images_pair = torch.cat([images1, images2], dim=0)  # 8B
         images_pair = simclr_aug(images_pair)  # transform
