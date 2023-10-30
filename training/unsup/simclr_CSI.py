@@ -89,10 +89,10 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             loss = loss_sim + loss_shift
         elif 'sim' in P.train_mode:
             loss = loss_sim
-            loss_shift = 0
+            loss_shift = loss_shift * 0
         elif 'cls' in P.train_mode:
             loss = loss_shift
-            loss_sim = 0
+            loss_sim = loss_sim * 0
             
         optimizer.zero_grad()
         loss.backward()
