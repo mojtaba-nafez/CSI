@@ -100,12 +100,12 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
             print('sim--------')
             loss = loss_sim
-            loss_shift = loss_shift * 0
+            loss_shift = loss_sim * 0
         elif 'cls' in P.train_mode:
             print('cls--------')
             loss_shift = criterion(outputs_aux['shift'], shift_labels)
             loss = loss_shift
-            loss_sim = loss_sim * 0
+            loss_sim = loss_shift * 0
             
         optimizer.zero_grad()
         loss.backward()
