@@ -69,7 +69,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             
             shift_labels = torch.cat([torch.ones_like(labels)], 0)  # B -> 4B
             shift_labels = shift_labels.repeat(2)
-        else
+        else:
             images1 = torch.cat([images1, exposure_images1])
             images2 = torch.cat([images2, exposure_images2])
 
