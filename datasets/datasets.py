@@ -188,17 +188,39 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor()
         ])
-        train_transform_cutpasted = transforms.Compose([
-            transforms.Resize((256,256)),
-            transforms.CenterCrop((image_size[0], image_size[1])),
-            CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
-        ])
+        if P.exposure_noise_type is None or P.exposure_noise_type == 'cutpaste':
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
+            ])
+        elif P.exposure_noise_type == 'blur':
+            blur_sigma = (P.exposure_blur_sigma_min, P.exposure_blur_sigma_max)
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),   
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.GaussianBlur(kernel_size=P.exposure_blur_kernel_size, 
+                                        sigma=blur_sigma),
+                transforms.ToTensor()
+            ])
+        elif P.exposure_noise_type == 'rotation':
+            angles = [90, 180, 270]
+            rotation_list = [transforms.Lambda(lambda x: TF.rotate(x, angle)) for angle in angles]
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.RandomChoice(rotation_list),
+                transforms.ToTensor()
+            ])
         imagenet_exposure = ImageNetExposure(root=base_path, count=tiny_count, transform=tiny_transform)
         train_ds_mvtech_fake = FakeMVTecDataset(root=fake_root, train=True, category=categories[P.one_class_idx], transform=fake_transform, count=fake_count)
         train_ds_mvtech_cutpasted = MVTecDataset_Cutpasted(root=root, train=True, category=categories[P.one_class_idx], transform=train_transform_cutpasted, count=cutpast_count)
-        print("number of fake data:", len(train_ds_mvtech_fake), 'shape:', train_ds_mvtech_fake[0][0].shape)
-        print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
-        print("number of cutpasted data:", len(train_ds_mvtech_cutpasted), 'shape:', train_ds_mvtech_cutpasted[0][0].shape)
+        if len(train_ds_mvtech_fake) > 0:
+            print("number of fake data:", len(train_ds_mvtech_fake), 'shape:', train_ds_mvtech_fake[0][0].shape)
+        if len(imagenet_exposure) > 0:
+            print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
+        if len(train_ds_mvtech_cutpasted) > 0:
+            print("number of cutpasted data:", len(train_ds_mvtech_cutpasted), 'shape:', train_ds_mvtech_cutpasted[0][0].shape)
         exposureset = torch.utils.data.ConcatDataset([train_ds_mvtech_fake, imagenet_exposure, train_ds_mvtech_cutpasted])
 
         print("number of exposure:", len(exposureset))
@@ -211,11 +233,31 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor()
         ])
-        train_transform_cutpasted = transforms.Compose([
-            transforms.Resize((256,256)),
-            transforms.CenterCrop((image_size[0], image_size[1])),
-            CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
-        ])
+        if P.exposure_noise_type is None or P.exposure_noise_type == 'cutpaste':
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
+            ])
+        elif P.exposure_noise_type == 'blur':
+            blur_sigma = (P.exposure_blur_sigma_min, P.exposure_blur_sigma_max)
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),   
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.GaussianBlur(kernel_size=P.exposure_blur_kernel_size, 
+                                        sigma=blur_sigma),
+                transforms.ToTensor()
+            ])
+        elif P.exposure_noise_type == 'rotation':
+            angles = [90, 180, 270]
+            rotation_list = [transforms.Lambda(lambda x: TF.rotate(x, angle)) for angle in angles]
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.RandomChoice(rotation_list),
+                transforms.ToTensor()
+            ])
+        
         imagenet_exposure = ImageNetExposure(root=base_path, count=tiny_count, transform=tiny_transform)
         fc = [int(fake_count / len(cls_list)) for i in range(len(cls_list))]
         if sum(fc) != fake_count:
@@ -238,7 +280,8 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             print("number of fake data:", len(train_ds_mvtech_fake), "shape:", train_ds_mvtech_fake[0][0].shape)
         if len(train_ds_mvtech_cutpasted) > 0:
             print("number of cutpast data:", len(train_ds_mvtech_cutpasted), 'shape:', train_ds_mvtech_cutpasted[0][0].shape)
-        print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
+        if len(imagenet_exposure) > 0:
+            print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
         print("number of exposure:", len(exposureset))
         train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
     else:
