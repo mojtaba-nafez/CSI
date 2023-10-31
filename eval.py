@@ -25,7 +25,7 @@ def evaluate_ood(P, eval_function, model, test_loader, ood_test_loader, simclr_a
         auroc_dict['one_class_mean'] = mean_dict
 
         # Log one_class_mean score to wandb
-        wandb.log({"one_class_mean": mean_dict})
+        wandb.log({"one_class_mean": mean_dict[[ood_score]]})
 
     bests = []
     for ood in auroc_dict.keys():
@@ -39,9 +39,6 @@ def evaluate_ood(P, eval_function, model, test_loader, ood_test_loader, simclr_a
         if P.print_score:
             print(message)
         bests.append(best_auroc)
-
-    # Log the best scores to wandb
-    wandb.log({"best_scores": bests})
 
     bests = map('{:.4f}'.format, bests)
     print('\t'.join(bests))
