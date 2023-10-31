@@ -3,6 +3,13 @@ from common.eval import *
 model.eval()
 print(P)
 
+import wandb
+
+# Initialize wandb
+wandb.init(project="mnist-cls", config=vars(P))
+
+# Log everything in P (assuming P is a argparse.Namespace object)
+wandb.config.update(vars(P))
 
 def evaluate_ood(P, eval_function, model, test_loader, ood_test_loader, simclr_aug):
     with torch.no_grad():
@@ -17,6 +24,9 @@ def evaluate_ood(P, eval_function, model, test_loader, ood_test_loader, simclr_a
             mean_dict[ood_score] = mean / len(auroc_dict.keys())
         auroc_dict['one_class_mean'] = mean_dict
 
+        # Log one_class_mean score to wandb
+        wandb.log({"one_class_mean": mean_dict})
+
     bests = []
     for ood in auroc_dict.keys():
         message = ''
@@ -29,6 +39,9 @@ def evaluate_ood(P, eval_function, model, test_loader, ood_test_loader, simclr_a
         if P.print_score:
             print(message)
         bests.append(best_auroc)
+
+    # Log the best scores to wandb
+    wandb.log({"best_scores": bests})
 
     bests = map('{:.4f}'.format, bests)
     print('\t'.join(bests))
