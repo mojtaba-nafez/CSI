@@ -62,6 +62,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             batch_size = images[0].size(0)
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
+        exp_labels = torch.ones_like(labels).to(device) * P.n_classes
+        sup_labels = torch.cat([labels, exp_labels]).to(device)
         
         images1 = torch.cat([images1, exposure_images1])
         images2 = torch.cat([images2, exposure_images2])
@@ -78,7 +80,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        loss_sim = Supervised_NT_xent(sim_matrix, labels, temperature=0.5) * P.sim_lambda
+        loss_sim = Supervised_NT_xent(sim_matrix, sup_labels, temperature=0.5) * P.sim_lambda
 
         loss_shift = criterion(outputs_aux['shift'], shift_labels)
 
