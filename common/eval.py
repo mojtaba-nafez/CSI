@@ -12,10 +12,15 @@ from utils.utils import get_loader_unique_label
 
 P = parse_args()
 
+cls_list = get_superclass_list(P.dataset)
 normal_labels = None
-if P.normal_labels:
+if P.normal_labels is not None:
     normal_labels = [int(num) for num in P.normal_labels.split(',')]
-    print("normal_labels: ", normal_labels)
+elif P.one_class_idx is not None:
+    normal_labels = [P.one_class_idx]
+else:
+    normal_labels = cls_list
+print("normal_labels: ", normal_labels)
 
 cls_list = get_superclass_list(P.dataset)
 anomaly_labels = [elem for elem in cls_list if elem not in normal_labels]
@@ -77,19 +82,27 @@ print("Unique labels(test_loader):", get_loader_unique_label(test_loader))
 print("Unique labels(train_loader):", get_loader_unique_label(train_loader))
 
 
-P.ood_dataset = anomaly_labels
-if  P.dataset=='WBC' or P.dataset=='mvtec-high-var-corruption' or P.dataset=="MVTecAD" or P.dataset=="mvtec-high-var" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
-    P.ood_dataset = [1]
-print("P.ood_dataset",  P.ood_dataset)
+if P.one_class_idx is not None:
+    P.ood_dataset = anomaly_labels
+    if P.dataset=='WBC' or P.dataset=='mvtec-high-var-corruption' or P.dataset=="MVTecAD" or P.dataset=="mvtec-high-var" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
+        P.ood_dataset = [1]
+    print("P.ood_dataset",  P.ood_dataset)
+elif P.ood_dataset is None:
+    raise ValueError('ood dataset needs to be specified in non one class mode')
+
 
 ood_test_loader = dict()
 for ood in P.ood_dataset:
-    ood_test_set = get_subclass_dataset(P, full_test_set, classes=ood)
-    ood = f'one_class_{ood}'
-    print(f"testset anomaly(class {ood}):", len(ood_test_set))
-    ood_test_loader[ood] = DataLoader(ood_test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
-    print("Unique labels(ood_test_loader):", get_loader_unique_label(ood_test_loader[ood]))
- 
+    if P.one_class_idx is not None:
+        ood_test_set = get_subclass_dataset(P, full_test_set, classes=ood)
+        ood = f'one_class_{ood}'
+        print(f"testset anomaly(class {ood}):", len(ood_test_set))
+        ood_test_loader[ood] = DataLoader(ood_test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
+        print("Unique labels(ood_test_loader):", get_loader_unique_label(ood_test_loader[ood]))
+    else:
+        ood_test_set = get_dataset(P, ood, test_only=True, image_size=image_size_, download=True)
+        ood_test_loader[ood] = DataLoader(ood_test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
+
 
 print("train loader batchs", len(train_loader))
 print("train_set:", len(train_set))

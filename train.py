@@ -69,6 +69,7 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--resize_factor", str(0.54),
             "--resize_fix", 
             "--one_class_idx" , str(P.one_class_idx),
+            "--ood_dataset", str(P.ood_dataset),
             "--load_path", str(P.load_path),
             "--normal_labels", str(P.normal_labels),
             "--noise_scale",str(0.0),
