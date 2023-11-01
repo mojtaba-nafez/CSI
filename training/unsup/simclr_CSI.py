@@ -35,12 +35,13 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     train_exposure_loader_iterator = iter(train_exposure_loader)
     print("len(train_exposure_loader_iterator), len(loader): ", len(train_exposure_loader_iterator), len(loader))
     print("cl_no_hflip=", P.cl_no_hflip)
-    for n, (images, labels) in enumerate(loader):
+    for n, (images, train_labels) in enumerate(loader):
         try:
             exposure_images, _ = next(train_exposure_loader_iterator)
         except StopIteration:
             train_exposure_loader_iterator = iter(train_exposure_loader)
             exposure_images, _ = next(train_exposure_loader_iterator)
+            expo_labels = torch.zeros(exposure_images.shape[0])
         # print(exposure_images.shape, images.shape, labels.shape)
         model.train()
         count = n * P.n_gpus  # number of trained samples
@@ -61,14 +62,14 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         else:
             batch_size = images[0].size(0)
             images1, images2 = images[0].to(device), images[1].to(device)
-        labels = labels.to(device)
+        train_labels = train_labels.to(device)
         
         images1 = torch.cat([images1, exposure_images1])
         images2 = torch.cat([images2, exposure_images2])
         #images1 = torch.cat([P.shift_trans(images1, k) for k in range(P.K_shift)])
         #images2 = torch.cat([P.shift_trans(images2, k) for k in range(P.K_shift)])
         #shift_labels = torch.cat([torch.ones_like(labels) * k for k in range(P.K_shift)], 0)  # B -> 4B
-        shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
+        shift_labels = torch.cat([train_labels, expo_labels], 0)  # B -> 4B
         shift_labels = shift_labels.repeat(2)
         
         images_pair = torch.cat([images1, images2], dim=0)  # 8B
@@ -78,9 +79,24 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
+        # loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
+        loss_sim = Supervised_NT_xent(sim_matrix, labels=shift_labels,
+                                      temperature=0.07, multi_gpu=P.multi_gpu) * P.sim_lambda
+        
+        img1 = outputs_aux['shift'][:int(outputs_aux['shift'].shape[0]/4)]        
+        exp1 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/4):int(outputs_aux['shift'].shape[0]/2)]
+        img2 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/2):int(3*outputs_aux['shift'].shape[0]/4)]
+        exp2 = outputs_aux['shift'][int(3*outputs_aux['shift'].shape[0]/4):]
+        output = torch.cat([img1, img2, exp1[:int(len(exp1)/10)], exp2[:int(len(exp2)/10)]]) 
+        
+        img1_label = shift_labels[:int(len(shift_labels)/4)]
+        exp1_label = shift_labels[int(len(shift_labels)/4):int(len(shift_labels)/2)]
+        img2_label = shift_labels[int(len(shift_labels)/2):int(3*len(shift_labels)/4)]
+        exp2_label = shift_labels[int(3*len(shift_labels)/4):]
+        
+        shift_labels = torch.cat([img1_label, img2_label, exp1_label[:int(len(exp1_label)/10)], exp2_label[:int(len(exp2_label)/10)]])
 
-        loss_shift = criterion(outputs_aux['shift'], shift_labels)
+        loss_shift = criterion(output, shift_labels)
 
         ### total loss ###
         loss = loss_sim + loss_shift
