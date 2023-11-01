@@ -68,14 +68,19 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--ood_samples", "10",
             "--resize_factor", str(0.54),
             "--resize_fix", 
-            "--one_class_idx" , str(P.one_class_idx),
-            "--ood_dataset", str(P.ood_dataset),
             "--load_path", str(P.load_path),
-            "--normal_labels", str(P.normal_labels),
             "--noise_scale",str(0.0),
             "--noist_probability", str(0.0),
             '--activation_function', str(P.activation_function)
         ]
+
+        if P.one_class_idx is not None:
+            arguments_to_pass += ["--one_class_idx" , str(P.one_class_idx)]
+        if P.normal_labels is not None:
+            arguments_to_pass += ["--normal_labels" , str(P.normal_labels)]
+        if P.ood_dataset is not None:
+            arguments_to_pass += ["--ood_dataset", str(P.ood_dataset)]
+
 
         result = subprocess.run(["python", "eval.py"] + arguments_to_pass, capture_output=True, text=True)
 
