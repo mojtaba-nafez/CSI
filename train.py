@@ -79,7 +79,7 @@ for epoch in range(start_epoch, P.epochs + 1):
         if P.normal_labels is not None:
             arguments_to_pass += ["--normal_labels" , str(P.normal_labels)]
         if P.ood_dataset is not None:
-            arguments_to_pass += ["--ood_dataset", str(P.ood_dataset)]
+            arguments_to_pass += ["--ood_dataset", str(P.ood_dataset[0])]
 
 
         result = subprocess.run(["python", "eval.py"] + arguments_to_pass, capture_output=True, text=True)
