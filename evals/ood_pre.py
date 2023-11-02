@@ -15,7 +15,6 @@ hflip = TL.HorizontalFlipLayer().to(device)
 
 
 def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
-    P.K_shift = 1
     auroc_dict = dict()
     for ood in ood_loaders.keys():
         auroc_dict[ood] = dict()
@@ -47,15 +46,24 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
         axis = f.mean(dim=1)  # (M, d)
         P.axis.append(normalize(axis, dim=1).to(device))
     print('axis size: ' + ' '.join(map(lambda x: str(len(x)), P.axis)))
+    # torch.Size([50000, 10, 128])
+    print("feats_train['simclr'].shape", feats_train['simclr'].shape)
+    # torch.Size([50000, 10, 11])
+    print("feats_train['shift'].shape", feats_train['shift'].shape)
 
-    f_sim = [f.mean(dim=1) for f in feats_train['simclr'].chunk(P.K_shift, dim=1)]  # list of (M, d)
-    f_shi = [f.mean(dim=1) for f in feats_train['shift'].chunk(P.K_shift, dim=1)]  # list of (M, 4)
+    # f_sim.shape torch.Size([50000, 128])
+    f_sim = [f.mean(dim=1) for f in feats_train['simclr'].chunk(1, dim=1)]  # list of (M, d)
+    # f_shi.shape torch.Size([50000, 11])
+    f_shi = [f.mean(dim=1) for f in feats_train['shift'].chunk(1, dim=1)]  # list of (M, 4)
+
 
     weight_sim = []
     weight_shi = []
-    for shi in range(P.K_shift):
+    softmax = nn.Softmax(dim=1)
+    for shi in range(1):
         sim_norm = f_sim[shi].norm(dim=1)  # (M)
-        shi_mean = f_shi[shi][:, shi]  # (M)
+        f_shi[shi] = softmax(f_shi[shi])
+        shi_mean = 1-f_shi[shi][:, 10]  # (M)
         weight_sim.append(1 / sim_norm.mean().item())
         weight_shi.append(1 / shi_mean.mean().item())
 
@@ -104,28 +112,39 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
 
     return auroc_dict
 
-
 def get_scores(P, feats_dict, ood_score):
     # convert to gpu tensor
+   
+    # feats_sim.shape: torch.Size([10000, 10, 128])
+    # feats_shi.shape: torch.Size([10000, 10, 11])
     feats_sim = feats_dict['simclr'].to(device)
     feats_shi = feats_dict['shift'].to(device)
-    N = feats_sim.size(0)
 
+    N = feats_sim.size(0)
+    # P.weight_shi.shape [0.11103488127435297]
+    # P.weight_sim.shape [0.4419047940139621]
+    print("P.weight_shi.shape", P.weight_shi)
+    print("P.weight_sim.shape", P.weight_sim)
     # compute scores
     scores = []
     for f_sim, f_shi in zip(feats_sim, feats_shi):
-        f_sim = [f.mean(dim=0, keepdim=True) for f in f_sim.chunk(P.K_shift)]  # list of (1, d)
-        f_shi = [f.mean(dim=0, keepdim=True) for f in f_shi.chunk(P.K_shift)]  # list of (1, 4)
+        f_sim = [f.mean(dim=0, keepdim=True) for f in f_sim.chunk(1)]  # list of (1, d)
+        f_shi = [f.mean(dim=0, keepdim=True) for f in f_shi.chunk(1)]  # list of (1, 4)
         score = 0
-        for shi in range(P.K_shift):
+    
+        softmax = nn.Softmax(dim=1)
+        for shi in range(1):
             score += (f_sim[shi] * P.axis[shi]).sum(dim=1).max().item() * P.weight_sim[shi]
-            score += f_shi[shi][:, shi].item() * P.weight_shi[shi]
+            f_shi[shi] = softmax(f_shi[shi])
+            score += (1 - f_shi[shi][:, 10].item()) * P.weight_shi[shi]
         score = score / P.K_shift
         scores.append(score)
     scores = torch.tensor(scores)
 
     assert scores.dim() == 1 and scores.size(0) == N  # (N)
     return scores.cpu()
+
+
 
 
 def get_features(P, data_name, model, loader, interp=False, prefix='',
@@ -157,7 +176,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
 
 def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=None,
                   sample_num=1, layers=('simclr', 'shift')):
-
+    P.K_shift = 1
     if not isinstance(layers, (list, tuple)):
         layers = [layers]
 
@@ -171,11 +190,7 @@ def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=Non
     model.eval()
     feats_all = {layer: [] for layer in layers}  # initialize: empty list
     for i, (x, _) in enumerate(loader):
-        if interp:
-            x_interp = (x + last) / 2 if i > 0 else x  # omit the first batch, assume batch sizes are equal
-            last = x  # save the last batch
-            x = x_interp  # use interp as current batch
-
+        
         if imagenet is True:
             x = torch.cat(x[0], dim=0)  # augmented list of x
 
@@ -186,10 +201,7 @@ def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=Non
         for seed in range(sample_num):
             set_random_seed(seed)
 
-            if P.K_shift > 1:
-                x_t = torch.cat([P.shift_trans(hflip(x), k) for k in range(P.K_shift)])
-            else:
-                x_t = x # No shifting: SimCLR
+            x_t = x # No shifting: SimCLR
             x_t = simclr_aug(x_t)
 
             # compute augmented features
@@ -229,7 +241,7 @@ def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=Non
             val = val.transpose(2, 1)  # (N, 4, T', d)
             val = val.reshape(N, T, d)  # (N, T, d)
             feats_all[key] = val
-
+    P.K_shift = 11
     return feats_all
 
 

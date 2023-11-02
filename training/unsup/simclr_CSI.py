@@ -38,11 +38,13 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     for n, (images, train_labels) in enumerate(loader):
         try:
             exposure_images, _ = next(train_exposure_loader_iterator)
+            exposure_images = exposure_images[torch.randperm(exposure_images.shape[0])]
             expo_labels = 10*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
 
         except StopIteration:
             train_exposure_loader_iterator = iter(train_exposure_loader)
             exposure_images, _ = next(train_exposure_loader_iterator)
+            exposure_images = exposure_images[torch.randperm(exposure_images.shape[0])]
             expo_labels = 10*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
         # print(exposure_images.shape, images.shape, labels.shape)
         model.train()
