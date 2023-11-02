@@ -346,7 +346,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 print("number of fake data:", len(train_ds_cifar10_fake), "shape:", train_ds_cifar10_fake[0][0].shape)
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_cifar10_fake, imagenet_exposure])
         
-        elif P.dataset=="cifar100-versus-10":
+        elif P.dataset=="cifar100-versus-10" or P.dataset=="cifar100-versus-10-supervised":
             cls_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
             fake_transform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),
@@ -610,6 +610,39 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = torch.utils.data.ConcatDataset([anomaly_testset, normal_testset]) 
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
+
+    elif dataset == 'cifar100-versus-10-supervised':
+        n_classes = 2
+        train_transform = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+        ])
+
+        transform = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+        ])
+        if train_transform_cutpasted:
+            train_set = datasets.CIFAR100('./data', train=True, download=True, transform=train_transform_cutpasted)
+        else:
+            train_set = datasets.CIFAR100('./data', train=True, download=True, transform=train_transform)
+
+        # for i in range(len(train_set)):
+        #    train_set.targets[i] = 0
+        
+        anomaly_testset = datasets.CIFAR10('./data', train=False, download=True, transform=transform)
+        for i in range(len(anomaly_testset)):
+            anomaly_testset.targets[i] = 1
+        normal_testset = datasets.CIFAR100('./data', train=False, download=True, transform=transform)
+        for i in range(len(normal_testset)):
+            normal_testset.targets[i] = 0
+        test_set = torch.utils.data.ConcatDataset([anomaly_testset, normal_testset]) 
+        print("train_set shapes: ", train_set[0][0].shape)
+        print("test_set shapes: ", test_set[0][0].shape)
+
+
+
     elif dataset == 'cifar100-versus-10':
         n_classes = 2
         train_transform = transforms.Compose([
@@ -1118,7 +1151,7 @@ def get_superclass_list(dataset):
         return MNIST_CORRUPTION_SUPERCLASS
     elif dataset == 'cifar10-versus-100' or dataset=='cifar10-versus-100-supervised':
         return CIFAR10_VER_CIFAR100_SUPERCLASS
-    elif dataset == 'cifar100-versus-10':
+    elif dataset == 'cifar100-versus-10' or dataset=='cifar100-versus-10-supervised':
         return CIFAR10_VER_CIFAR100_SUPERCLASS
     elif dataset == 'dtd':
         return DTD_SUPERCLASS
