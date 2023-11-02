@@ -288,8 +288,23 @@ class Pretrain_ResNet152(BaseModel):
         return z_n
 
 
+class GaussianNoise(nn.Module):
+    def __init__(self, mean=0., std=1., clip_min=0., clip_max=1., probability=1.0):
+        super().__init__()
+        self.mean = mean
+        self.std = std
+        self.clip_min = clip_min
+        self.clip_max = clip_max
+        self.probability = probability
+
+    def forward(self, img):
+        if random.random() < self.probability:
+            noise = torch.randn(img.size(), device=img.device) * self.std + self.mean
+            return torch.clamp(img + noise, min=self.clip_min, max=self.clip_max)
+        return img
+    
 class Pretrain_Wide_ResNet(BaseModel):
-    def __init__(self, block, num_blocks, num_classes=10):
+    def __init__(self, block, num_classes=10, mean=0., std=0.1, noise_probability=0.5):
         last_dim = 2048 * block.expansion
         super(Pretrain_Wide_ResNet, self).__init__(last_dim, num_classes)
 
@@ -299,6 +314,9 @@ class Pretrain_Wide_ResNet(BaseModel):
         mu = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1).cuda()
         std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1).cuda()
         self.norm = lambda x: (x - mu) / std
+        
+        self.gaussian_noise = GaussianNoise(mean=mean, std=std, probability=noise_probability)
+        
         self.backbone = models.wide_resnet50_2(pretrained=True)
         self.backbone.fc = torch.nn.Identity()
         i = 0
@@ -309,6 +327,7 @@ class Pretrain_Wide_ResNet(BaseModel):
             i+=1
 
     def penultimate(self, x, all_features=False):
+        x = self.gaussian_noise(x)
         x = self.norm(x)
         z1 = self.backbone(x)
         z_n = F.normalize(z1, dim=-1)
@@ -360,8 +379,8 @@ def Pretrain_ResNet152_Model(num_classes):
     return Pretrain_ResNet152(BasicBlock, [2,2,2,2], num_classes=num_classes)
 
 
-def Pretrain_Wide_ResNet_Model(num_classes):
-    return Pretrain_Wide_ResNet(BasicBlock, [2,2,2,2], num_classes=num_classes)
+def Pretrain_Wide_ResNet_Model(num_classes,  mean=0.0, noise_scale=0.1, noise_probability=0):
+    return Pretrain_Wide_ResNet(BasicBlock, num_classes=num_classes, mean=mean, std=noise_scale, noise_probability=noise_probability)
 
 def Pretrain_ResNet152_Corruption_Model(num_classes):
     return Pretrain_ResNet152_Corruption(BasicBlock, [2,2,2,2], num_classes=num_classes)

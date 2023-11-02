@@ -2,28 +2,19 @@ from common.eval import *
 
 model.eval()
 print(P)
-if P.mode == 'test_acc':
-    from evals import test_classifier
-    with torch.no_grad():
-        error = test_classifier(P, model, test_loader, 0, logger=None)
 
-elif P.mode == 'test_marginalized_acc':
-    from evals import test_classifier
-    with torch.no_grad():
-        error = test_classifier(P, model, test_loader, 0, marginal=True, logger=None)
+import wandb
 
-elif P.mode in ['ood', 'ood_pre']:
-    if P.mode == 'ood':
-        from evals import eval_ood_detection
-    else:
-        from evals.ood_pre import eval_ood_detection
-        from evals.ood_pre_2 import eval_ood_detection as eval_ood_detection_2
-        from evals.ood_pre_3 import eval_ood_detection as eval_ood_detection_3
-    print(P)
-    with torch.no_grad():
-        auroc_dict = eval_ood_detection(P, model, test_loader, ood_test_loader, P.ood_score,
-                                        train_loader=train_loader, simclr_aug=simclr_aug)
+# Initialize wandb
+wandb.init(project="mnist-cls", config=vars(P))
 
+# Log everything in P (assuming P is a argparse.Namespace object)
+wandb.config.update(vars(P))
+
+def evaluate_ood(P, eval_function, model, test_loader, ood_test_loader, simclr_aug):
+    with torch.no_grad():
+        auroc_dict = eval_function(P, model, test_loader, ood_test_loader, P.ood_score, train_loader=train_loader, simclr_aug=simclr_aug)
+    
     if P.one_class_idx is not None:
         mean_dict = dict()
         for ood_score in P.ood_score:
@@ -32,6 +23,9 @@ elif P.mode in ['ood', 'ood_pre']:
                 mean += auroc_dict[ood][ood_score]
             mean_dict[ood_score] = mean / len(auroc_dict.keys())
         auroc_dict['one_class_mean'] = mean_dict
+
+        # Log one_class_mean score to wandb
+        wandb.log({"one_class_mean": mean_dict[ood_score]})
 
     bests = []
     for ood in auroc_dict.keys():
@@ -48,69 +42,34 @@ elif P.mode in ['ood', 'ood_pre']:
 
     bests = map('{:.4f}'.format, bests)
     print('\t'.join(bests))
-
-
-    if P.print_3_score:
-        with torch.no_grad():
-            auroc_dict = eval_ood_detection_2(P, model, test_loader, ood_test_loader, P.ood_score,
-                                            train_loader=train_loader, simclr_aug=simclr_aug)
-
-        if P.one_class_idx is not None:
-            mean_dict = dict()
-            for ood_score in P.ood_score:
-                mean = 0
-                for ood in auroc_dict.keys():
-                    mean += auroc_dict[ood][ood_score]
-                mean_dict[ood_score] = mean / len(auroc_dict.keys())
-            auroc_dict['one_class_mean'] = mean_dict
-
-        bests = []
-        for ood in auroc_dict.keys():
-            message = ''
-            best_auroc = 0
-            for ood_score, auroc in auroc_dict[ood].items():
-                message += '[%s %s %.4f] ' % (ood, ood_score, auroc)
-                if auroc > best_auroc:
-                    best_auroc = auroc
-            message += '[%s %s %.4f] ' % (ood, 'best', best_auroc)
-            if P.print_score:
-                print(message)
-            bests.append(best_auroc)
-
-        bests = map('{:.4f}'.format, bests)
-        print('\t'.join(bests))
-
-
-        
-        with torch.no_grad():
-            auroc_dict = eval_ood_detection_3(P, model, test_loader, ood_test_loader, P.ood_score,
-                                            train_loader=train_loader, simclr_aug=simclr_aug)
-
-        if P.one_class_idx is not None:
-            mean_dict = dict()
-            for ood_score in P.ood_score:
-                mean = 0
-                for ood in auroc_dict.keys():
-                    mean += auroc_dict[ood][ood_score]
-                mean_dict[ood_score] = mean / len(auroc_dict.keys())
-            auroc_dict['one_class_mean'] = mean_dict
-
-        bests = []
-        for ood in auroc_dict.keys():
-            message = ''
-            best_auroc = 0
-            for ood_score, auroc in auroc_dict[ood].items():
-                message += '[%s %s %.4f] ' % (ood, ood_score, auroc)
-                if auroc > best_auroc:
-                    best_auroc = auroc
-            message += '[%s %s %.4f] ' % (ood, 'best', best_auroc)
-            if P.print_score:
-                print(message)
-            bests.append(best_auroc)
-
-        bests = map('{:.4f}'.format, bests)
-        print('\t'.join(bests))
     
+    
+if P.mode == 'test_acc':
+    from evals import test_classifier
+    with torch.no_grad():
+        error = test_classifier(P, model, test_loader, 0, logger=None)
+
+elif P.mode == 'test_marginalized_acc':
+    from evals import test_classifier
+    with torch.no_grad():
+        error = test_classifier(P, model, test_loader, 0, marginal=True, logger=None)
+
+elif P.mode in ['ood', 'ood_pre']:
+    if P.mode == 'ood':
+        from evals import eval_ood_detection
+    else:
+        from evals.ood_pre import eval_ood_detection as eval_ood_detection
+        from evals.ood_pre_2 import eval_ood_detection as eval_ood_detection_sim
+        from evals.ood_pre_3 import eval_ood_detection as eval_ood_detection_cls
+        
+    print(P)
+    
+    if 'sim' in P.test_score_mode and 'cls' in P.test_score_mode:
+        evaluate_ood(P, eval_ood_detection, model, test_loader, ood_test_loader, simclr_aug)
+    elif 'sim' in P.test_score_mode:
+        evaluate_ood(P, eval_ood_detection_sim, model, test_loader, ood_test_loader, simclr_aug)
+    elif 'cls' in P.test_score_mode:
+        evaluate_ood(P, eval_ood_detection_cls, model, test_loader, ood_test_loader, simclr_aug)
 
 else:
     raise NotImplementedError()

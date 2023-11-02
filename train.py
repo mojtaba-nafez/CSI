@@ -73,7 +73,8 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--normal_labels", str(P.normal_labels),
             "--noise_scale",str(0.0),
             "--noist_probability", str(0.0),
-            '--activation_function', str(P.activation_function)
+            '--activation_function', str(P.activation_function),
+            '--test-score-mode', str(' '.join(P.train_mode))
         ]
 
         result = subprocess.run(["python", "eval.py"] + arguments_to_pass, capture_output=True, text=True)
@@ -93,6 +94,6 @@ if P.multi_gpu:
     save_states = model.module.state_dict()
 else:
     save_states = model.state_dict()
+    
 save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)
 save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
-
