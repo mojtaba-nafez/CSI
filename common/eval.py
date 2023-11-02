@@ -51,7 +51,7 @@ print("full train set:", len(train_set))
 
 
 full_test_set = deepcopy(test_set)  # test set of full classes
-if P.dataset=='mvtec-high-var-corruption' or P.dataset=='mvtec-high-var' or P.dataset=="MVTecAD" or P.dataset=="WBC" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10' or P.dataset=='cifar10-versus-100-supervised':
+if P.dataset=='mvtec-high-var-corruption' or P.dataset=='mvtec-high-var' or P.dataset=="MVTecAD" or P.dataset=="WBC" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10' or P.dataset=='cifar10-versus-100-supervised' or P.dataset=='cifar100-versus-10-supervised':
     train_set = set_dataset_count(train_set, count=P.main_count)
     if P.dataset=="WBC":
         test_set = get_subclass_dataset(P, test_set, classes=normal_labels)
@@ -99,7 +99,14 @@ simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)
 P.shift_trans, P.K_shift = C.get_shift_module(P, eval=True)
 P.shift_trans = P.shift_trans.to(device)
 
-P.K_shift = 11
+if P.dataset=='cifar10-versus-100-supervised':
+    P.sup_output_neuron_number=10
+elif P.dataset=='cifar100-versus-10-supervised':
+    P.sup_output_neuron_number=20
+else:
+    P.sup_output_neuron_number = P.n_classes
+
+P.K_shift = P.sup_output_neuron_number+1 
 model = C.get_classifier(P.model, n_classes=P.n_classes, activation=P.activation_function, mean=P.noise_mean, std=P.noise_std, noise_scale=P.noise_scale, noist_probability=P.noist_probability).to(device)
 model = C.get_shift_classifer(model, P.K_shift).to(device)
 criterion = nn.CrossEntropyLoss().to(device)

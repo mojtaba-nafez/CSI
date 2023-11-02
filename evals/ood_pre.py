@@ -63,7 +63,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     for shi in range(1):
         sim_norm = f_sim[shi].norm(dim=1)  # (M)
         f_shi[shi] = softmax(f_shi[shi])
-        shi_mean = 1-f_shi[shi][:, 10]  # (M)
+        shi_mean = 1-f_shi[shi][:, P.sup_output_neuron_number]  # (M)
         weight_sim.append(1 / sim_norm.mean().item())
         weight_shi.append(1 / shi_mean.mean().item())
 
@@ -136,7 +136,7 @@ def get_scores(P, feats_dict, ood_score):
         for shi in range(1):
             score += (f_sim[shi] * P.axis[shi]).sum(dim=1).max().item() * P.weight_sim[shi]
             f_shi[shi] = softmax(f_shi[shi])
-            score += (1 - f_shi[shi][:, 10].item()) * P.weight_shi[shi]
+            score += (1 - f_shi[shi][:, P.sup_output_neuron_number].item()) * P.weight_shi[shi]
         score = score / P.K_shift
         scores.append(score)
     scores = torch.tensor(scores)
@@ -241,7 +241,7 @@ def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=Non
             val = val.transpose(2, 1)  # (N, 4, T', d)
             val = val.reshape(N, T, d)  # (N, T, d)
             feats_all[key] = val
-    P.K_shift = 11
+    P.K_shift = P.sup_output_neuron_number+1
     return feats_all
 
 

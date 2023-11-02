@@ -39,13 +39,13 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         try:
             exposure_images, _ = next(train_exposure_loader_iterator)
             exposure_images = exposure_images[torch.randperm(exposure_images.shape[0])]
-            expo_labels = 10*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
+            expo_labels = P.sup_output_neuron_number*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
 
         except StopIteration:
             train_exposure_loader_iterator = iter(train_exposure_loader)
             exposure_images, _ = next(train_exposure_loader_iterator)
             exposure_images = exposure_images[torch.randperm(exposure_images.shape[0])]
-            expo_labels = 10*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
+            expo_labels = P.sup_output_neuron_number*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
         # print(exposure_images.shape, images.shape, labels.shape)
         model.train()
         count = n * P.n_gpus  # number of trained samples
@@ -91,14 +91,14 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         exp1 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/4):int(outputs_aux['shift'].shape[0]/2)]
         img2 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/2):int(3*outputs_aux['shift'].shape[0]/4)]
         exp2 = outputs_aux['shift'][int(3*outputs_aux['shift'].shape[0]/4):]
-        output = torch.cat([img1, img2, exp1[:int(len(exp1)/10)], exp2[:int(len(exp2)/10)]]) 
+        output = torch.cat([img1, img2, exp1[:int(len(exp1)/P.sup_output_neuron_number))], exp2[:int(len(exp2)/P.sup_output_neuron_number)]]) 
         
         img1_label = shift_labels[:int(len(shift_labels)/4)]
         exp1_label = shift_labels[int(len(shift_labels)/4):int(len(shift_labels)/2)]
         img2_label = shift_labels[int(len(shift_labels)/2):int(3*len(shift_labels)/4)]
         exp2_label = shift_labels[int(3*len(shift_labels)/4):]
         
-        shift_labels = torch.cat([img1_label, img2_label, exp1_label[:int(len(exp1_label)/10)], exp2_label[:int(len(exp2_label)/10)]])
+        shift_labels = torch.cat([img1_label, img2_label, exp1_label[:int(len(exp1_label)/P.sup_output_neuron_number)], exp2_label[:int(len(exp2_label)/P.sup_output_neuron_number)]])
         loss_shift = criterion(output, shift_labels)
 
         ### total loss ###
