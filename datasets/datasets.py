@@ -212,6 +212,13 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.RandomChoice(rotation_list),
                 transforms.ToTensor()
             ])
+        elif P.expoure_noise_type == 'auto':
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.AutoAugment(),
+                transforms.ToTensor()
+            ])
         imagenet_exposure = ImageNetExposure(root=base_path, count=tiny_count, transform=tiny_transform)
         train_ds_mvtech_fake = FakeMVTecDataset(root=fake_root, train=True, category=categories[P.one_class_idx], transform=fake_transform, count=fake_count)
         train_ds_mvtech_cutpasted = MVTecDataset_Cutpasted(root=root, train=True, category=categories[P.one_class_idx], transform=train_transform_cutpasted, count=cutpast_count)
@@ -255,6 +262,13 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.Resize((256,256)),
                 transforms.CenterCrop((image_size[0], image_size[1])),
                 transforms.RandomChoice(rotation_list),
+                transforms.ToTensor()
+            ])
+        elif P.expoure_noise_type == 'auto':
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.AutoAugment(),
                 transforms.ToTensor()
             ])
         
@@ -334,6 +348,12 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0],image_size[1])),
                     transforms.RandomChoice(rotation_list),
+                    transforms.ToTensor()
+                ])
+            elif P.expoure_noise_type == 'auto':
+                train_transform_cutpasted = transforms.Compose([
+                    transforms.Resize((image_size[0],image_size[1])),
+                    transforms.AutoAugment(),
                     transforms.ToTensor()
                 ])
         

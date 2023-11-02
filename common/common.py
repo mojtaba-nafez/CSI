@@ -46,7 +46,7 @@ def parse_args(default=False):
                         default=20, type=int) 
 
     parser.add_argument('--exposure_noise_type', 
-                        choices=['blur', 'cutpaste', 'rotation'], 
+                        choices=['blur', 'cutpaste', 'rotation', 'auto'], 
                         default=None, type=str)
     parser.add_argument('--exposure_blur_sigma_min',
                         default=0.1, type=float)
