@@ -38,12 +38,12 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     for n, (images, train_labels) in enumerate(loader):
         try:
             exposure_images, _ = next(train_exposure_loader_iterator)
-            expo_labels = torch.zeros(exposure_images.shape[0]).to(device)
+            expo_labels = 10*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
 
         except StopIteration:
             train_exposure_loader_iterator = iter(train_exposure_loader)
             exposure_images, _ = next(train_exposure_loader_iterator)
-            expo_labels = torch.zeros(exposure_images.shape[0]).to(device)
+            expo_labels = 10*torch.ones(exposure_images.shape[0], dtype=torch.int).to(device)
         # print(exposure_images.shape, images.shape, labels.shape)
         model.train()
         count = n * P.n_gpus  # number of trained samples
@@ -84,7 +84,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         # loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
         loss_sim = Supervised_NT_xent(sim_matrix, labels=shift_labels,
                                       temperature=0.07, multi_gpu=P.multi_gpu) * P.sim_lambda
-        
+
         img1 = outputs_aux['shift'][:int(outputs_aux['shift'].shape[0]/4)]        
         exp1 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/4):int(outputs_aux['shift'].shape[0]/2)]
         img2 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/2):int(3*outputs_aux['shift'].shape[0]/4)]
@@ -97,7 +97,6 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         exp2_label = shift_labels[int(3*len(shift_labels)/4):]
         
         shift_labels = torch.cat([img1_label, img2_label, exp1_label[:int(len(exp1_label)/10)], exp2_label[:int(len(exp2_label)/10)]])
-
         loss_shift = criterion(output, shift_labels)
 
         ### total loss ###
@@ -120,7 +119,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             log_('[Epoch %3d; %3d] [Time %.3f] [Data %.3f] [LR %.5f]\n'
                  '[LossC %f] [LossSim %f] [LossShift %f]' %
                  (epoch, count, batch_time.value, data_time.value, lr,
-                  losses['cls'].value, losses['sim'].value, losses['shift'].value))
+                  losses['cls'].value, losses['sim'].value, losses['shift'].value))    
 
     log_('[DONE] [Time %.3f] [Data %.3f] [LossC %f] [LossSim %f] [LossShift %f]' %
          (batch_time.average, data_time.average,
