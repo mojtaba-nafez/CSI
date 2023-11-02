@@ -3,7 +3,7 @@ import time
 import torch.optim
 
 import models.transform_layers as TL
-from training.contrastive_loss import get_similarity_matrix, NT_xent
+from training.contrastive_loss import get_similarity_matrix, NT_xent, Supervised_NT_xent
 from utils.utils import AverageMeter, normalize
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
@@ -38,10 +38,12 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     for n, (images, train_labels) in enumerate(loader):
         try:
             exposure_images, _ = next(train_exposure_loader_iterator)
+            expo_labels = torch.zeros(exposure_images.shape[0]).to(device)
+
         except StopIteration:
             train_exposure_loader_iterator = iter(train_exposure_loader)
             exposure_images, _ = next(train_exposure_loader_iterator)
-            expo_labels = torch.zeros(exposure_images.shape[0])
+            expo_labels = torch.zeros(exposure_images.shape[0]).to(device)
         # print(exposure_images.shape, images.shape, labels.shape)
         model.train()
         count = n * P.n_gpus  # number of trained samples

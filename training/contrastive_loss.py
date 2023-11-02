@@ -55,7 +55,7 @@ def Supervised_NT_xent(sim_matrix, labels, temperature=0.5, chunk=2, eps=1e-8, m
     if multi_gpu:
         gather_t = [torch.empty_like(labels) for _ in range(dist.get_world_size())]
         labels = torch.cat(distops.all_gather(gather_t, labels))
-    labels = labels.repeat(2)
+    # labels = labels.repeat(2)
 
     logits_max, _ = torch.max(sim_matrix, dim=1, keepdim=True)
     sim_matrix = sim_matrix - logits_max.detach()
