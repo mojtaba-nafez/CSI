@@ -91,7 +91,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         exp1 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/4):int(outputs_aux['shift'].shape[0]/2)]
         img2 = outputs_aux['shift'][int(outputs_aux['shift'].shape[0]/2):int(3*outputs_aux['shift'].shape[0]/4)]
         exp2 = outputs_aux['shift'][int(3*outputs_aux['shift'].shape[0]/4):]
-        output = torch.cat([img1, img2, exp1[:int(len(exp1)/P.sup_output_neuron_number))], exp2[:int(len(exp2)/P.sup_output_neuron_number)]]) 
+        output = torch.cat([img1, img2, exp1[:int(len(exp1)/P.sup_output_neuron_number)], exp2[:int(len(exp2)/P.sup_output_neuron_number)]]) 
         
         img1_label = shift_labels[:int(len(shift_labels)/4)]
         exp1_label = shift_labels[int(len(shift_labels)/4):int(len(shift_labels)/2)]
