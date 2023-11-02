@@ -718,8 +718,6 @@ class MNIST_CORRUPTION(Dataset):
         self.transform = transform
         self.corruption_type = corruption_type
         self.train = train
-
-        self._ensure_dataset_exists(root_dir, corruption_type)
         
         indicator = 'train' if train else 'test'
         folder = os.path.join(self.root_dir, self.corruption_type, f'saved_{indicator}_images')
@@ -744,15 +742,7 @@ class MNIST_CORRUPTION(Dataset):
             if not os.path.exists(path):
                 img_pil = torchvision.transforms.ToPILImage()(img)
                 img_pil.save(path)
-
-    def _ensure_dataset_exists(self, root_dir, corruption_type):
-        dataset_path = os.path.join(root_dir)
-        if not os.path.exists(dataset_path):
-            print("Dataset not found. Downloading now...")
-            os.makedirs(dataset_path, exist_ok=True)
-            subprocess.run(["wget", "https://zenodo.org/record/3239543/files/mnist_c.zip"])
-            subprocess.run(["unzip", os.path.join(root_dir, "mnist_c.zip")])
-            
+                
     def __len__(self):
         return len(self.labels)
 
