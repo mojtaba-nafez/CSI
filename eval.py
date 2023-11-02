@@ -6,7 +6,7 @@ print(P)
 import wandb
 
 # Initialize wandb
-wandb.init(project="mnist-cls", config=vars(P))
+wandb.init(project="Corruption-GONDE", config=vars(P))
 
 # Log everything in P (assuming P is a argparse.Namespace object)
 wandb.config.update(vars(P))

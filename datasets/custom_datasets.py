@@ -746,12 +746,12 @@ class MNIST_CORRUPTION(Dataset):
                 img_pil.save(path)
 
     def _ensure_dataset_exists(self, root_dir, corruption_type):
-        dataset_path = os.path.join(root_dir, corruption_type)
+        dataset_path = os.path.join(root_dir)
         if not os.path.exists(dataset_path):
             print("Dataset not found. Downloading now...")
             os.makedirs(dataset_path, exist_ok=True)
-            subprocess.run(["wget", "-P", root_dir, "https://zenodo.org/record/3239543/files/mnist_c.zip"])
-            subprocess.run(["unzip", "-d", root_dir, os.path.join(root_dir, "mnist_c.zip")])
+            subprocess.run(["wget", "https://zenodo.org/record/3239543/files/mnist_c.zip"])
+            subprocess.run(["unzip", os.path.join(root_dir, "mnist_c.zip")])
             
     def __len__(self):
         return len(self.labels)
