@@ -17,6 +17,7 @@ def parse_args(default=False):
                         default="./mnist_c/", type=str)
     parser.add_argument('--mnist_corruption_type', help='MNIST corruption type',
                         choices=[
+                            '-',
                             "brightness",
                             "canny_edges",
                             "dotted_line",
