@@ -75,3 +75,7 @@ else:
     raise NotImplementedError()
 
 
+import time
+
+time.sleep(10) 
+wandb.finish()
