@@ -299,15 +299,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
         print("number of exposure:", len(exposureset))
         train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
     else:
-        if P.dataset=='breastmnist' or P.dataset=='mnist' or P.dataset=='fashion-mnist':
-            train_transform_cutpasted = transforms.Compose([
-                transforms.Resize((image_size[0], image_size[1])),
-                transforms.Grayscale(num_output_channels=1),
-                transforms.Grayscale(num_output_channels=3),
-                transforms.RandomRotation((90, 270)),
-                CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
-            ])
-        elif P.dataset=='head-ct':
+        if P.dataset=='head-ct':
             train_transform_cutpasted = transforms.Compose([
                 transforms.Resize((image_size[0], image_size[1])),
                 transforms.Grayscale(num_output_channels=1),
@@ -329,15 +321,25 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 High_CutPasteUnion(),
             ])
         else:
+            channels_transform = transforms.Grayscale(num_output_channels=3) if 'mnist' in P.dataset else lambda x: x
+            if P.dataset == 'emnist':
+                channels_transform = transforms.Compose([
+                    channels_transform,
+                    lambda img: transforms.functional.rotate(img, -90),
+                    lambda img: transforms.functional.hflip(img)
+                ])
+
             if P.exposure_noise_type is None or P.exposure_noise_type == 'cutpaste':
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0], image_size[1])),
+                    channels_transform,
                     CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
                 ])
             elif P.exposure_noise_type == 'blur':
                 blur_sigma = (P.exposure_blur_sigma_min, P.exposure_blur_sigma_max)
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0],image_size[1])),
+                    channels_transform,
                     transforms.GaussianBlur(kernel_size=P.exposure_blur_kernel_size, 
                                             sigma=blur_sigma),
                     transforms.ToTensor()
@@ -347,12 +349,14 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 rotation_list = [transforms.Lambda(lambda x: TF.rotate(x, angle)) for angle in angles]
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0],image_size[1])),
+                    channels_transform,
                     transforms.RandomChoice(rotation_list),
                     transforms.ToTensor()
                 ])
             elif P.expoure_noise_type == 'auto':
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0],image_size[1])),
+                    channels_transform,
                     transforms.AutoAugment(),
                     transforms.ToTensor()
                 ])
@@ -471,7 +475,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 print("number of fake data:", len(train_ds_svhn_fake), "shape:", train_ds_svhn_fake[0][0].shape)
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_svhn_fake, imagenet_exposure])
         
-        elif P.dataset=="mnist":
+        elif P.dataset in ["mnist", "emnist"]:
             fake_transform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),
                 transforms.RandomHorizontalFlip(),
@@ -584,6 +588,22 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         else:
             train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
         test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
+        print("train_set shapes: ", train_set[0][0].shape)
+        print("test_set shapes: ", test_set[0][0].shape)
+    elif dataset == 'emnist':
+        n_classes = 27
+        transform = transforms.Compose([
+            transforms.Resize((image_size[0],image_size[1])),
+            transforms.Grayscale(num_output_channels=3),
+            lambda img: transforms.functional.rotate(img, -90),
+            lambda img: transforms.functional.hflip(img),
+            transforms.ToTensor()
+        ])
+        if train_transform_cutpasted:
+            train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform_cutpasted)
+        else:
+            train_set = datasets.CIFAR10(DATA_PATH, split='letters', train=True, download=download, transform=transform)
+        test_set = datasets.CIFAR10(DATA_PATH, split='letters', train=False, download=download, transform=transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
     elif dataset == 'dior':
