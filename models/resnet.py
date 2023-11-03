@@ -302,6 +302,10 @@ class GaussianNoise(nn.Module):
             noise = torch.randn(img.size(), device=img.device) * self.std + self.mean
             return torch.clamp(img + noise, min=self.clip_min, max=self.clip_max)
         return img
+
+    def __repr__(self):
+        return f"GaussianNoise(mean={self.mean}, std={self.std}, clip_min={self.clip_min}, clip_max={self.clip_max}, probability={self.probability})"
+
     
 class Pretrain_Wide_ResNet(BaseModel):
     def __init__(self, block, num_classes=10, mean=0., std=0.1, noise_probability=0.5):
@@ -311,11 +315,12 @@ class Pretrain_Wide_ResNet(BaseModel):
         self.in_planes = 64
         self.last_dim = last_dim
 
+        self.gaussian_noise = GaussianNoise(mean=mean, std=std, probability=noise_probability)
+        print(self.gaussian_noise)
+        
         mu = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1).cuda()
         std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1).cuda()
         self.norm = lambda x: (x - mu) / std
-        
-        self.gaussian_noise = GaussianNoise(mean=mean, std=std, probability=noise_probability)
         
         self.backbone = models.wide_resnet50_2(pretrained=True)
         self.backbone.fc = torch.nn.Identity()
