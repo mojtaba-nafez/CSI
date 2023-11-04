@@ -20,6 +20,7 @@ if P.normal_labels:
 cls_list = get_superclass_list(P.dataset)
 anomaly_labels = [elem for elem in cls_list if elem not in normal_labels and elem != 0]
 print(anomaly_labels)
+print('THIS IS A TEST MESSAGE')
 
 ### Set torch device ###
 
