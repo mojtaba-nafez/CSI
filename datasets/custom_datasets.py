@@ -755,6 +755,38 @@ class MNIST_CORRUPTION(Dataset):
 
         label = self.labels[idx]
         return image, label
+
+from datasets import load_dataset
+
+class FMNIST_CORRUPTION(Dataset):
+    def __init__(self, split='test', transform=None):
+        # Check if split is valid
+        if split not in ['train', 'test']:
+            raise ValueError("Split must be 'train' or 'test'.")
+
+        self.split = split
+        self.transform = transform or transforms.ToTensor()  # Default transform
+
+        # Load the dataset
+        self.data = load_dataset("mweiss/fashion_mnist_corrupted")[self.split]
+        self.images = np.array([np.array(image) for image in self.data['image']])
+        self.labels = np.array(self.data['label'])
+        
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        # Get the image and label
+        image, label = self.images[idx], self.labels[idx]
+
+        # Convert to PIL Image for compatibility with torchvision transforms
+        image = Image.fromarray(image, mode='L')  # 'L' mode means grayscale
+
+        # Apply the transform to the image
+        if self.transform is not None:
+            image = self.transform(image)
+
+        return image, label
     
 class MyDataset_Binary(torch.utils.data.Dataset):
   'Characterizes a dataset for PyTorch'
