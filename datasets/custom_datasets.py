@@ -902,7 +902,6 @@ class DIOR_OOD(DIOR):
         return img, target
 
 
-
 class SpoofDataset(Dataset):
     link = 'https://drive.google.com/file/d/1VVIt4wuF1CW381GhzFZ9lvODECqI9EXl/view?usp=sharing'
     csv_fieldnames = ['index', 'train', 'spoof', 'class', 'path']
@@ -961,8 +960,13 @@ class SpoofDataset(Dataset):
         for cls in classes:
             if self.chosen_classes is not None and cls not in self.chosen_classes:
                 continue
-            split = int(len(info_dict[cls]) * self.train_split)
-            rows_split = info_dict[cls][:split] if self.train else info_dict[cls][split:]
+            live_rows = list(filter(lambda row: int(row['spoof']) == 0, info_dict[cls]))
+            spoof_rows = list(filter(lambda row: int(row['spoof']) == 1, info_dict[cls]))
+            split = int(len(live_rows) * self.train_split)
+            if self.train:
+                rows_split = live_rows[:split]
+            else:
+                rows_split = live_rows[split:] + spoof_rows
             for row in rows_split:
                 data.append(row['path'])
                 targets.append(int(row['spoof']))
@@ -977,8 +981,4 @@ class SpoofDataset(Dataset):
         if self.target_transform is not None:
             target = self.target_transform(target)
         
-        return img, target
-    
-        
-
-        
+        return img, target   

@@ -47,6 +47,7 @@ DTD_SUPERCLASS = list(range(46))
 WBC_SUPERCLASS = list(range(2))
 DIOR_SUPERCLASS = list(range(19))
 EMNIST_SUPERCLASS = list(range(27))
+SPOOF_SUPERCLASS = list(range(2))
 
 def sparse2coarse(targets):
     coarse_labels = np.array(
@@ -592,6 +593,32 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
+    elif dataset == 'spoof':
+        n_classes = 2
+        root = DATA_PATH
+        train_transform = transforms.Compose([
+                transforms.Resize((256, 256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+            ])
+        
+        test_transform = transforms.Compose([
+                transforms.Resize((image_size[0], image_size[1])),
+                transforms.ToTensor(),
+            ])
+        for class_idx in labels:
+            if train_transform_cutpasted:
+                train_set = SpoofDataset(root, train=True, download=download, transform=train_transform_cutpasted, chosen_classes=labels)
+            else:
+                train_set = SpoofDataset(root, train=True, download=download, transform=train_transform, chosen_classes=labels)
+
+            test_set = SpoofDataset(root, train=False, download=download, transform=test_transform, chosen_classes=labels)
+        
+        print("train_set shapes: ", train_set[0][0].shape)
+        print("test_set shapes: ", test_set[0][0].shape)
+        
+        print("len(test_dataset), len(train_dataset)", len(test_set), len(train_set))
     elif dataset == 'emnist':
         n_classes = 27
         transform = transforms.Compose([
@@ -1156,6 +1183,8 @@ def get_superclass_list(dataset):
         return DIOR_SUPERCLASS
     elif dataset == 'emnist':
         return EMNIST_SUPERCLASS
+    elif dataset == 'spoof':
+        return SPOOF_SUPERCLASS
     else:
         raise NotImplementedError()
 
