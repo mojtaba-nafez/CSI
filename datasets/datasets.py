@@ -46,6 +46,7 @@ CIFAR10_VER_CIFAR100_SUPERCLASS = list(range(2))
 DTD_SUPERCLASS = list(range(46))
 WBC_SUPERCLASS = list(range(2))
 DIOR_SUPERCLASS = list(range(19))
+EMNIST_SUPERCLASS = list(range(27))
 
 def sparse2coarse(targets):
     coarse_labels = np.array(
@@ -1153,6 +1154,8 @@ def get_superclass_list(dataset):
         return IMAGENET_SUPERCLASS
     elif dataset == 'dior':
         return DIOR_SUPERCLASS
+    elif dataset == 'emnist':
+        return EMNIST_SUPERCLASS
     else:
         raise NotImplementedError()
 
