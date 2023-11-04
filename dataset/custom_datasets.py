@@ -760,7 +760,7 @@ class MNIST_CORRUPTION(Dataset):
 
 class FMNIST_CORRUPTION(Dataset):
     def __init__(self, split='test', transform=None):
-        from dataset.dataset import load_dataset
+        from datasets import load_dataset
         # Check if split is valid
         if split not in ['train', 'test']:
             raise ValueError("Split must be 'train' or 'test'.")
