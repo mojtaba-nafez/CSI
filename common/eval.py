@@ -19,6 +19,8 @@ if P.normal_labels:
 
 cls_list = get_superclass_list(P.dataset)
 anomaly_labels = [elem for elem in cls_list if elem not in normal_labels]
+if P.dataset == 'emnist':
+    anomaly_labels.remove(0)
 
 ### Set torch device ###
 
