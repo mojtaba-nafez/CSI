@@ -604,8 +604,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         if train_transform_cutpasted:
             train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform_cutpasted)
         else:
-            train_set = datasets.CIFAR10(DATA_PATH, split='letters', train=True, download=download, transform=transform)
-        test_set = datasets.CIFAR10(DATA_PATH, split='letters', train=False, download=download, transform=transform)
+            train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=transform)
+        test_set = datasets.EMNIST(DATA_PATH, split='letters', train=False, download=download, transform=transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
     elif dataset == 'dior':
