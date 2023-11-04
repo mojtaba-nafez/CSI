@@ -488,7 +488,11 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             if sum(fc) != fake_count:
                 fc[0] += abs(fake_count - sum(fc))                  
             fake_root = './MNIST-Fake/'
-            train_ds_mnist_fake = FakeMNIST(root=fake_root, category=cls_list, transform=fake_transform, count=fc)
+            if P.dataset == "emnist":
+                _cls_list = list(range(10))
+            else:
+                _cls_list = cls_list
+            train_ds_mnist_fake = FakeMNIST(root=fake_root, category=_cls_list, transform=fake_transform, count=fc)
             if len(train_ds_mnist_fake) > 0:
                 print("number of fake data:", len(train_ds_mnist_fake), "shape:", train_ds_mnist_fake[0][0].shape)
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_mnist_fake, imagenet_exposure])
