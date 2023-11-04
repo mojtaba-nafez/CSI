@@ -756,10 +756,11 @@ class MNIST_CORRUPTION(Dataset):
         label = self.labels[idx]
         return image, label
 
-from datasets import load_dataset
+
 
 class FMNIST_CORRUPTION(Dataset):
     def __init__(self, split='test', transform=None):
+        from datasets import load_dataset
         # Check if split is valid
         if split not in ['train', 'test']:
             raise ValueError("Split must be 'train' or 'test'.")
