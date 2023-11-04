@@ -484,7 +484,10 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
             ])
-            fc = [int(fake_count / len(cls_list)) for i in range(len(cls_list))]
+            if P.dataset == 'emnist':
+                fc = [int(fake_count / 10) for i in range(10)]
+            else:
+                fc = [int(fake_count / len(cls_list)) for i in range(len(cls_list))]
             if sum(fc) != fake_count:
                 fc[0] += abs(fake_count - sum(fc))                  
             fake_root = './MNIST-Fake/'
