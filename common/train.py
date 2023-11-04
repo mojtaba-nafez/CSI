@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from common.common import parse_args
 import models.classifier as C
-from datasets import set_dataset_count, mvtecad_dataset, get_dataset, get_superclass_list, get_subclass_dataset, get_exposure_dataloader
+from dataset import set_dataset_count, mvtecad_dataset, get_dataset, get_superclass_list, get_subclass_dataset, get_exposure_dataloader
 from utils.utils import load_checkpoint, get_loader_unique_label
 
 P = parse_args()

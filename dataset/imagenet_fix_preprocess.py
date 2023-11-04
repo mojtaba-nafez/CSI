@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
-from datasets import get_subclass_dataset
+from dataset import get_subclass_dataset
 
 def set_random_seed(seed):
     random.seed(seed)

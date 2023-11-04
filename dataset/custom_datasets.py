@@ -7,7 +7,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Dataset
 
 from utils.utils import set_random_seed
-from datasets.cutpast_transformation import *
+from dataset.cutpast_transformation import *
 from PIL import Image
 from glob import glob
 import pickle
@@ -760,7 +760,7 @@ class MNIST_CORRUPTION(Dataset):
 
 class FMNIST_CORRUPTION(Dataset):
     def __init__(self, split='test', transform=None):
-        from datasets import load_dataset
+        from dataset import load_dataset
         # Check if split is valid
         if split not in ['train', 'test']:
             raise ValueError("Split must be 'train' or 'test'.")
