@@ -214,7 +214,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.RandomChoice(rotation_list),
                 transforms.ToTensor()
             ])
-        elif P.expoure_noise_type == 'auto':
+        elif P.exposure_noise_type == 'auto':
             train_transform_cutpasted = transforms.Compose([
                 transforms.Resize((256,256)),
                 transforms.CenterCrop((image_size[0], image_size[1])),
@@ -266,7 +266,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.RandomChoice(rotation_list),
                 transforms.ToTensor()
             ])
-        elif P.expoure_noise_type == 'auto':
+        elif P.exposure_noise_type == 'auto':
             train_transform_cutpasted = transforms.Compose([
                 transforms.Resize((256,256)),
                 transforms.CenterCrop((image_size[0], image_size[1])),
@@ -356,7 +356,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                     transforms.RandomChoice(rotation_list),
                     transforms.ToTensor()
                 ])
-            elif P.expoure_noise_type == 'auto':
+            elif P.exposure_noise_type == 'auto':
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0],image_size[1])),
                     channels_transform,
