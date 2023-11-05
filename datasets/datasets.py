@@ -7,6 +7,8 @@ from torchvision import datasets, transforms
 import torchvision.transforms.functional as TF
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import ImageFolder
+from torchvision.transforms import v2
+from torch.utils.data import default_collate
 
 from utils.utils import set_random_seed
 from datasets.cutpast_transformation import *
@@ -221,6 +223,19 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.AutoAugment(),
                 transforms.ToTensor()
             ])
+        elif P.exposure_noise_type in ['mixup', 'cutmix']:
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.ToTensor()
+            ])
+        elif P.exposure_noise_type == 'cutout':
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                v2.RandomErasing(p=1),
+                transforms.ToTensor()
+            ])
         imagenet_exposure = ImageNetExposure(root=base_path, count=tiny_count, transform=tiny_transform)
         train_ds_mvtech_fake = FakeMVTecDataset(root=fake_root, train=True, category=categories[P.one_class_idx], transform=fake_transform, count=fake_count)
         train_ds_mvtech_cutpasted = MVTecDataset_Cutpasted(root=root, train=True, category=categories[P.one_class_idx], transform=train_transform_cutpasted, count=cutpast_count)
@@ -271,6 +286,19 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.Resize((256,256)),
                 transforms.CenterCrop((image_size[0], image_size[1])),
                 transforms.AutoAugment(),
+                transforms.ToTensor()
+            ])
+        elif P.exposure_noise_type in ['mixup', 'cutmix']:
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                transforms.ToTensor()
+            ])
+        elif P.exposure_noise_type == 'cutout':
+            train_transform_cutpasted = transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1])),
+                v2.RandomErasing(p=1),
                 transforms.ToTensor()
             ])
         
@@ -361,6 +389,17 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                     transforms.Resize((image_size[0],image_size[1])),
                     channels_transform,
                     transforms.AutoAugment(),
+                    transforms.ToTensor()
+                ])
+            elif P.exposure_noise_type in ['mixup', 'cutmix']:
+                train_transform_cutpasted = transforms.Compose([
+                    transforms.Resize((image_size[0], image_size[1])),
+                    transforms.ToTensor()
+                ])
+            elif P.exposure_noise_type == 'cutout':
+                train_transform_cutpasted = transforms.Compose([
+                    transforms.Resize((image_size[0], image_size[1])),
+                    v2.RandomErasing(p=1),
                     transforms.ToTensor()
                 ])
         
@@ -546,7 +585,16 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
         if len(imagenet_exposure) > 0:
             print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
         print("number of exposure:", len(exposureset))
-        train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
+        if P.exposure_noise_type == 'mixup':
+            mixup = v2.MixUp(num_classes=P.n_classes)
+            collate_fn = lambda batch: mixup(*default_collate(batch))
+            train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True, collate_fn=collate_fn)
+        elif P.exposure_noise_type == 'cutmix':
+            cutmix = v2.CutMix(num_classes=P.n_classes)
+            collate_fn = lambda batch: cutmix(*default_collate(batch))
+            train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True, collate_fn=collate_fn)
+        else:
+            train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
     return train_loader
 
 

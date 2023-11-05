@@ -2,13 +2,13 @@ import random
 import math
 from torchvision import transforms
 import torch 
+import numpy as np
 
 def cut_paste_collate_fn(batch):
     # cutPaste return 2 tuples of tuples we convert them into a list of tuples
     img_types = list(zip(*batch))
 #     print(list(zip(*batch)))
     return [torch.stack(imgs) for imgs in img_types]
-    
 
 class CutPaste(object):
     """Base class for both cutpaste variants with common operations"""
