@@ -1010,6 +1010,8 @@ class MixUpDataset(Dataset):
             lam = np.random.beta(self.alpha, self.beta)
         else:
             lam = 1
+        
+        lam = max(lam, 0.5)
 
         x = (1 - self.lam) * x1 + self.lam * x2
         if self.alpha > self.beta:
