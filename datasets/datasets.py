@@ -585,13 +585,20 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
         if len(imagenet_exposure) > 0:
             print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
         print("number of exposure:", len(exposureset))
+
+        
+        def target_transform(inputs):
+            labels = inputs[1]
+            labels_new = torch.zeros_like(inputs, dtype=int).to(labels.device)
+            labels_new[labels == -1] = 1
+            return inputs[0], labels_new
         if P.exposure_noise_type == 'mixup':
-            mixup = v2.MixUp(num_classes=P.n_classes)
-            collate_fn = lambda batch: mixup(*default_collate(batch))
+            mixup = v2.MixUp(num_classes=2)
+            collate_fn = lambda batch: mixup(*default_collate(target_transform(batch)))
             train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True, collate_fn=collate_fn)
         elif P.exposure_noise_type == 'cutmix':
-            cutmix = v2.CutMix(num_classes=P.n_classes)
-            collate_fn = lambda batch: cutmix(*default_collate(batch))
+            cutmix = v2.CutMix(num_classes=2)
+            collate_fn = lambda batch: cutmix(*default_collate(target_transform(batch)))
             train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True, collate_fn=collate_fn)
         else:
             train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
