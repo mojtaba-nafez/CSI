@@ -1011,7 +1011,7 @@ class MixUpDataset(Dataset):
         else:
             lam = 1
 
-        x = (1 - self.lam) * x1 + self.lam * x2
+        x = (1 - lam) * x1 + lam * x2
         if self.alpha > self.beta:
             y = y2
         else:
