@@ -1013,10 +1013,7 @@ class MixUpDataset(Dataset):
             lam = 1
         if self.force_negative:  
             lam = max(lam, 0.5)
-        x = (1 - lam) * x1 + lam * x2
-        if self.alpha > self.beta:
-            y = y2
-        else:
-            y = y1
         
+        x = (1 - lam) * x1 + lam * x2
+        y = y2 if lam >= 2 else y1
         return x, y
