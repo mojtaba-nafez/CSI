@@ -591,7 +591,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             dataset2 = imagenet_exposure
             alpha = P.exposure_mixup_alpha
             beta = 1 / alpha
-            exposureset = MixUpDataset(dataset1=dataset1, dataset2=dataset2, alpha=alpha, beta=beta, shuffle=True)
+            exposureset = MixUpDataset(dataset1=dataset1, dataset2=dataset2, alpha=alpha, beta=beta)
 
         train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
     return train_loader
