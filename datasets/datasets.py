@@ -589,7 +589,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
         if P.exposure_noise_type in ['mixup']:
             dataset1, _, _, _ = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=train_transform_cutpasted)
             dataset2 = imagenet_exposure
-            alpha = P.mixup_alpha
+            alpha = P.exposure_mixup_alpha
             beta = 1 / alpha
             exposureset = MixUpDataset(dataset1=dataset1, dataset2=dataset2, alpha=alpha, beta=beta, shuffle=True)
 
