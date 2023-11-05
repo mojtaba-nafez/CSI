@@ -982,3 +982,39 @@ class SpoofDataset(Dataset):
             target = self.target_transform(target)
         
         return img, target   
+    
+
+class MixUpDataset(Dataset):
+    
+    def __init__(self, dataset1, dataset2, alpha=3.33, beta=0.3):
+        self.dataset1 = dataset1
+        self.dataset2 = dataset2
+        self.indices = np.random.choice(len(self.dataset2), len(self.dataset2), replace=False)
+        self.alpha = alpha
+        self.beta = beta
+
+    def __len__(self):
+        return len(self.dataset2)
+
+    def _shuffle(self):
+        self.indices = np.random.choice(len(self.dataset2), len(self.dataset2), replace=False)
+
+    def __getitem__(self, index):
+        if index == 0:
+            self._shuffle()
+
+        x1, y1 = self.dataset1[index]
+        x2, y2 = self.dataset2[self.indices[index]]
+
+        if self.alpha > 0:
+            lam = np.random.beta(self.alpha, self.beta)
+        else:
+            lam = 1
+
+        x = (1 - self.lam) * x1 + self.lam * x2
+        if self.alpha > self.beta:
+            y = y2
+        else:
+            y = y1
+        
+        return x, y

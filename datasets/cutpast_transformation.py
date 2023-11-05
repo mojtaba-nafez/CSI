@@ -10,6 +10,7 @@ def cut_paste_collate_fn(batch):
 #     print(list(zip(*batch)))
     return [torch.stack(imgs) for imgs in img_types]
 
+
 class CutPaste(object):
     """Base class for both cutpaste variants with common operations"""
     def __init__(self, colorJitter=0.1, transform=None):
