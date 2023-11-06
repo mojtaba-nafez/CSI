@@ -740,8 +740,10 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                         beta = 1 / alpha
                         noisy_dataset = MixUpDataset(noisy_dataset, noisy_dataset, alpha, beta, force_negative=False, lam_default=0.5)
                     noisy_dataset = set_dataset_count(noisy_dataset, count)
+                print(f'len of {noise} data: {count}')
                 exposure_datasets.append(noisy_dataset)
             tiny_dataset = ImageNetExposure(root=base_path, count=remaining_count, transform=tiny_transform)
+            print(f'len of tiny data: {remaining_count}')
             exposure_datasets.append(tiny_dataset)
             
             exposureset = ConcatDataset(exposure_datasets)
