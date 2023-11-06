@@ -514,11 +514,13 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             elif P.exposure_noise_type in ['mixup', 'cutmix']:
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0], image_size[1])),
+                    channels_transform,
                     transforms.ToTensor()
                 ])
             elif P.exposure_noise_type == 'cutout':
                 train_transform_cutpasted = transforms.Compose([
                     transforms.Resize((image_size[0], image_size[1])),
+                    channels_transform,
                     v2.RandomErasing(p=1),
                     transforms.ToTensor()
                 ])
