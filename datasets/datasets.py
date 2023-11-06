@@ -245,9 +245,9 @@ def get_exposure_noise_dict(exposure_noise_ratios):
         raise ValueError('Wrong format for noise ratios')
 
     for noise, ratio in zip(noise_keys, noise_ratios):
-        noise_ratios[noise] = ratio
+        noise_dict[noise] = ratio
     
-    return noise_ratios
+    return noise_dict
     
 def get_fake_dataset(dataset, fake_count, cls_list, fake_transform):
 
