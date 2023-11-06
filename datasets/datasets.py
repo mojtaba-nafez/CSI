@@ -66,6 +66,7 @@ def sparse2coarse(targets):
 
 CLASS_NAMES = ['toothbrush', 'zipper', 'transistor', 'tile', 'grid', 'wood', 'pill', 'bottle', 'capsule', 'metal_nut', 'hazelnut', 'screw', 'carpet', 'leather', 'cable']
 
+
 def get_transform(image_size=None):
     # Note: data augmentation is implemented in the layers
     # Hence, we only define the identity transformation here
@@ -146,13 +147,131 @@ def mvtecad_dataset(P, category, root = "./mvtec_anomaly_detection", image_size=
     print("train_ds_mvtech_normal shapes: ", train_ds_mvtech_normal[0][0].shape)
     
     return  train_ds_mvtech_normal, test_ds_mvtech, image_size, n_classes
-        
+
+
+
+def get_channels_transform(dataset):
+    if dataset in ['mnist', 'emnist', 'fashion-mnist', 'Tomor_Detection', 'head-ct', 'breastmnist']:
+        channels_transform = transforms.Grayscale(num_output_channels=3)
+        if dataset == 'emnist':
+            channels_transform = transforms.Compose([
+                channels_transform,
+                transforms.Lambda(lambd=lambda img: transforms.functional.rotate(img, -90)),
+                transforms.Lambda(lambd=lambda img: transforms.functional.hflip(img))
+            ])
+        return channels_transform
+    else:
+        return transforms.Lambda(lambd=lambda x: x)
+
+def get_resize_transform(dataset, image_size):
+    if dataset in ['mvtec-high-var', 'MVTecAD']:
+        return transforms.Compose([
+                transforms.Resize((256,256)),
+                transforms.CenterCrop((image_size[0], image_size[1]))
+        ])
+    else:
+        return transforms.Resize((image_size[0], image_size[1]))
+
+def get_noise_transform(noise, **kwargs):
+    if noise == 'cutpaste':
+        return CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),]))
+    elif noise == 'blur':
+        blur_sigma = (kwargs['exposure_blur_sigma_min'], kwargs['exposure_blur_sigma_max'])
+        return transforms.GaussianBlur(kernel_size=kwargs['exposure_blur_kernel_size'], 
+                                    sigma=blur_sigma)
+    elif noise == 'rotation':
+        angles = [90, 180, 270]
+        rotation_list = [transforms.Lambda(lambda x: TF.rotate(x, angle)) for angle in angles]
+        return transforms.RandomChoice(rotation_list)
+    elif noise == 'auto':
+        return transforms.AutoAugment()
+    elif noise == 'cutout':
+        return v2.RandomErasing(p=1, scale=(0.17, 0.33))
+    elif noise == 'noise':
+        return GaussianNoise(mean=0.5)
+    elif noise == 'perspective':
+        return v2.RandomPerspective(0.5, p=1)
+    elif noise == 'affine':
+        return v2.RandomAffine(30)
+    elif noise == 'rotate90':
+        return transforms.Lambda(lambda x: TF.rotate(x, 90))
+    elif noise == 'grayscale':
+        return transforms.RandomGrayscale(p=1)
+    elif noise == 'jitter':
+        return transforms.ColorJitter(brightness=0.5)
+    else:
+        return transforms.Lambda(lambda x: x)
+
+def get_after_transform(dataset, flip=False, rand_rotate=False):
+    flip_transform = transforms.RandomHorizontalFlip() if flip else transforms.Lambda(lambd=lambda x: x)
+    rand_rotate_transform = transforms.RandomRotation(90, 270) if rand_rotate else transforms.Lambda(lambd=lambda x: x)
+    return transforms.Compose([
+        flip_transform,
+        rand_rotate_transform,
+        transforms.ToTensor()
+    ])
+
+def compose_transform(dataset, image_size, noise, **kwargs):
+    resize_transform = get_resize_transform(dataset, image_size)
+    channels_transform = get_channels_transform(dataset)
+    noise_transform = get_noise_transform(noise, **kwargs)
+    kwargs = {
+        'flip': noise == 'fake',
+        'rand_rotate': dataset == 'head-ct'
+    }
+    after_transform = get_after_transform(dataset, **kwargs)
+    return transforms.Compose([
+        resize_transform,
+        channels_transform,
+        noise_transform,
+        after_transform
+    ])
+
+
+def get_exposure_noise_dict(exposure_noise_ratios):
+    noise_dict = {}
+    if exposure_noise_ratios is None or len(exposure_noise_ratios) == 0:
+        return noise_dict
     
+    noise_split = exposure_noise_ratios.split(' ')
+    try:
+        noise_keys = list(filter((lambda i, val: i % 2 == 0), enumerate(noise_split)))
+        print(f'noise types: {noise_keys}')
+        noise_ratios = list(filter((lambda i, val: i % 2 == 1), enumerate(noise_split)))
+        noise_ratios = list(map(float, noise_ratios))
+        print(f'noise ratios: {noise_ratios}')
+    except:
+        raise ValueError('Wrong format for noise ratios')
+
+    for noise, ratio in zip(noise_keys, noise_ratios):
+        noise_ratios[noise] = ratio
+    
+    return noise_ratios
+    
+def get_fake_dataset(dataset, fake_count, cls_list, fake_transform):
+
+    if dataset in ['MVTecAD', 'mvtec-high-var']:
+        fc = [int(fake_count / len(cls_list)) for i in range(len(cls_list))]
+        if sum(fc) != fake_count:
+            fc[0] += abs(fake_count - sum(fc))
+        fake_root = './fake_mvtecad'
+        train_ds_mvtech_fake = []
+        for idx, i in enumerate(cls_list):
+            train_ds_mvtech_fake.append(FakeMVTecDataset(root=fake_root, train=True, category=CLASS_NAMES[i], transform=fake_transform, count=fc[idx]))
+        fake_dataset = ConcatDataset(train_ds_mvtech_fake)
+    elif dataset == 'cifar10':
+        fake_root='./CIFAR10-Fake/'
+        fc = [int(fake_count / len(cls_list)) for i in range(len(cls_list))]
+        if sum(fc) != fake_count:
+            fc[0] += abs(fake_count - sum(fc))            
+        fake_dataset = FakeCIFAR10(root=fake_root, category=cls_list, transform=fake_transform, count=fc)
+
+    return fake_dataset
 
 def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                             base_path = './tiny-imagenet-200', fake_root="./fake_mvtecad", root="./mvtec_anomaly_detection" ,count=-1, cls_list=None, labels=None):
     categories = ['toothbrush', 'zipper', 'transistor', 'tile', 'grid', 'wood', 'pill', 'bottle', 'capsule', 'metal_nut', 'hazelnut', 'screw', 'carpet', 'leather', 'cable']
-    if P.dataset=='head-ct' or P.dataset=='breastmnist' or  P.dataset=='mnist' or P.dataset=='fashion-mnist' or P.dataset=='Tomor_Detection':
+    if P.dataset in ['head-ct', 'breastmnist', 'mnist', 'fashion-mnist', 'Tomor_Detection', 'emnist']:
         tiny_transform = transforms.Compose([
                 transforms.Resize((image_size[0], image_size[1])),
                 transforms.Grayscale(num_output_channels=1),
@@ -592,6 +711,37 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             alpha = P.exposure_mixup_alpha
             beta = 1 / alpha
             exposureset = MixUpDataset(dataset1=dataset1, dataset2=dataset2, alpha=alpha, beta=beta)
+        
+        if P.exposure_noise_ratios:
+            noise_ratios = get_exposure_noise_dict(P.exposure_noise_ratios)
+            assert sum(noise_ratios.values()) <= 1.0
+
+            noise_args = dict(
+                exposure_mixup_alpha=P.exposure_mixup_alpha,
+                exposure_blur_sigma_min=P.exposure_blur_sigma_min,
+                exposure_blur_sigma_max=P.exposure_blur_sigma_max,
+                exposure_blur_kernel_size=P.exposure_blur_kernel_size,
+            )
+            exposure_datasets = []
+            remaining_count = P.main_count
+            for noise, ratio in noise_ratios.items():
+                noisy_transform = compose_transform(P.dataset, image_size, noise, **noise_args)
+                count = int(ratio * P.main_count)
+                remaining_count -= count
+                if noise == 'fake':
+                    noisy_dataset = get_fake_dataset(P.dataset, count, cls_list, noisy_transform)
+                else:
+                    noisy_dataset = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=noisy_transform)[0]
+                    if noise == 'mixup':
+                        alpha = P.exposure_mixup_alpha
+                        beta = 1 / alpha
+                        noisy_dataset = MixUpDataset(noisy_dataset, noisy_dataset, alpha, beta, force_negative=False, lam_default=0.5)
+                    noisy_dataset = set_dataset_count(noisy_dataset, count)
+                exposure_datasets.append(noisy_dataset)
+            tiny_dataset = ImageNetExposure(root=base_path, count=remaining_count, transform=tiny_transform)
+            exposure_datasets.append(tiny_dataset)
+            
+            exposureset = ConcatDataset(exposure_datasets)
 
         train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
     return train_loader

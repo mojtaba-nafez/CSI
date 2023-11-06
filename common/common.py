@@ -48,6 +48,8 @@ def parse_args(default=False):
     parser.add_argument('--exposure_noise_type', 
                         choices=['blur', 'cutpaste', 'rotation', 'auto', 'mixup', 'cutmix', 'cutout'], 
                         default=None, type=str)
+    parser.add_argument('--exposure_noise_ratios', help= 'Specify what ratio to use for each augmentation',
+                        nargs='*', default=None, type=str)
     parser.add_argument('--exposure_mixup_alpha',
                         default=2.0, type=float)
     parser.add_argument('--exposure_blur_sigma_min',

@@ -986,13 +986,14 @@ class SpoofDataset(Dataset):
 
 class MixUpDataset(Dataset):
     
-    def __init__(self, dataset1, dataset2, alpha=3.33, beta=0.3, force_negative=True):
+    def __init__(self, dataset1, dataset2, alpha=3.33, beta=0.3, force_negative=True, lam_default=1):
         self.dataset1 = dataset1
         self.dataset2 = dataset2
-        self.indices = np.random.choice(len(self.dataset2), len(self.dataset2), replace=False)
+        self._shuffle()
         self.alpha = alpha
         self.beta = beta
         self.force_negative = force_negative
+        self.lam_default = lam_default
 
     def __len__(self):
         return len(self.dataset2)
@@ -1010,10 +1011,10 @@ class MixUpDataset(Dataset):
         if self.alpha > 0:
             lam = np.random.beta(self.alpha, self.beta)
         else:
-            lam = 1
+            lam = self.lam_default
         if self.force_negative:  
             lam = max(lam, 0.5)
         
         x = (1 - lam) * x1 + lam * x2
-        y = y2 if lam >= 2 else y1
+        y = y2 if lam >= 0.5 else y1
         return x, y

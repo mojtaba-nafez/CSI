@@ -11,6 +11,40 @@ def cut_paste_collate_fn(batch):
     return [torch.stack(imgs) for imgs in img_types]
 
 
+from PIL import Image
+
+class RotateByAngle:
+    def __init__(self, angle):
+        assert angle in [90, 180, 270], "Angle should be one of [90, 180, 270]"
+        self.angle = angle
+
+    def __call__(self, img):
+        if self.angle == 90:
+            return img.transpose(Image.Transpose.ROTATE_270)
+        elif self.angle == 180:
+            return img.transpose(Image.Transpose.ROTATE_180)
+        elif self.angle == 270:
+            return img.transpose(Image.Transpose.ROTATE_90)
+
+
+class GaussianNoise:
+    def __init__(self, mean=0., std=0.1):
+        self.std = std
+        self.mean = mean
+
+    def __call__(self, img):
+        img_tensor = transforms.functional.to_tensor(img)
+        noise = torch.randn(img_tensor.size()) * self.std + self.mean
+        noisy_img = img_tensor + noise
+        # Clip the values to be between 0 and 1
+        noisy_img = torch.clamp(noisy_img, 0, 1)
+        return transforms.functional.to_pil_image(noisy_img)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+
+
 class CutPaste(object):
     """Base class for both cutpaste variants with common operations"""
     def __init__(self, colorJitter=0.1, transform=None):
