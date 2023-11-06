@@ -7,7 +7,7 @@ def parse_args(default=False):
     parser = ArgumentParser(description='Pytorch implementation of CSI')
 
     parser.add_argument('--dataset', help='Dataset',
-                        choices=['cifar10-versus-100-supervised', 'cifar100-versus-10-supervised', 'svhn-10-corruption', 'mvtec-high-var-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'WBC', 'dtd', 'cifar10-corruption', 'mnist-corruption', 'Tomor_Detection', 'ucsd', 'mvtec-high-var', 'breastmnist', 'head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10', 'MVTecAD', 'dior'],
+                        choices=['cifar100-versus-other-eval', 'cifar10-versus-other-eval', 'cifar10-versus-100-supervised', 'cifar100-versus-10-supervised', 'svhn-10-corruption', 'mvtec-high-var-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'WBC', 'dtd', 'cifar10-corruption', 'mnist-corruption', 'Tomor_Detection', 'ucsd', 'mvtec-high-var', 'breastmnist', 'head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10', 'MVTecAD', 'dior'],
                         default="cifar10", type=str)
     parser.add_argument('--normal_labels', help='normal_labels for high variation',
                         default="0,1,2,3,4,5,6,7,8,9,10,11,12,13", type=str)
@@ -15,6 +15,9 @@ def parse_args(default=False):
                         default="./CIFAR-10-C/defocus_blur.npy", type=str)
     parser.add_argument('--mnist_corruption_folder', help='',
                         default="./mnist_c/", type=str)
+    parser.add_argument('--outlier_dataset', help='',
+                        default="mnist",choices=['mnist', 'svhn', 'fashion-mnist'] ,type=str)
+                        
     parser.add_argument('--mnist_corruption_type', help='MNIST corruption type',
                         choices=[
                             "brightness",
