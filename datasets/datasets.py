@@ -618,7 +618,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             for i in range(len(anomaly_testset)):
                 anomaly_testset.targets[i] = 1
         elif P.outlier_dataset == 'imagenet30':
-            anomaly_testset = datasets.ImageFolder('./one_class_test_1', transform=transform)
+            anomaly_testset = datasets.ImageFolder('./one_class_test', transform=transform)
             for i in range(len(anomaly_testset)):
                 anomaly_testset.targets[i] = 1
 
@@ -663,7 +663,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             for i in range(len(anomaly_testset)):
                 anomaly_testset.targets[i] = 1
         elif P.outlier_dataset == 'imagenet30':
-            anomaly_testset = datasets.ImageFolder('./one_class_test_1', transform=transform)
+            anomaly_testset = datasets.ImageFolder('./one_class_test', transform=transform)
             for i in range(len(anomaly_testset)):
                 anomaly_testset.targets[i] = 1
         
