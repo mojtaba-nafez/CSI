@@ -177,7 +177,8 @@ def get_noise_transform(noise, **kwargs):
         return CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),]))
     elif noise == 'blur':
         blur_sigma = (kwargs['exposure_blur_sigma_min'], kwargs['exposure_blur_sigma_max'])
-        return transforms.GaussianBlur(kernel_size=kwargs['exposure_blur_kernel_size'], 
+        kernel_size = kwargs['exposure_blur_kernel_size']
+        return transforms.GaussianBlur(kernel_size=kernel_size, 
                                     sigma=blur_sigma)
     elif noise == 'rotation':
         angles = [90, 180, 270]
