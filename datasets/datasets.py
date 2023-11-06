@@ -234,7 +234,7 @@ def get_exposure_noise_dict(exposure_noise_ratios):
     if exposure_noise_ratios is None or len(exposure_noise_ratios) == 0:
         return noise_dict
     
-    noise_split = exposure_noise_ratios.split(' ')
+    noise_split = exposure_noise_ratios
     try:
         noise_keys = list(filter((lambda i, val: i % 2 == 0), enumerate(noise_split)))
         print(f'noise types: {noise_keys}')
