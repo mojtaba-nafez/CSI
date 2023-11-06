@@ -591,7 +591,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         if P.outlier_dataset == 'mnist' or P.outlier_dataset == 'fashion-mnist':
             transform = transforms.Compose([
                 transforms.Resize((32, 32)),
-                transforms.Grayscale(num_output_channels=3)
+                transforms.Grayscale(num_output_channels=3),
                 transforms.ToTensor(),
             ])
         else:
@@ -637,7 +637,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         if P.outlier_dataset == 'mnist' or P.outlier_dataset == 'fashion-mnist':
             transform = transforms.Compose([
                 transforms.Resize((32, 32)),
-                transforms.Grayscale(num_output_channels=3)
+                transforms.Grayscale(num_output_channels=3),
                 transforms.ToTensor(),
             ])
         else:
