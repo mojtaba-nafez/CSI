@@ -98,10 +98,10 @@ print("train_set:", len(train_set))
 simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)
 P.shift_trans, P.K_shift = C.get_shift_module(P, eval=True)
 P.shift_trans = P.shift_trans.to(device)
-
-if P.dataset=='cifar10-versus-100-supervised':
+ 
+if P.dataset=='cifar10-versus-100-supervised' or P.dataset=='cifar10-versus-other-eval':
     P.sup_output_neuron_number=10
-elif P.dataset=='cifar100-versus-10-supervised':
+elif P.dataset=='cifar100-versus-10-supervised' or P.dataset=='cifar100-versus-other-eval':
     P.sup_output_neuron_number=20
 else:
     P.sup_output_neuron_number = P.n_classes
