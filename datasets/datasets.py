@@ -727,14 +727,16 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             )
             exposure_datasets = []
             remaining_count = P.main_count
-            for noise, ratio in noise_ratios.items():
+            for i, (noise, ratio) in enumerate(noise_ratios.items()):
                 noisy_transform = compose_transform(P.dataset, image_size, noise, **noise_args)
                 count = int(ratio * P.main_count)
+                if i == len(noise_ratios) - 1:
+                    count = remaining_count
                 remaining_count -= count
                 if noise == 'fake':
                     noisy_dataset = get_fake_dataset(P.dataset, count, cls_list, noisy_transform)
                 else:
-                    noisy_dataset = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=noisy_transform)[0]
+                    noisy_dataset, _, _, _ = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=noisy_transform)
                     if noise == 'mixup':
                         alpha = P.exposure_mixup_alpha
                         beta = 1 / alpha
@@ -742,10 +744,6 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                     noisy_dataset = set_dataset_count(noisy_dataset, count)
                 print(f'len of {noise} data: {count}')
                 exposure_datasets.append(noisy_dataset)
-            tiny_dataset = ImageNetExposure(root=base_path, count=remaining_count, transform=tiny_transform)
-            print(f'len of tiny data: {remaining_count}')
-            exposure_datasets.append(tiny_dataset)
-            
             exposureset = ConcatDataset(exposure_datasets)
 
         train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
