@@ -16,7 +16,7 @@ def parse_args(default=False):
     parser.add_argument('--mnist_corruption_folder', help='',
                         default="./mnist_c/", type=str)
     parser.add_argument('--outlier_dataset', help='',
-                        default="mnist",choices=['mnist', 'svhn', 'fashion-mnist'] ,type=str)
+                        default="mnist",choices=['imagenet30', 'mnist', 'svhn', 'fashion-mnist'] ,type=str)
                         
     parser.add_argument('--mnist_corruption_type', help='MNIST corruption type',
                         choices=[
