@@ -236,9 +236,9 @@ def get_exposure_noise_dict(exposure_noise_ratios):
     
     noise_split = exposure_noise_ratios
     try:
-        noise_keys = list(filter((lambda i, val: i % 2 == 0), enumerate(noise_split)))
+        noise_keys = list(filter((lambda i, val: i % 2 == 0), list(enumerate(noise_split))))
         print(f'noise types: {noise_keys}')
-        noise_ratios = list(filter((lambda i, val: i % 2 == 1), enumerate(noise_split)))
+        noise_ratios = list(filter((lambda i, val: i % 2 == 1), list(enumerate(noise_split))))
         noise_ratios = list(map(float, noise_ratios))
         print(f'noise ratios: {noise_ratios}')
     except:
