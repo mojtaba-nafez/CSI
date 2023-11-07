@@ -601,8 +601,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
 
         train_set = datasets.CIFAR100('./data', train=True, download=True, transform=cifar_transform)
         train_set.targets = sparse2coarse(train_set.targets)
-        # for i in range(len(train_set)):
-        #    train_set.targets[i] = 0
+        for i in range(len(train_set)):
+            train_set.targets[i] = 0
         
 
         if P.outlier_dataset == 'svhn':
