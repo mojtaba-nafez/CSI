@@ -1286,7 +1286,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                 self.label = in_label
                 self.out_label = out_label
                 self.test_anomaly_len = 100
-
+        print("labels", labels)
         args = Args(in_label=labels) #set args here
         transform_train = transforms.Compose([transforms.Resize((image_size[0], image_size[1])),
                                       transforms.RandomHorizontalFlip(),
