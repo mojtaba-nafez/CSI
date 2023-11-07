@@ -1265,6 +1265,27 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = torch.utils.data.ConcatDataset([anomaly_testset, normal_testset]) 
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
+    elif dataset == 'FGVC':
+        class Args:
+            def __init__(self, in_label, out_label):
+                self.dataset = 'cifar10'
+                self.epochs = 20 
+                self.lr = 1e-5
+                self.batch_size = 16
+                self.angular = False
+                self.store = False
+                self.img_size = 224
+                self.backbone = 'ViT-B_16'
+                self.pretrained_dir = 'ViT-B_16.npz'
+                self.label = in_label
+                self.out_label = out_label
+                self.test_anomaly_len = 100
+
+        args = Args(19, 1) #set args here
+        train_set = get_normal_train_loader(args)
+        test_set = get_test_loader_near_ood(args)
+        print("train_set shapes: ", train_set[0][0].shape)
+        print("test_set shapes: ", test_set[0][0].shape)
 
     elif dataset == 'svhn':
         assert test_only and image_size is not None
@@ -1380,7 +1401,7 @@ def get_superclass_list(dataset):
         return MVTecAD_SUPERCLASS
     elif dataset == 'ArtBench':
         return ART_BENCH_SUPERCLASS
-    elif dataset == 'head-ct' or dataset=='cifar100-versus-other-eval' or dataset=='cifar10-versus-other-eval':
+    elif dataset=='FGVC' or dataset == 'head-ct' or dataset=='cifar100-versus-other-eval' or dataset=='cifar10-versus-other-eval':
         return HEAD_CT_SUPERCLASS
     elif dataset == 'mvtec-high-var' or dataset == 'mvtec-high-var-corruption':
         return MVTEC_HV_SUPERCLASS
