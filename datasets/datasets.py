@@ -19,7 +19,7 @@ import seaborn as sns
 import cv2
 from datasets.custom_datasets import *
 from torch.utils.data import ConcatDataset
-
+from datasets.FGVC_dataset import *
 import medmnist
 from medmnist import INFO, Evaluator
 
