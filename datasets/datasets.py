@@ -735,8 +735,14 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 remaining_count -= count
                 if noise == 'fake':
                     noisy_dataset = get_fake_dataset(P.dataset, count, cls_list, noisy_transform)
+                
                 else:
                     noisy_dataset, _, _, _ = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=noisy_transform)
+                    if P.dataset in ['MVTec', 'mvtec-high-var', 'head-ct']:
+                        noisy_dataset = set_dataset_count(noisy_dataset, count=count)
+                    else:
+                        noisy_dataset = get_subclass_dataset(P, noisy_dataset, classes=cls_list, count=cutpast_count)
+
                     if noise == 'mixup':
                         alpha = P.exposure_mixup_alpha
                         beta = 1 / alpha
