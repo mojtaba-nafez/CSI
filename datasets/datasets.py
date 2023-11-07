@@ -283,7 +283,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.Resize((image_size[0], image_size[1])),
                 CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
             ])
-        if P.dataset=='WBC':
+        if P.dataset=='WBC' or P.dataset=='FGVC':  
             cutpast_train_set, _, _, _ = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=train_transform_cutpasted, labels=cls_list)            
         else:    
             cutpast_train_set, _, _, _ = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=train_transform_cutpasted)
