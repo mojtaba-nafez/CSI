@@ -752,7 +752,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                         alpha = P.exposure_mixup_alpha
                         beta = 1 / alpha
                         noisy_dataset = MixUpDataset(noisy_dataset, noisy_dataset, alpha, beta, force_negative=False, lam_default=0.5)
-                print(f'len of {noise} data: {count}')
+                print(f'len of {noise} data: {len(noisy_dataset)}')
                 exposure_datasets.append(noisy_dataset)
             exposureset = ConcatDataset(exposure_datasets)
 
