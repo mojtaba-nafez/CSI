@@ -710,6 +710,11 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
 
         if P.exposure_noise_type in ['mixup']:
             dataset1, _, _, _ = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size, train_transform_cutpasted=train_transform_cutpasted)
+            if P.dataset in ['MVTec', 'mvtec-high-var', 'head-ct']:
+                dataset1 = set_dataset_count(dataset1, count=count)
+            else:
+                dataset1 = get_subclass_dataset(P, dataset1, classes=cls_list, count=cutpast_count)
+
             dataset2 = imagenet_exposure
             alpha = P.exposure_mixup_alpha
             beta = 1 / alpha
