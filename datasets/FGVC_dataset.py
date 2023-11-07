@@ -195,11 +195,7 @@ def subsample_classes(dataset, include_classes=range(60)):
 
 from torch.utils.data import ConcatDataset
 
-def get_normal_train_loader(args, image_size):
-
-    transform_train = transforms.Compose([transforms.Resize((image_size[0], image_size[1])),
-                                      transforms.RandomHorizontalFlip(),
-                                      transforms.ToTensor()])
+def get_normal_train_loader(args, image_size, transform_train):
     train_set = FGVCAircraft(root=aircraft_root, transform=transform_train, split='trainval')
     train_set = subsample_classes(train_set, include_classes=[args.label])
     train_set.target_transform = lambda x: 0
