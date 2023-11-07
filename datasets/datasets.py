@@ -1288,8 +1288,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                 self.test_anomaly_len = 100
 
         args = Args(in_label=labels) #set args here
-        normal_train_loader = get_normal_train_loader(args)
-        test_loader = get_test_loader_near_ood(args)
         transform_train = transforms.Compose([transforms.Resize((image_size[0], image_size[1])),
                                       transforms.RandomHorizontalFlip(),
                                       transforms.ToTensor()])
