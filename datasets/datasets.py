@@ -267,7 +267,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.RandomRotation((90, 270)),
                 CutPasteNormal(transform = transforms.Compose([transforms.ToTensor(),])),
             ])
-        elif P.dataset=='dtd':
+        elif P.dataset=='dtd' or P.dataset=='FGVC':
             train_transform_cutpasted = transforms.Compose([
                 transforms.Resize((image_size[0], image_size[1])),
                 High_CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
@@ -1283,8 +1283,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                 self.test_anomaly_len = 100
 
         args = Args(19, 1) #set args here
-        train_set = get_normal_train_loader(args)
-        test_set = get_test_loader_near_ood(args)
+        train_set = get_normal_train_loader(args, image_size=image_size)
+        test_set = get_test_loader_near_ood(args, image_size=image_size)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
 
