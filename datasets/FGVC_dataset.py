@@ -1,9 +1,13 @@
 import os
+import torch
 import numpy as np
 from copy import deepcopy
-
 from torchvision.datasets.folder import default_loader
 from torch.utils.data import Dataset
+from torch.utils.data.dataset import Subset
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader, Dataset
+from torchvision.datasets import ImageFolder
 
 aircraft_root = 'aircraft'
 
