@@ -107,6 +107,7 @@ else:
     P.sup_output_neuron_number = P.n_classes
 
 P.K_shift = P.sup_output_neuron_number+1 
+print('P.K_shift= ', P.K_shift)
 model = C.get_classifier(P.model, n_classes=P.n_classes, activation=P.activation_function, mean=P.noise_mean, std=P.noise_std, noise_scale=P.noise_scale, noist_probability=P.noist_probability).to(device)
 model = C.get_shift_classifer(model, P.K_shift).to(device)
 criterion = nn.CrossEntropyLoss().to(device)
