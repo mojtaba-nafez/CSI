@@ -1268,12 +1268,12 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
     elif dataset == 'FGVC':
         n_classes = 2
         class Args:
-            def __init__(self, in_label=[0, 1]):
+            def __init__(self, in_label=[0]):
                 all_label = np.array([91,96,59,19,37,45 ,90,68,74,89])
                 in_label = all_label[in_label]
                 out_label = np.setdiff1d(all_label, in_label)
-                print("out_label", out_label)
-                print("in_label", in_label)
+                print("FGVC out_label", out_label)
+                print("FGVC in_label", in_label)
                 self.dataset = 'cifar10'
                 self.epochs = 20 
                 self.lr = 1e-5
