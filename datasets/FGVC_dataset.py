@@ -197,7 +197,7 @@ from torch.utils.data import ConcatDataset
 
 def get_normal_train_loader(args, image_size, transform_train):
     train_set = FGVCAircraft(root=aircraft_root, transform=transform_train, split='trainval')
-    train_set = subsample_classes(train_set, include_classes=[args.label])
+    train_set = subsample_classes(train_set, include_classes=args.label)
     train_set.target_transform = lambda x: 0
     return train_set
 
@@ -206,11 +206,11 @@ def get_test_loader_near_ood(args, image_size):
                                       transforms.ToTensor(),])
 
     test_set_in = FGVCAircraft(root=aircraft_root, transform=transform_test, split='test')
-    test_set_in = subsample_classes(test_set_in, include_classes=[args.label])
+    test_set_in = subsample_classes(test_set_in, include_classes=args.label)
     test_set_in.target_transform = lambda x: 0
 
     test_set_out = FGVCAircraft(root=aircraft_root, transform=transform_test, split='test')
-    test_set_out = subsample_classes(test_set_out, include_classes=[args.out_label])
+    test_set_out = subsample_classes(test_set_out, include_classes=args.out_label)
     test_set_out.target_transform = lambda x: 1
 
     testset = ConcatDataset([test_set_in, test_set_out])   

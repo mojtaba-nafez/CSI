@@ -1268,7 +1268,12 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
     elif dataset == 'FGVC':
         n_classes = 2
         class Args:
-            def __init__(self, in_label, out_label):
+            def __init__(self, in_label=[0, 1]):
+                all_label = np.array([91,96,59,19,37,45 ,90,68,74,89])
+                in_label = all_label[in_label]
+                out_label = np.setdiff1d(all_label, in_label)
+                print("out_label", out_label)
+                print("in_label", in_label)
                 self.dataset = 'cifar10'
                 self.epochs = 20 
                 self.lr = 1e-5
@@ -1282,15 +1287,18 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                 self.out_label = out_label
                 self.test_anomaly_len = 100
 
-        args = Args(19, 1) #set args here
+        args = Args(in_label=labels) #set args here
+        normal_train_loader = get_normal_train_loader(args)
+        test_loader = get_test_loader_near_ood(args)
         transform_train = transforms.Compose([transforms.Resize((image_size[0], image_size[1])),
                                       transforms.RandomHorizontalFlip(),
                                       transforms.ToTensor()])
         if train_transform_cutpasted:
             train_set = get_normal_train_loader(args, image_size=image_size, transform_train=train_transform_cutpasted)
         else:
-            train_set = get_normal_train_loader(args, image_size=image_size, transform_train=transform_train)
+            train_set = get_normal_train_loader(args, image_size=image_size, transform_traintransform_train)
         test_set = get_test_loader_near_ood(args, image_size=image_size)
+        print("len(test_set), len(train_set): ", len(test_set), len(train_set))
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
 
