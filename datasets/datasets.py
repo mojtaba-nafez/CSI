@@ -1287,9 +1287,9 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                                       transforms.RandomHorizontalFlip(),
                                       transforms.ToTensor()])
         if train_transform_cutpasted:
-            train_set = get_normal_train_loader(args, image_size=image_size, train_transform_cutpasted)
+            train_set = get_normal_train_loader(args, image_size=image_size, transform_train=train_transform_cutpasted)
         else:
-            train_set = get_normal_train_loader(args, image_size=image_size, transform_train)
+            train_set = get_normal_train_loader(args, image_size=image_size, transform_train=transform_train)
         test_set = get_test_loader_near_ood(args, image_size=image_size)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
