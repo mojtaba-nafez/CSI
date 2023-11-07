@@ -1401,7 +1401,7 @@ def get_superclass_list(dataset):
         return MVTecAD_SUPERCLASS
     elif dataset == 'ArtBench':
         return ART_BENCH_SUPERCLASS
-    elif dataset=='FGVC' or dataset == 'head-ct' or dataset=='cifar100-versus-other-eval' or dataset=='cifar10-versus-other-eval':
+    elif dataset=='FGVC' or dataset=='head-ct' or dataset=='cifar100-versus-other-eval' or dataset=='cifar10-versus-other-eval':
         return HEAD_CT_SUPERCLASS
     elif dataset == 'mvtec-high-var' or dataset == 'mvtec-high-var-corruption':
         return MVTEC_HV_SUPERCLASS
