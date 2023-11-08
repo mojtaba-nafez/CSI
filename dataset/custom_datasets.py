@@ -795,6 +795,7 @@ class SVHN_CORRUPTION(torch.utils.data.Dataset):
         self.labels_10 = np.load(svhn_corruption_label)
         self.svhn_corruption_data = svhn_corruption_data
         self.data = np.load(svhn_corruption_data)
+        self.data = np.transpose(self.data, (0, 2, 3, 1))
         self.transform = transform
         
     def __getitem__(self, index):
