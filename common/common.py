@@ -36,6 +36,11 @@ def parse_args(default=False):
                             "zigzag"
                         ],
                         default="brightness", type=str)
+
+    parser.add_argument('--svhn_corruption_folder', help='',
+                        default="./SVHN-C/", type=str)
+    
+    parser.add_argument('--svhn_corruption_type', help='', type=str, default="Contrast", choices=['Contrast', 'Gaussian Blur','Gaussian Noise','Glass Blur','Impulse Noise','Shot Noise','Speckle Noise'])
                 
     parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
                         default=None, type=int)

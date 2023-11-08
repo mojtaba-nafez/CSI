@@ -757,6 +757,61 @@ class MNIST_CORRUPTION(Dataset):
         return image, label
 
 
+import torch
+from torchvision.datasets import CIFAR10, MNIST, SVHN, FashionMNIST, CIFAR100
+import torchvision.transforms as transforms
+import numpy as np
+
+# Define model
+import torch.nn as nn
+from torchvision import models
+import pandas as pd
+from torchvision.datasets import VisionDataset
+from torchvision.datasets.folder import default_loader
+from torchvision.datasets.utils import download_file_from_google_drive
+import torchvision
+
+
+from tqdm import tqdm
+import requests
+import subprocess
+import os
+from glob import glob
+from PIL import Image
+from torch.utils.data import ConcatDataset
+
+SVHN_CORRUPTION_TYPES = [
+    'Contrast',
+    'Gaussian Blur',
+    'Gaussian Noise',
+    'Glass Blur',
+    'Impulse Noise',
+    'Shot Noise',
+    'Speckle Noise',
+]
+
+class SVHN_CORRUPTION(torch.utils.data.Dataset):
+    def __init__(self, transform=None, svhn_corruption_label = './SVHN-C/labels.npy', svhn_corruption_data = './SVHN-C/Contrast.npy'):
+        self.labels_10 = np.load(svhn_corruption_label)
+        self.svhn_corruption_data = svhn_corruption_data
+        self.data = np.load(svhn_corruption_data)
+        self.transform = transform
+        
+    def __getitem__(self, index):
+        x = self.data[index]
+        label = self.labels_10[index]
+
+        if self.transform:
+            x = Image.fromarray((x * 255).astype(np.uint8))
+            x = self.transform(x)    
+            
+        return x, label
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__}(corruption_type={self.svhn_corruption_data})"
 
 class FMNIST_CORRUPTION(Dataset):
     def __init__(self, split='test', transform=None):
@@ -786,7 +841,7 @@ class FMNIST_CORRUPTION(Dataset):
         # Apply the transform to the image
         if self.transform is not None:
             image = self.transform(image)
-
+        
         return image, label
     
 class MyDataset_Binary(torch.utils.data.Dataset):

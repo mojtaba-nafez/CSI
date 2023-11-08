@@ -6,6 +6,7 @@ from torch.utils.data.dataset import Subset
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import ImageFolder
+from common import train
 
 from utils.utils import set_random_seed
 from dataset.cutpast_transformation import *
@@ -931,7 +932,10 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         ])
 
         train_set = datasets.SVHN(DATA_PATH, split='train', download=download, transform=train_transform)
-        test_set = datasets.SVHN(DATA_PATH, split='test', download=download, transform=test_transform)
+        test_set =  SVHN_CORRUPTION(svhn_corruption_data=os.path.join(P.svhn_corruption_folder, f'{P.svhn_corruption_type}.npy'),
+                                    svhn_corruption_label=os.path.join(P.svhn_corruption_folder, 'labels.npy'), 
+                                    transform=train_transform)
+        
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
 
