@@ -619,7 +619,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                 anomaly_testset.targets[i] = 1
         elif P.outlier_dataset == 'imagenet30':
             transform = transforms.Compose([
-                transforms.Resize((224, 224)),
+                transforms.Resize((32, 32)),
                 transforms.ToTensor(),
             ])
             image_path = glob('./one_class_test/*/*/*')
@@ -668,7 +668,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                 anomaly_testset.targets[i] = 1
         elif P.outlier_dataset == 'imagenet30':
             transform = transforms.Compose([
-                transforms.Resize((224, 224)),
+                transforms.Resize((32, 32)),
                 transforms.ToTensor(),
             ])
             image_path = glob('./one_class_test/*/*/*')
