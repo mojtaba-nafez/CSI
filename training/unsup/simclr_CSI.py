@@ -90,16 +90,9 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         optimizer.step()
         
         # If SWA is to be used and the current epoch is beyond the start epoch
-        if swa_model and epoch > swa_start:
-            # Update the SWA weights after a set frequency
-            if (epoch - swa_start) % swa_update_frequency == 0:
-                swa_model.update_parameters(model)
-                swa_scheduler.step()
-            else:
-                scheduler.step(epoch - 1 + n / len(loader))
-        else:
-            # If SWA is not used, or it hasn't started yet, use the regular scheduler
+        if epoch < swa_start:
             scheduler.step(epoch - 1 + n / len(loader))
+        
         
         lr = optimizer.param_groups[0]['lr']
 
