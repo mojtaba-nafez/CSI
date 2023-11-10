@@ -842,7 +842,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("test_set shapes: ", test_set[0][0].shape)
         
         print("len(test_dataset), len(train_dataset)", len(test_set), len(train_set))
-    elif dataset == 'imagenet-30':
+    elif dataset == 'imagenet30':
             transform = transforms.Compose([
                 transforms.Resize((32, 32)),
                 transforms.ToTensor(),
