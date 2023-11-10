@@ -226,6 +226,24 @@ class Pretrain_ResNet(BaseModel):
         return z_n
 
 
+class GaussianNoise(nn.Module):
+    def __init__(self, mean=0., std=1., clip_min=0., clip_max=1., probability=1.0):
+        super().__init__()
+        self.mean = mean
+        self.std = std
+        self.clip_min = clip_min
+        self.clip_max = clip_max
+        self.probability = probability
+
+    def forward(self, img):
+        if random.random() < self.probability:
+            noise = torch.randn(img.size(), device=img.device) * self.std + self.mean
+            return torch.clamp(img + noise, min=self.clip_min, max=self.clip_max)
+        return img
+
+    def __repr__(self):
+        return f"GaussianNoise(mean={self.mean}, std={self.std}, clip_min={self.clip_min}, clip_max={self.clip_max}, probability={self.probability})"
+
 class Pretrain_ResNet18_Corruption(BaseModel):
     def __init__(self, block, num_blocks, num_classes=10, std=1.0, mean=0.0, noise_scale=0.1, probability=0.5):
         last_dim = 512 * block.expansion
@@ -233,6 +251,10 @@ class Pretrain_ResNet18_Corruption(BaseModel):
 
         self.in_planes = 64
         self.last_dim = last_dim
+
+        self.gaussian_noise = GaussianNoise(mean=mean, std=noise_scale, probability=probability)
+        
+        print(f'\n{self.gaussian_noise}\n')
 
         mu = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1).cuda()
         std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1).cuda()
@@ -252,9 +274,7 @@ class Pretrain_ResNet18_Corruption(BaseModel):
         self.probability = probability
 
     def penultimate(self, x, all_features=False):
-        p = random.random()
-        if p < self.probability:
-            x = x + (torch.randn(x.size()).to(self.device) * self.std + self.mean)*self.noise_scale
+        x = self.gaussian_noise(x)
         x = self.norm(x)
         z1 = self.backbone(x)
         z_n = F.normalize(z1, dim=-1)
@@ -286,25 +306,6 @@ class Pretrain_ResNet152(BaseModel):
         z1 = self.backbone(x)
         z_n = F.normalize(z1, dim=-1)
         return z_n
-
-
-class GaussianNoise(nn.Module):
-    def __init__(self, mean=0., std=1., clip_min=0., clip_max=1., probability=1.0):
-        super().__init__()
-        self.mean = mean
-        self.std = std
-        self.clip_min = clip_min
-        self.clip_max = clip_max
-        self.probability = probability
-
-    def forward(self, img):
-        if random.random() < self.probability:
-            noise = torch.randn(img.size(), device=img.device) * self.std + self.mean
-            return torch.clamp(img + noise, min=self.clip_min, max=self.clip_max)
-        return img
-
-    def __repr__(self):
-        return f"GaussianNoise(mean={self.mean}, std={self.std}, clip_min={self.clip_min}, clip_max={self.clip_max}, probability={self.probability})"
 
     
 class Pretrain_Wide_ResNet(BaseModel):
