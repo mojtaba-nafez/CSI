@@ -842,6 +842,13 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("test_set shapes: ", test_set[0][0].shape)
         
         print("len(test_dataset), len(train_dataset)", len(test_set), len(train_set))
+    elif dataset == 'imagenet-30':
+            transform = transforms.Compose([
+                transforms.Resize((32, 32)),
+                transforms.ToTensor(),
+            ])
+            image_path = glob('./one_class_test/*/*/*')
+            test_set = ImageNet30_Dataset(image_path=image_path, labels=[1]*len(image_path), transform=transform)
     elif dataset == 'fashion-mnist':
         # image_size = (32, 32, 3)
         n_classes = 10
