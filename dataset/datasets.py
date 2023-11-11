@@ -32,6 +32,7 @@ CIFAR10_SUPERCLASS = list(range(10))  # one class
 IMAGENET_SUPERCLASS = list(range(30))  # one class
 TUMOR_BRAIN_SUPERCLASS = list(range(2))
 MNIST_SUPERCLASS = list(range(10))
+EMNIST_SUPERCLASS = list(range(10))
 SVHN_SUPERCLASS = list(range(10))
 FashionMNIST_SUPERCLASS = list(range(10))
 MVTecAD_SUPERCLASS = list(range(2))
@@ -848,6 +849,63 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = datasets.MNIST(DATA_PATH, train=False, download=download, transform=test_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
+        
+    elif dataset == 'emnist':
+        
+        transpose_transform = transforms.Lambda(lambda img: img.transpose(1, 2))
+
+        n_classes = 26
+        train_transform = transforms.Compose([
+            transforms.Resize((image_size[0], image_size[1])),
+            transpose_transform,
+            transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+        ])
+        test_transform = transforms.Compose([
+            transforms.Resize((image_size[0], image_size[1])),
+            transpose_transform,
+            transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+        ])
+
+        train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform)    
+        test_set = datasets.EMNIST(DATA_PATH,  split='letters', train=False, download=download, transform=test_transform)
+        
+        train_set.targets = train_set.targets - 1
+        test_set.targets = test_set.targets - 1
+        
+        print("train_set shapes: ", train_set[0][0].shape)
+        print("test_set shapes: ", test_set[0][0].shape)
+    
+    elif dataset == 'emnist-corruption':
+        # image_size = (32, 32, 1)
+        n_classes = 26
+        
+        transpose_transform = transforms.Lambda(lambda img: img.transpose(1, 2))
+
+
+        train_transform = transforms.Compose([
+            transforms.Resize((image_size[0], image_size[1])),
+            transpose_transform,
+            transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+        ])
+        test_transform = transforms.Compose([
+            transforms.Resize((image_size[0], image_size[1])),
+            transpose_transform,
+            transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+        ])
+       
+        train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform)
+            
+        test_set = EMNISTCorruptionDataset(root_dir=P.mnist_corruption_folder, corruption_type=P.mnist_corruption_type, transform=transform)
+        
+        train_set.targets = train_set.targets - 1
+        
+        print("train_set shapes: ", train_set[0][0].shape)
+        print("test_set shapes: ", test_set[0][0].shape)
+           
     elif dataset=='cifar10-corruption':
         n_classes = 10
         transform = transforms.Compose([
@@ -1063,6 +1121,8 @@ def get_superclass_list(dataset):
         return FashionMNIST_SUPERCLASS
     elif dataset == 'mnist':
         return MNIST_SUPERCLASS
+    elif dataset == 'emnist' or dataset == 'emnist-corruption':
+        return EMNIST_SUPERCLASS
     elif dataset == 'cifar100' or dataset=='cifar100-corruption':
         return CIFAR100_SUPERCLASS
     elif dataset == 'ucsd':

@@ -7,7 +7,7 @@ def parse_args(default=False):
     parser = ArgumentParser(description='Pytorch implementation of CSI')
 
     parser.add_argument('--dataset', help='Dataset',
-                        choices=['svhn-10-corruption', 'fmnist-corruption', 'mvtec-high-var-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'WBC', 'dtd', 'cifar10-corruption', 'mnist-corruption', 'Tomor_Detection', 'ucsd', 'mvtec-high-var', 'breastmnist', 'head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10', 'MVTecAD', 'dior'],
+                        choices=['emnist', 'emnist-corruption', 'svhn-10-corruption', 'fmnist-corruption', 'mvtec-high-var-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'WBC', 'dtd', 'cifar10-corruption', 'mnist-corruption', 'Tomor_Detection', 'ucsd', 'mvtec-high-var', 'breastmnist', 'head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10', 'MVTecAD', 'dior'],
                         default="cifar10", type=str)
     parser.add_argument('--normal_labels', help='normal_labels for high variation',
                         default="0,1,2,3,4,5,6,7,8,9,10,11,12,13", type=str)
@@ -37,6 +37,27 @@ def parse_args(default=False):
                         ],
                         default="brightness", type=str)
 
+    
+    parser.add_argument('--emnist_corruption_folder', help='',
+                        default="./emnist_c/", type=str)
+    
+    
+    parser.add_argument('--emnist_corruption_type', help='MNIST corruption type',
+                        choices=[
+                            'shot_noise',
+                            'impulse_noise',
+                            'glass_blur',
+                            'motion_blur',
+                            'shear',
+                            'scale',
+                            'rotate',
+                            'brightness',
+                            'contrast',
+                            'saturate',
+                            'inverse'
+                        ],
+                        default="shot_noise", type=str)
+    
     parser.add_argument('--svhn_corruption_folder', help='',
                         default="./SVHN-C/", type=str)
     

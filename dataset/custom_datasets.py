@@ -780,6 +780,51 @@ from glob import glob
 from PIL import Image
 from torch.utils.data import ConcatDataset
 
+
+
+EMNIST_CORRUPTION_TYPES = [
+    'shot_noise',
+    'impulse_noise',
+    'glass_blur',
+    'motion_blur',
+    'shear',
+    'scale',
+    'rotate',
+    'brightness',
+    'contrast',
+    'saturate',
+    'inverse'
+]
+
+class EMNISTCorruptionDataset(torch.utils.data.Dataset):
+    def __init__(self, corruption_type, root_dir='./', transform=None):
+        """
+        Args:
+            root_dir (string): Directory with all the corrupted dataset .npy files.
+            corruption_type (string): Type of corruption applied to the dataset.
+                                      It is used to identify the files.
+            transform (callable, optional): Optional transform to be applied
+                                            on a sample.
+        """
+        self.transform = transform
+        self.images = np.load(os.path.join(root_dir, f'{corruption_type}_images.npy'))
+        self.labels = np.load(os.path.join(root_dir, f'{corruption_type}_labels.npy'))
+        self.images = self.images.transpose((0, 2, 1))
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        image = self.images[idx]
+        label = self.labels[idx]
+
+        image = Image.fromarray(image, mode='L')  # 'L' mode means grayscale
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label - 1
+    
 SVHN_CORRUPTION_TYPES = [
     'Contrast',
     'Gaussian Blur',
