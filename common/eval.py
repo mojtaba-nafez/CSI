@@ -106,4 +106,4 @@ criterion = nn.CrossEntropyLoss().to(device)
 
 if P.load_path is not None:
     checkpoint = torch.load(P.load_path)
-    model.load_state_dict(checkpoint, strict=not P.no_strict)
+    model.load_state_dict(checkpoint, strict=False)
