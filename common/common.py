@@ -39,7 +39,7 @@ def parse_args(default=False):
 
     
     parser.add_argument('--emnist_corruption_folder', help='',
-                        default="./emnist_c/", type=str)
+                        default="./emnist-c/", type=str)
     
     
     parser.add_argument('--emnist_corruption_type', help='MNIST corruption type',

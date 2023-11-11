@@ -899,7 +899,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
        
         train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform)
             
-        test_set = EMNISTCorruptionDataset(root_dir=P.mnist_corruption_folder, corruption_type=P.mnist_corruption_type, transform=test_transform)
+        test_set = EMNISTCorruptionDataset(root_dir=P.emnist_corruption_folder, corruption_type=P.emnist_corruption_type, transform=test_transform)
         
         train_set.targets = train_set.targets - 1
         
