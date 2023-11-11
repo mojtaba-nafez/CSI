@@ -696,7 +696,7 @@ class DIOR_FAKE(Dataset):
     def __init__(self, root='.', transform=None, category=[1], count=[-1]):
         self.image_files = []
         for cat, cnt in zip(category, count):
-            image = list(np.load(os.path.join(root, f'dior_fake_{cat}.npy')))
+            image = list(np.load(os.path.join(root, f'dior_fake_{cat+1}.npy')))
             if cnt<len(image):
                 image = image[:cnt]
             else:
