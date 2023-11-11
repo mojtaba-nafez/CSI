@@ -45,6 +45,7 @@ CIFAR10_VER_CIFAR100_SUPERCLASS = list(range(2))
 DTD_SUPERCLASS = list(range(46))
 WBC_SUPERCLASS = list(range(2))
 DIOR_SUPERCLASS = list(range(19))
+IMAGENET30_SUPERCLASS = list(range(30))
 
 def sparse2coarse(targets):
     coarse_labels = np.array(
@@ -842,13 +843,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("test_set shapes: ", test_set[0][0].shape)
         
         print("len(test_dataset), len(train_dataset)", len(test_set), len(train_set))
-    elif dataset == 'imagenet30':
-            transform = transforms.Compose([
-                transforms.Resize((32, 32)),
-                transforms.ToTensor(),
-            ])
-            image_path = glob('./one_class_test/*/*/*')
-            test_set = ImageNet30_Dataset(image_path=image_path, labels=[1]*len(image_path), transform=transform)
     elif dataset == 'fashion-mnist':
         # image_size = (32, 32, 3)
         n_classes = 10
@@ -902,6 +896,13 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
 
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
+    elif dataset == 'imagenet30':
+        transform = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+        ])
+        image_path = glob('./one_class_test/*/*/*')
+        test_set = ImageNet30_Dataset(image_path=image_path, labels=[1]*len(image_path), transform=transform)
     elif dataset == 'mnist':
         # image_size = (32, 32, 1)
         n_classes = 10
@@ -1125,6 +1126,8 @@ def get_superclass_list(dataset):
         return IMAGENET_SUPERCLASS
     elif dataset == 'dior':
         return DIOR_SUPERCLASS
+    elif dataset == 'imagenet30':
+        return IMAGENET30_SUPERCLASS
     else:
         raise NotImplementedError()
 
