@@ -857,15 +857,15 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         n_classes = 26
         train_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
-            transpose_transform,
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
+            transpose_transform,
         ])
         test_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
-            transpose_transform,
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
+            transpose_transform,
         ])
 
         train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform)    
@@ -886,15 +886,15 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
 
         train_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
-            transpose_transform,
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
+            transpose_transform,
         ])
         test_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
-            transpose_transform,
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
+            transpose_transform,
         ])
        
         train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform)
