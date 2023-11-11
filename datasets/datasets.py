@@ -896,13 +896,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
 
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
-    elif dataset == 'imagenet30':
-        transform = transforms.Compose([
-            transforms.Resize((32, 32)),
-            transforms.ToTensor(),
-        ])
-        image_path = glob('./one_class_test/*/*/*')
-        test_set = ImageNet30_Dataset(image_path=image_path, labels=[1]*len(image_path), transform=transform)
     elif dataset == 'mnist':
         # image_size = (32, 32, 1)
         n_classes = 10
@@ -1078,7 +1071,15 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
         test_set = get_subset_with_len(test_set, length=3000, shuffle=True)
 
+    elif dataset == 'imagenet30':
+        transform = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+        ])
+        image_path = glob('./one_class_test/*/*/*')
+        test_set = ImageNet30_Dataset(image_path=image_path, labels=[1]*len(image_path), transform=transform)
     else:
+        print(dataset)
         raise NotImplementedError()
 
     if test_only:
