@@ -894,7 +894,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.Resize((image_size[0], image_size[1])),
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
-            transpose_transform,
         ])
        
         train_set = datasets.EMNIST(DATA_PATH, split='letters', train=True, download=download, transform=train_transform)
