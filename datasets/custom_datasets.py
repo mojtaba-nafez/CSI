@@ -700,7 +700,7 @@ class DIOR_FAKE(Dataset):
             if cnt<len(image):
                 image = image[:cnt]
             else:
-                t = len(cnt)
+                t = len(image)
                 for i in range(cnt-t):
                     image.append(random.choice(image[:t]))
             self.image_files += image
