@@ -854,7 +854,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         
         transpose_transform = transforms.Lambda(lambda img: img.transpose(1, 2))
 
-        n_classes = 26
+        n_classes = 27
         train_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
             transforms.Grayscale(num_output_channels=3),
@@ -879,7 +879,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
     
     elif dataset == 'emnist-corruption':
         # image_size = (32, 32, 1)
-        n_classes = 26
+        n_classes = 27
         
         transpose_transform = transforms.Lambda(lambda img: img.transpose(1, 2))
 
