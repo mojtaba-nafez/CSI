@@ -674,6 +674,21 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             if len(train_ds_fmnist_fake) > 0:
                 print("number of fake data:", len(train_ds_fmnist_fake), "shape:", train_ds_fmnist_fake[0][0].shape)
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_fmnist_fake, imagenet_exposure])
+        elif P.dataset == 'dior':
+            fake_transform = transforms.Compose([
+                transforms.Resize((image_size[0],image_size[1])),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor()
+            ])
+            fc = [int(fake_count / len(cls_list)) for i in range(len(cls_list))]
+            if sum(fc) != fake_count:
+                fc[0] += abs(fake_count - sum(fc))
+            fake_root='.'
+            train_dior_fake = DIOR_FAKE(root=fake_root, category=cls_list, transform=fake_transform, count=fc)
+            if len(train_dior_fake) > 0:
+                print("number of fake data:", len(train_dior_fake), "shape:", train_dior_fake[0][0].shape)
+            exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_dior_fake, imagenet_exposure])
+
         elif P.dataset=="Tomor_Detection":
             fake_transform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),

@@ -672,6 +672,49 @@ class HEAD_CT_FAKE(Dataset):
         return len(self.image_files)
 
 
+class HEAD_CT_FAKE(Dataset):
+    def __init__(self, transform=None, count=6000):
+        self.transform = transform
+        self.image_files = list(np.load("./Head-CT-50.npy"))
+        if count<len(self.image_files):
+            self.image_files = self.image_files[:count]
+        else:
+            t = len(self.image_files)
+            for i in range(count-t):
+                self.image_files.append(random.choice(self.image_files[:t]))
+
+    def __getitem__(self, index):
+        image = Image.fromarray((self.image_files[index].transpose(1, 2, 0)*255).astype(np.uint8))
+        if self.transform is not None:
+            image = self.transform(image)
+        target = 1
+        return image, target
+    def __len__(self):
+        return len(self.image_files)
+
+class DIOR_FAKE(Dataset):
+    def __init__(self, root='.', transform=None, category=[1], count=[-1]):
+        self.image_files = []
+        for cat, cnt in zip(category, count):
+            image = list(np.load(os.path.join(root, f'dior_fake_{cat}.npy')))
+            if cnt<len(image):
+                image = image[:cnt]
+            else:
+                t = len(cnt)
+                for i in range(cnt-t):
+                    image.append(random.choice(image[:t]))
+            self.image_files += image
+    
+    def __getitem__(self, index):
+        image = Image.fromarray((self.image_files[index].transpose(1, 2, 0)*255).astype(np.uint8))
+        if self.transform is not None:
+            image = self.transform(image)
+        target = 1
+        return image, target
+    def __len__(self):
+        return len(self.image_files) 
+
+
 
 import torch
 from torchvision import transforms
