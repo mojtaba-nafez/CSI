@@ -705,7 +705,7 @@ class CIFAR_CORRUCPION(Dataset):
         x = self.data[index]
         y = self.labels_10[index]
         if self.transform:
-            x = Image.fromarray((x * 255).astype(np.uint8))
+            x = Image.fromarray((x).astype(np.uint8))
             x = self.transform(x)    
         return x, y
     
