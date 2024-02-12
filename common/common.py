@@ -140,8 +140,10 @@ def parse_args(default=False):
                         action='store_true')
     parser.add_argument('--timer', default=None, type=int)
 
-    parser.add_argument('--freezing_layer', help='Freezing Layer',
-                        default=133, type=int)
+    parser.add_argument('--freezing_layer', help='Freezing Layer', default=133, type=int)
+
+    parser.add_argument('--fine_tune_freezing_layer', help='Freezing Layer', default=133, type=int)
+
     if default:
         return parser.parse_args('')  # empty string
     else:

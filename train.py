@@ -5,6 +5,7 @@ import os
 from common.train import *
 from evals import test_classifier
 import time
+from utils_.utils import count_parameters
 
 start_time = time.time()
 
@@ -45,6 +46,13 @@ for epoch in range(start_epoch, P.epochs + 1):
     if epoch > P.unfreeze_pretrain_model_epoch:
         for param in model.parameters():
             param.requires_grad = True
+        kk = 0
+        num = P.fine_tune_freezing_layer
+        for param in model.parameters():
+            if kk<num:
+                param.requires_grad = False
+            kk+=1
+        count_parameters(model)
 
     train(P, epoch, model, criterion, optimizer, scheduler_warmup, train_loader, train_exposure_loader=train_exposure_loader, logger=logger, **kwargs)
 
