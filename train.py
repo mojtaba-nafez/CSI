@@ -29,6 +29,9 @@ linear_optim = torch.optim.Adam(linear.parameters(), lr=1e-3, betas=(.9, .999), 
 epoch = 0
 # Run experiments
 for epoch in range(start_epoch, P.epochs + 1):
+    if epoch > P.break_epoch:
+        print("Stoped by break_epoch argument!")
+        break
     if P.timer is not None and P.timer < (time.time() - start_time):
         break
     logger.log_dirname(f"Epoch {epoch}")
@@ -95,7 +98,6 @@ for epoch in range(start_epoch, P.epochs + 1):
             logger.log("Script execution failed.")
             logger.log("Error:")
             logger.log(result.stderr)
-        
 epoch += 1
 if P.multi_gpu:
     save_states = model.module.state_dict()
