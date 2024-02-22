@@ -1,3 +1,4 @@
+from collections import OrderedDict
 
 import torch
 import torch.nn as nn
@@ -7,6 +8,8 @@ from models.base_model import BaseModel
 from models.transform_layers import NormalizeLayer
 from torch.nn.utils import spectral_norm
 from torchvision import models
+from .clip_base import ModifiedResNet
+
 
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -24,8 +27,23 @@ class CLIP_R50(BaseModel):
         std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1).to(device)
         self.norm = lambda x: ( x - mu ) / std
 
-        self.backbone, transform = clip.load("RN50", device=device)
-        self.backbone = self.backbone.visual
+
+        model_layers = (3, 4, 6, 3)
+        model_output_dim = 1024
+        model_heads = 32
+        model_input_resolution = 32
+        model_width = 64
+
+        self.backbone = ModifiedResNet(layers=model_layers, output_dim=model_output_dim, heads=model_heads, input_resolution=model_input_resolution, width=model_width).to(device)
+        state_dict = torch.load("./RN50.pt", map_location="cpu").state_dict()
+        visual_state_dict = OrderedDict()
+        for key, value in state_dict.items():
+            if key.startswith('visual.'):
+                visual_key = '.'.join(key.split('.')[1:])
+                if not visual_key.startswith('attnpool'):
+                    visual_state_dict[visual_key] = value
+
+        self.backbone.load_state_dict(visual_state_dict, strict=False)
 
         i = 0
         num = freezing_layer
