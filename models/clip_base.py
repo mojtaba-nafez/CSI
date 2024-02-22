@@ -146,13 +146,13 @@ class ModifiedResNet(nn.Module):
 
     def __init__(self, layers, output_dim, heads, input_resolution=224, width=64):
         super().__init__()
-        print("----------------------")
-        print("layers", layers)
-        print("output_dim", output_dim)
-        print("heads", heads)
-        print("input_resolution", input_resolution)
-        print("width", width)
-        print("----------------------")
+        # print("----------------------")
+        # print("layers", layers)
+        # print("output_dim", output_dim)
+        # print("heads", heads)
+        # print("input_resolution", input_resolution)
+        # print("width", width)
+        # print("----------------------")
         self.output_dim = output_dim
         self.input_resolution = input_resolution
 
@@ -202,7 +202,7 @@ class ModifiedResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        print("x.shape before self.attnpool: ", x.shape)
+        # print("x.shape before self.attnpool: ", x.shape)
         x = self.attnpool(x)
 
         return x
