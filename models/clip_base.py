@@ -96,10 +96,10 @@ class Bottleneck(nn.Module):
 class AttentionPool2d(nn.Module):
     def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):
         super().__init__()
-        print("spacial_dim: ", spacial_dim)
-        print("embed_dim: ", embed_dim)
-        print("num_heads: ", num_heads)
-        print("output_dim: ", output_dim)
+        # print("spacial_dim: ", spacial_dim)
+        # print("embed_dim: ", embed_dim)
+        # print("num_heads: ", num_heads)
+        # print("output_dim: ", output_dim)
         self.positional_embedding = nn.Parameter(torch.randn(spacial_dim ** 2 + 1, embed_dim) / embed_dim ** 0.5)
         self.k_proj = nn.Linear(embed_dim, embed_dim)
         self.q_proj = nn.Linear(embed_dim, embed_dim)
@@ -110,8 +110,8 @@ class AttentionPool2d(nn.Module):
     def forward(self, x):
         x = x.reshape(x.shape[0], x.shape[1], x.shape[2] * x.shape[3]).permute(2, 0, 1)  # NCHW -> (HW)NC
         x = torch.cat([x.mean(dim=0, keepdim=True), x], dim=0)  # (HW+1)NC
-        print("befor self.positional_embedding: ", x.shape)
-        print("self.positional_embedding[:, None, :].shape", self.positional_embedding[:, None, :].shape)
+        # print("befor self.positional_embedding: ", x.shape)
+        # print("self.positional_embedding[:, None, :].shape", self.positional_embedding[:, None, :].shape)
         x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC
         x, _ = F.multi_head_attention_forward(
             query=x, key=x, value=x,
