@@ -16,7 +16,7 @@ def conv3x3(in_planes, out_planes, stride=1):
 
 
 class CLIP_R50(BaseModel):
-    def __init__(self, num_classes=10, freezing_layer=168):
+    def __init__(self, num_classes=10, freezing_layer=330):
         import clip
         last_dim = 1024
         super(CLIP_R50, self).__init__(last_dim, num_classes)
