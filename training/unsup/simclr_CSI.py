@@ -68,10 +68,10 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
         
         if P.virtual_outliers and epoch > P.warmup_epoch:
             try:
-                exposure_embeddings, _ = next(virtual_outliers_loader_iterator)
+                exposure_embeddings = next(virtual_outliers_loader_iterator)
             except StopIteration:
                 virtual_outliers_loader_iterator = iter(virtual_outliers_loader)
-                exposure_embeddings, _ = next(virtual_outliers_loader_iterator)
+                exposure_embeddings = next(virtual_outliers_loader_iterator)
             exposure_embeddings = exposure_embeddings.to(device)
             
             batch_size = images.size(0)
@@ -86,10 +86,10 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             
         else:
             try:
-                exposure_images = next(train_exposure_loader_iterator)
+                exposure_images, _ = next(train_exposure_loader_iterator)
             except StopIteration:
                 train_exposure_loader_iterator = iter(train_exposure_loader)
-                exposure_images = next(train_exposure_loader_iterator)
+                exposure_images, _ = next(train_exposure_loader_iterator)
         
             ### SimCLR loss ###
             if P.dataset != 'imagenet':
