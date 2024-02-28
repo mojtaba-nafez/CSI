@@ -137,6 +137,22 @@ def parse_args(default=False):
     parser.add_argument("--save_score", help='save ood score for plotting histogram',
                         action='store_true')
     parser.add_argument('--timer', default=None, type=int)
+    
+    
+    # Virtual Outlier Synthesis
+    parser.add_argument('--virtual_outliers', help='Flag to enable virtual outlier generation',
+                    action='store_true')
+    parser.add_argument('--warmup_epoch', help='Epoch number after which virtual outliers are introduced',
+                        default=10, type=int)
+    parser.add_argument('--K', help='Number of nearest neighbors to consider for virtual outlier synthesis',
+                        default=50, type=int)
+    parser.add_argument('--num_boundary_points', help='Number of boundary points to consider for virtual outlier synthesis',
+                        default=200, type=int)
+    parser.add_argument('--num_candidate_outliers', help='Number of candidate virtual outliers to generate before selection',
+                        default=200, type=int)
+    parser.add_argument('--std_dev', help='Standard deviation for the Gaussian noise in virtual outlier synthesis',
+                        default=1.0, type=float)
+
 
     if default:
         return parser.parse_args('')  # empty string

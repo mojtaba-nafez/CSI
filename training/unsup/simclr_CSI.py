@@ -1,9 +1,12 @@
 import time
 
+import torch
 import torch.optim
-
 import models.transform_layers as TL
 from training.contrastive_loss import get_similarity_matrix, NT_xent
+from utils.utils import AverageMeter, normalize
+from utils.virtual_outliers import create_faiss_index, find_boundary_points, generate_candidate_outliers, select_best_outliers, synthesize_outliers
+from torch.utils.data import DataLoader, TensorDataset
 from utils.utils import AverageMeter, normalize
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
@@ -32,55 +35,93 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     losses['shift'] = AverageMeter()
 
     check = time.time()
+    
     train_exposure_loader_iterator = iter(train_exposure_loader)
+
+    if P.virtual_outliers and epoch > P.warmup_epoch:
+        all_embeddings = []
+        model.eval()
+        with torch.no_grad():
+            for images, _ in loader:
+                images = images.to(device)
+                features = model.penultimate(images).detach()
+                all_embeddings.append(features.detach().cpu())
+        all_embeddings = torch.cat(all_embeddings, dim=0)
+        virtual_outliers_embeddings = synthesize_outliers(all_embeddings.to(device), all_embeddings.shape[0], P.K, P.num_boundary_points, P.num_candidate_outliers, P.std_dev).detach()
+        virtual_outliers_loader = DataLoader(TensorDataset(virtual_outliers_embeddings), batch_size=P.batch_size, shuffle=True)
+        virtual_outliers_loader_iterator = iter(virtual_outliers_loader)
+        model.train()
+    else:
+        train_exposure_loader_iterator = iter(train_exposure_loader)
+        
     print("len(train_exposure_loader_iterator), len(loader): ", len(train_exposure_loader_iterator), len(loader))
     print("cl_no_hflip=", P.cl_no_hflip)
+    
     for n, (images, labels) in enumerate(loader):
-        try:
-            exposure_images, _ = next(train_exposure_loader_iterator)
-        except StopIteration:
-            train_exposure_loader_iterator = iter(train_exposure_loader)
-            exposure_images, _ = next(train_exposure_loader_iterator)
+        
         # print(exposure_images.shape, images.shape, labels.shape)
         model.train()
         count = n * P.n_gpus  # number of trained samples
 
         data_time.update(time.time() - check)
         check = time.time()
-
-        ### SimCLR loss ###
-        if P.dataset != 'imagenet':
+        
+        if P.virtual_outliers and epoch > P.warmup_epoch:
+            try:
+                exposure_embeddings, _ = next(virtual_outliers_loader_iterator)
+            except StopIteration:
+                virtual_outliers_loader_iterator = iter(virtual_outliers_loader)
+                exposure_embeddings, _ = next(virtual_outliers_loader_iterator)
+            exposure_embeddings = exposure_embeddings.to(device)
+            
             batch_size = images.size(0)
             images = images.to(device)
-            exposure_images = exposure_images.to(device)
+            
             if P.cl_no_hflip:
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
                 images1, images2 = hflip(images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
-            exposure_images1, exposure_images2 = hflip(exposure_images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
+
+            features = torch.cat([model.penultimate(images1), exposure_embeddings, model.penultimate(images2), exposure_embeddings]) # inlier / exposure / augmented-inlier / exposure 
+            
         else:
-            batch_size = images[0].size(0)
-            images1, images2 = images[0].to(device), images[1].to(device)
-        labels = labels.to(device)
+            try:
+                exposure_images, _ = next(train_exposure_loader_iterator)
+            except StopIteration:
+                train_exposure_loader_iterator = iter(train_exposure_loader)
+                exposure_images, _ = next(train_exposure_loader_iterator)
         
-        images1 = torch.cat([images1, exposure_images1])
-        images2 = torch.cat([images2, exposure_images2])
-        #images1 = torch.cat([P.shift_trans(images1, k) for k in range(P.K_shift)])
-        #images2 = torch.cat([P.shift_trans(images2, k) for k in range(P.K_shift)])
-        #shift_labels = torch.cat([torch.ones_like(labels) * k for k in range(P.K_shift)], 0)  # B -> 4B
+            ### SimCLR loss ###
+            if P.dataset != 'imagenet':
+                batch_size = images.size(0)
+                images = images.to(device)
+                exposure_images = exposure_images.to(device)
+                if P.cl_no_hflip:
+                    images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
+                else:
+                    images1, images2 = hflip(images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
+                exposure_images1, exposure_images2 = hflip(exposure_images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
+            else:
+                batch_size = images[0].size(0)
+                images1, images2 = images[0].to(device), images[1].to(device)
+            
+            images1 = torch.cat([images1, exposure_images1])
+            images2 = torch.cat([images2, exposure_images2])
+            
+            images_pair = torch.cat([images1, images2], dim=0)  # 8B
+            images_pair = simclr_aug(images_pair)  # transform
+        
+            features = model.penultimate(images_pair)        
+
+        labels = labels.to(device)
         shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
         shift_labels = shift_labels.repeat(2)
         
-        images_pair = torch.cat([images1, images2], dim=0)  # 8B
-        images_pair = simclr_aug(images_pair)  # transform
-
-        _, outputs_aux = model(images_pair, simclr=True, penultimate=False, shift=True)
-
-        simclr = normalize(outputs_aux['simclr'])  # normalize
+        simclr = normalize(model.simclr_layer(features))  # normalize
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
         loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
 
-        loss_shift = criterion(outputs_aux['shift'], shift_labels)
+        loss_shift = criterion(model.shift_cls_layer(features), shift_labels)
 
         ### total loss ###
         loss = loss_sim + loss_shift
