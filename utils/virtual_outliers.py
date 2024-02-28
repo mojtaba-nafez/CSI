@@ -23,8 +23,14 @@ def create_faiss_index(embeddings, use_gpu=True):
 
 def find_boundary_points(normalized_embeddings, K, number_of_boundary_points):
     index = create_faiss_index(normalized_embeddings.cpu().numpy())  # Ensure embeddings are on CPU for FAISS
-    _, I = index.search(normalized_embeddings.cpu().numpy(), K + 1)  # Move tensor to CPU before conversion
-    boundary_indices = np.unique(I[:, -1])[:number_of_boundary_points]  # Last column, unique indices
+    D, I = index.search(normalized_embeddings.cpu().numpy(), K + 1)  # D for distances, I for indices
+
+    # Sort by the Kth nearest distance in descending order and get the corresponding indices
+    sorted_indices = np.argsort(-D[:, K])[:number_of_boundary_points]  # Use -D[:, K] for descending sort
+
+    # Extract the indices of the points with the highest Kth neighbor distance
+    boundary_indices = I[sorted_indices, K]
+
     return boundary_indices
 
 def generate_candidate_outliers(boundary_embeddings_unnorm, number_of_candidates, std_dev):
