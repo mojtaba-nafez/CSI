@@ -72,8 +72,10 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             except StopIteration:
                 virtual_outliers_loader_iterator = iter(virtual_outliers_loader)
                 exposure_embeddings = next(virtual_outliers_loader_iterator)
-                
-            exposure_embeddings = torch.tensor(exposure_embeddings).to(device)
+            
+            print(len(exposure_embeddings))
+            print(exposure_embeddings)
+            exposure_embeddings = exposure_embeddings.to(device)
             
             batch_size = images.size(0)
             images = images.to(device)
