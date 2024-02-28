@@ -86,10 +86,10 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
             
         else:
             try:
-                exposure_images, _ = next(train_exposure_loader_iterator)
+                exposure_images = next(train_exposure_loader_iterator)
             except StopIteration:
                 train_exposure_loader_iterator = iter(train_exposure_loader)
-                exposure_images, _ = next(train_exposure_loader_iterator)
+                exposure_images = next(train_exposure_loader_iterator)
         
             ### SimCLR loss ###
             if P.dataset != 'imagenet':
