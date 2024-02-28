@@ -1,3 +1,4 @@
+from cv2 import normalize
 import numpy as np
 import torch
 import faiss
@@ -39,15 +40,17 @@ def generate_candidate_outliers(boundary_embeddings_unnorm, number_of_candidates
     candidates = boundary_embeddings_unnorm.unsqueeze(1).repeat(1, number_of_candidates, 1).view(-1, d) + noise
     return candidates
 
-def select_best_outliers(all_candidates, index, num_boundary_points, num_candidates_per_boundary, num_outliers_needed):
-    D, _ = index.search(all_candidates.cpu().numpy(), 1)
-    distances = torch.from_numpy(np.sqrt(D)).squeeze()
+
+def select_best_outliers(all_candidates, index, num_boundary_points, num_candidates_per_boundary, num_outliers_needed, K):
+    # Search for the Kth nearest neighbor in the index for each candidate
+    D, _ = index.search(normalize_embeddings(all_candidates).cpu().numpy(), K + 1)
+    distances_to_kth_neighbor = torch.from_numpy(np.sqrt(D[:, K])).squeeze()
 
     # Reshape distances to group by boundary point
-    distances = distances.view(num_boundary_points, num_candidates_per_boundary)
+    distances_to_kth_neighbor = distances_to_kth_neighbor.view(num_boundary_points, num_candidates_per_boundary)
 
-    # Select the best (furthest) candidates from each group
-    _, selected_indices = torch.topk(distances, num_outliers_needed // num_boundary_points, largest=True)
+    # Select the best (furthest) candidates from each group based on distance to the Kth nearest neighbor
+    _, selected_indices = torch.topk(distances_to_kth_neighbor, num_outliers_needed // num_boundary_points, largest=True)
 
     # Flatten the indices to get the global index in the all_candidates tensor
     global_indices = (torch.arange(num_boundary_points).unsqueeze(1) * num_candidates_per_boundary + selected_indices).view(-1)
@@ -61,6 +64,6 @@ def synthesize_outliers(inlier_embeddings, num_outliers_needed, K, num_boundary_
     all_candidates = generate_candidate_outliers(boundary_embeddings_unnorm, num_candidate_outliers, std_dev)
     index = create_faiss_index(normalized_embeddings)
     
-    selected_outliers = select_best_outliers(all_candidates, index, num_boundary_points, num_candidate_outliers, num_outliers_needed)
+    selected_outliers = select_best_outliers(all_candidates, index, num_boundary_points, num_candidate_outliers, num_outliers_needed, K)
 
     return selected_outliers
