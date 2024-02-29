@@ -152,7 +152,7 @@ def parse_args(default=False):
                         default=200, type=int)
     parser.add_argument('--std_dev', help='Standard deviation for the Gaussian noise in virtual outlier synthesis',
                         default=1.0, type=float)
-
+    parser.add_argument('--pdf_threshold', type=float, default=0.1)
 
     if default:
         return parser.parse_args('')  # empty string

@@ -5,7 +5,7 @@ import torch.optim
 import models.transform_layers as TL
 from training.contrastive_loss import get_similarity_matrix, NT_xent
 from utils.utils import AverageMeter, normalize
-from utils.virtual_outliers import create_faiss_index, find_boundary_points, generate_candidate_outliers, select_best_outliers, synthesize_outliers
+from utils.virtual_outliers import create_faiss_index, find_boundary_points, generate_candidate_outliers, select_best_outliers, synthesize_outliers, synthesize_outliers_with_gaussian
 from torch.utils.data import DataLoader, TensorDataset
 from utils.utils import AverageMeter, normalize
 
@@ -47,7 +47,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
                 features = model.penultimate(images).detach()
                 all_embeddings.append(features.detach().cpu())
         all_embeddings = torch.cat(all_embeddings, dim=0)
-        virtual_outliers_embeddings = synthesize_outliers(all_embeddings.to(device), all_embeddings.shape[0], P.K, P.num_boundary_points, P.num_candidate_outliers, P.std_dev).detach()
+        # virtual_outliers_embeddings = synthesize_outliers(all_embeddings.to(device), all_embeddings.shape[0], P.K, P.num_boundary_points, P.num_candidate_outliers, P.std_dev).detach()
+        virtual_outliers_embeddings = synthesize_outliers_with_gaussian(all_embeddings.to(device), all_embeddings.shape[0], P.pdf_threshold)
         virtual_outliers_loader = DataLoader(TensorDataset(virtual_outliers_embeddings), batch_size=P.batch_size, shuffle=True)
         virtual_outliers_loader_iterator = iter(virtual_outliers_loader)
         model.train()
