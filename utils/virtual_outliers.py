@@ -76,7 +76,7 @@ def synthesize_outliers(inlier_embeddings, num_outliers_needed, K, num_boundary_
 import torch
 from torch.distributions.multivariate_normal import MultivariateNormal
 
-def calculate_epsilon_from_samples(mean, covariance, t, num_samples=200):
+def calculate_epsilon_from_samples(mean, covariance, t, num_samples=100):
     mvn = MultivariateNormal(mean, covariance)
     samples = mvn.sample((num_samples,))
     distances = (samples - mean).unsqueeze(1).matmul(covariance.inverse().unsqueeze(0)).matmul((samples - mean).unsqueeze(-1)).squeeze()
@@ -102,7 +102,6 @@ def synthesize_outliers_with_gaussian(inlier_embeddings, num_outliers_needed, t,
     
     # Continue sampling until we have enough outliers
     while len(selected_outliers) < num_outliers_needed:
-        print(len(selected_outliers))
         # Sample batch from Gaussian
         samples = mvn.sample((batch_size,))
         
