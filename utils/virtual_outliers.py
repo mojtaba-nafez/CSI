@@ -68,7 +68,12 @@ def synthesize_outliers(inlier_embeddings, num_outliers_needed, K, num_boundary_
 
     return selected_outliers
 
-mport torch
+
+#####################################
+## Generate outliers with GMM Method
+#####################################
+
+import torch
 import numpy as np
 from torch.distributions.multivariate_normal import MultivariateNormal
 
@@ -112,3 +117,89 @@ def synthesize_outliers_with_gaussian(inlier_embeddings, num_outliers_needed, th
         selected_outliers = [selected_outliers[i] for i in selected_indices]
 
     return torch.stack(selected_outliers)
+
+
+#############################################
+## Generate outliers with Window-Based Method
+#############################################
+
+def generate_outliers_with_exact_magnitude(embedding, K, magnitude):
+    d = embedding.shape[1]
+    noise = torch.randn((K, d), device=embedding.device)
+    noise_norms = torch.norm(noise, p=2, dim=1, keepdim=True)
+    normalized_noise = noise / noise_norms
+    scaled_noise = normalized_noise * magnitude
+    return scaled_noise
+
+def create_faiss_index_window(embeddings, use_gpu=True):
+    d = embeddings.shape[1]
+    index = faiss.IndexFlatL2(d)
+    if use_gpu:
+        faiss_res = faiss.StandardGpuResources()
+        index = faiss.index_cpu_to_gpu(faiss_res, 0, index)
+    index.add(embeddings.cpu().numpy())
+    return index
+
+def validate_and_find_magnitude(embedding, embeddings, K, initial_magnitude, threshold=0.5, tau=2, use_gpu=True):
+    magnitude = initial_magnitude
+    if len(embedding.shape) == 1:
+        embedding = embedding.unsqueeze(0)
+        
+    normalized_embedding = normalize_embeddings(embedding)
+
+    # Normalize all embeddings to ensure a fair comparison
+    all_embeddings_normalized = normalize_embeddings(embeddings)
+    candidates_init = generate_outliers_with_exact_magnitude(embedding, K, 1)
+
+    # Create a FAISS index for all embeddings including the original dataset
+    index = create_faiss_index_window(all_embeddings_normalized, use_gpu=use_gpu)
+
+    while magnitude > 0.01:
+        # Generate outliers for the specific embedding
+        candidates = embedding + candidates_init * magnitude
+        # Normalize the candidates to ensure a fair comparison
+        candidates_normalized = normalize_embeddings(candidates)
+        # Add these candidates to the index
+        temp_index = faiss.IndexFlatL2(all_embeddings_normalized.shape[1])
+        if use_gpu:
+            faiss_res = faiss.StandardGpuResources()  # Use GPU resources if available
+            temp_index = faiss.index_cpu_to_gpu(faiss_res, 0, temp_index)
+        temp_index.add(np.concatenate([all_embeddings_normalized.cpu().numpy(), candidates_normalized.cpu().numpy()]))
+
+        # Search for the original embedding's nearest neighbors among all points including the generated outliers
+        D, I = temp_index.search(normalized_embedding.cpu().numpy(), K + 1)
+
+        # Calculate the ratio of neighbors that are generated outliers
+        # Count as outliers only those neighbors that are not part of the original dataset
+        num_outliers = sum([1 for i in I[0] if i >= len(embeddings)])
+        ratio = num_outliers / K
+
+        if ratio >= threshold:
+            return magnitude
+        magnitude /= tau
+
+    return magnitude
+
+def find_magnitudes_for_all_embeddings(embeddings, K=10, initial_magnitude=1.0, threshold=0.5, use_gpu=True):
+    magnitudes = []
+    for i, embedding in enumerate(embeddings):
+        magnitude = validate_and_find_magnitude(embedding, embeddings, K, initial_magnitude, threshold, use_gpu=use_gpu)
+        magnitudes.append(magnitude)
+        print(f"Embedding {i+1}/{embeddings.shape[0]}: Magnitude = {magnitude}")
+    return magnitudes
+
+
+def synthesize_outliers_window(inlier_embeddings, num_outliers_needed, K, num_boundary_points, num_candidate_outliers, std_dev, initial_magnitude, threshold):
+    normalized_embeddings = normalize_embeddings(inlier_embeddings)
+    magnitudes = find_magnitudes_for_all_embeddings(inlier_embeddings, K, initial_magnitude, threshold)
+    sorted_indices = np.argsort(magnitudes)[::-1]  # Sort magnitudes in descending order and get indices
+    boundary_indices = sorted_indices[:num_boundary_points] 
+    boundary_indices = torch.tensor(boundary_indices)
+    boundary_embeddings_unnorm = inlier_embeddings[boundary_indices]
+    
+    all_candidates = generate_candidate_outliers(boundary_embeddings_unnorm, num_candidate_outliers, std_dev)
+    index = create_faiss_index(normalized_embeddings)
+    
+    selected_outliers = select_best_outliers(all_candidates, index, num_boundary_points, num_candidate_outliers, num_outliers_needed, K)
+
+    return selected_outliers
