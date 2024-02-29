@@ -67,3 +67,48 @@ def synthesize_outliers(inlier_embeddings, num_outliers_needed, K, num_boundary_
     selected_outliers = select_best_outliers(all_candidates, index, num_boundary_points, num_candidate_outliers, num_outliers_needed, K)
 
     return selected_outliers
+
+mport torch
+import numpy as np
+from torch.distributions.multivariate_normal import MultivariateNormal
+
+def synthesize_outliers_with_gaussian(inlier_embeddings, num_outliers_needed, threshold, batch_size=1000):
+    # Move to GPU for acceleration
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    inlier_embeddings = torch.tensor(inlier_embeddings).to(device)
+    
+    # Estimate Gaussian parameters: mean and covariance
+    mean = torch.mean(inlier_embeddings, dim=0)
+    covariance = torch.cov(inlier_embeddings.t())
+
+    # Define Multivariate Normal distribution
+    mvn = MultivariateNormal(mean, covariance)
+
+    selected_outliers = []
+    pdfs = []
+    
+    # Continue sampling until we have enough outliers
+    while len(selected_outliers) < num_outliers_needed:
+        # Sample batch from Gaussian
+        samples = mvn.sample((batch_size,))
+        
+        # Compute PDF for each sample
+        sample_pdfs = torch.exp(mvn.log_prob(samples))
+        
+        # Filter samples with PDF lower than threshold
+        for i, pdf in enumerate(sample_pdfs):
+            if pdf < threshold:
+                selected_outliers.append(samples[i])
+                pdfs.append(pdf)
+                
+            # Stop if we've collected enough
+            if len(selected_outliers) >= num_outliers_needed:
+                break
+    
+    # If more outliers than needed, select ones with minimum PDF
+    if len(selected_outliers) > num_outliers_needed:
+        # Sort by PDF and select the ones with lowest values
+        selected_indices = np.argsort(pdfs)[:num_outliers_needed]
+        selected_outliers = [selected_outliers[i] for i in selected_indices]
+
+    return torch.stack(selected_outliers)
