@@ -74,48 +74,50 @@ def synthesize_outliers(inlier_embeddings, num_outliers_needed, K, num_boundary_
 #####################################
 
 import torch
-import numpy as np
 from torch.distributions.multivariate_normal import MultivariateNormal
 
-def synthesize_outliers_with_gaussian(inlier_embeddings, num_outliers_needed, threshold, batch_size=1000):
-    # Move to GPU for acceleration
+def calculate_epsilon_from_samples(mean, covariance, t, num_samples=1000):
+    mvn = MultivariateNormal(mean, covariance)
+    samples = mvn.sample((num_samples,))
+    distances = (samples - mean).unsqueeze(1).matmul(covariance.inverse().unsqueeze(0)).matmul((samples - mean).unsqueeze(-1)).squeeze()
+    sorted_distances, _ = torch.sort(distances)
+    epsilon = sorted_distances[t - 1]  # t-th smallest value, assuming t starts from 1
+    return epsilon.item()  # Return as a Python float for later comparison
+
+def synthesize_outliers_with_gaussian(inlier_embeddings, num_outliers_needed, t, batch_size=10000):
+    # Move to GPU for acceleration, if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    inlier_embeddings = torch.tensor(inlier_embeddings).to(device)
+    inlier_embeddings = torch.tensor(inlier_embeddings, dtype=torch.float).to(device)
     
     # Estimate Gaussian parameters: mean and covariance
     mean = torch.mean(inlier_embeddings, dim=0)
-    covariance = torch.cov(inlier_embeddings.t())
+    covariance = torch.cov(inlier_embeddings.t()) + torch.eye(inlier_embeddings.shape[1], device=device) * 1e-6
+    
+    # Calculate epsilon based on the t-th smallest likelihood from the sample
+    epsilon = calculate_epsilon_from_samples(mean, covariance, t)
+    print(epsilon)
 
-    # Define Multivariate Normal distribution
     mvn = MultivariateNormal(mean, covariance)
-
     selected_outliers = []
-    pdfs = []
     
     # Continue sampling until we have enough outliers
     while len(selected_outliers) < num_outliers_needed:
+        print(len(selected_outliers))
         # Sample batch from Gaussian
         samples = mvn.sample((batch_size,))
         
-        # Compute PDF for each sample
-        sample_pdfs = torch.exp(mvn.log_prob(samples))
+        # Compute the Mahalanobis distance for each sample
+        mahalanobis_distances = (samples - mean).unsqueeze(1).matmul(covariance.inverse().unsqueeze(0)).matmul((samples - mean).unsqueeze(-1)).squeeze()
         
-        # Filter samples with PDF lower than threshold
-        for i, pdf in enumerate(sample_pdfs):
-            if pdf < threshold:
+        # Filter samples based on the calculated epsilon
+        for i, distance in enumerate(mahalanobis_distances):
+            if distance < epsilon:
                 selected_outliers.append(samples[i])
-                pdfs.append(pdf)
                 
             # Stop if we've collected enough
             if len(selected_outliers) >= num_outliers_needed:
                 break
     
-    # If more outliers than needed, select ones with minimum PDF
-    if len(selected_outliers) > num_outliers_needed:
-        # Sort by PDF and select the ones with lowest values
-        selected_indices = np.argsort(pdfs)[:num_outliers_needed]
-        selected_outliers = [selected_outliers[i] for i in selected_indices]
-
     return torch.stack(selected_outliers)
 
 

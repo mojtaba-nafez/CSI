@@ -48,7 +48,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
                 all_embeddings.append(features.detach().cpu())
         all_embeddings = torch.cat(all_embeddings, dim=0)
         # virtual_outliers_embeddings = synthesize_outliers(all_embeddings.to(device), all_embeddings.shape[0], P.K, P.num_boundary_points, P.num_candidate_outliers, P.std_dev).detach()
-        virtual_outliers_embeddings = synthesize_outliers_with_gaussian(all_embeddings.to(device), all_embeddings.shape[0], P.pdf_threshold)
+        virtual_outliers_embeddings = synthesize_outliers_with_gaussian(all_embeddings.to(device), all_embeddings.shape[0], 1)
         virtual_outliers_loader = DataLoader(TensorDataset(virtual_outliers_embeddings), batch_size=P.batch_size, shuffle=True)
         virtual_outliers_loader_iterator = iter(virtual_outliers_loader)
         model.train()
