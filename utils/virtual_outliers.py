@@ -84,7 +84,7 @@ def calculate_epsilon_from_samples(mean, covariance, t, num_samples=1000):
     epsilon = sorted_distances[t - 1]  # t-th smallest value, assuming t starts from 1
     return epsilon.item()  # Return as a Python float for later comparison
 
-def synthesize_outliers_with_gaussian(inlier_embeddings, num_outliers_needed, t, batch_size=10000):
+def synthesize_outliers_with_gaussian(inlier_embeddings, num_outliers_needed, t, batch_size=1000):
     # Move to GPU for acceleration, if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     inlier_embeddings = torch.tensor(inlier_embeddings, dtype=torch.float).to(device)
