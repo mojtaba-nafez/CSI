@@ -140,9 +140,9 @@ def mvtecad_dataset(P, category, root = "./mvtec_anomaly_detection", image_size=
     test_ds_mvtech = MVTecDataset(root=root, train=False, category=categories[category], transform=test_transform, count=-1)
     train_ds_mvtech_normal = MVTecDataset(root=root, train=True, category=categories[category], transform=train_transform, count=P.main_count)
     
-    print("test_ds_mvtech shapes: ", test_ds_mvtech[0][0].shape)
-    print("train_ds_mvtech_normal shapes: ", train_ds_mvtech_normal[0][0].shape)
-    
+    # print("test_ds_mvtech shapes: ", test_ds_mvtech[0][0].shape)
+    # print("train_ds_mvtech_normal shapes: ", train_ds_mvtech_normal[0][0].shape)
+
     return  train_ds_mvtech_normal, test_ds_mvtech, image_size, n_classes
         
     
@@ -183,7 +183,10 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
     if (fake_count+tiny_count+cutpast_count)!=count:
         tiny_count += (count - (cutpast_count+fake_count+tiny_count))
     print("fake_count, tiny_count, cutpast_count", fake_count, tiny_count, cutpast_count)
-    if P.dataset == "MVTecAD":
+    if  P.exposure_dataset == "food":
+        food_exposure = datasets.Food101(DATA_PATH, split='train', download=True, transform=tiny_transform)
+        train_loader = DataLoader(food_exposure, batch_size=batch_size, shuffle=True)
+    elif P.dataset == "MVTecAD":
         fake_transform = transforms.Compose([
             transforms.Resize((256,256)),
             transforms.CenterCrop((image_size[0], image_size[1])),
@@ -449,10 +452,12 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, imagenet_exposure])
         
         if len(cutpast_train_set) > 0:
-            print("number of cutpast data:", len(cutpast_train_set), 'shape:', cutpast_train_set[0][0].shape)
-        print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
+            pass
+            # print("number of cutpast data:", len(cutpast_train_set), 'shape:', cutpast_train_set[0][0].shape)
+        # print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
         print("number of exposure:", len(exposureset))
         train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
+
     return train_loader
 
 
@@ -1027,8 +1032,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_dir = os.path.join(IMAGENET_PATH, 'one_class_test')
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
-        print("train_set shapes: ", train_set[0][0].shape)
-        print("test_set shapes: ", test_set[0][0].shape)
 
     elif dataset == 'stanford_dogs':
         assert test_only and image_size is not None
