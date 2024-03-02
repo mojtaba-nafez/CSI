@@ -458,7 +458,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             # print("number of cutpast data:", len(cutpast_train_set), 'shape:', cutpast_train_set[0][0].shape)
         # print("number of tiny data:", len(imagenet_exposure), 'shape:', imagenet_exposure[0][0].shape)
         print("number of exposure:", len(exposureset))
-        train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
+        train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True, drop_last=True)
 
     return train_loader
 
