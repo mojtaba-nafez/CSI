@@ -187,7 +187,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
         print(f"exposure food")
         food_exposure = datasets.Food101(DATA_PATH, split='train', download=True, transform=tiny_transform)
         train_loader = DataLoader(food_exposure, batch_size=batch_size, shuffle=True)
-        print("food_exposure[0][0].shape: {}".format(food_exposure[0][0].shape, ))
+        print("food_exposure[0][0].shape: {}".format(next(iter(train_loader))[0].shape))
     elif P.dataset == "MVTecAD":
         fake_transform = transforms.Compose([
             transforms.Resize((256,256)),
@@ -1027,7 +1027,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_dir = os.path.join(DATA_PATH, 'Imagenet_fix')
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
-    elif dataset == 'imagenet':
+    elif dataset == 'imagenet30':
         image_size = (224, 224, 3)
         n_classes = 30
         train_dir = os.path.join(IMAGENET_PATH, 'one_class_train')
