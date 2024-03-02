@@ -187,6 +187,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
         print(f"exposure food")
         food_exposure = datasets.Food101(DATA_PATH, split='train', download=True, transform=tiny_transform)
         train_loader = DataLoader(food_exposure, batch_size=batch_size, shuffle=True)
+        print("food_exposure[0][0].shape: {}".format(food_exposure[0][0].shape, ))
     elif P.dataset == "MVTecAD":
         fake_transform = transforms.Compose([
             transforms.Resize((256,256)),
