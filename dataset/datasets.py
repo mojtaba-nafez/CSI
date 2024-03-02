@@ -183,7 +183,8 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
     if (fake_count+tiny_count+cutpast_count)!=count:
         tiny_count += (count - (cutpast_count+fake_count+tiny_count))
     print("fake_count, tiny_count, cutpast_count", fake_count, tiny_count, cutpast_count)
-    if  P.exposure_dataset == "food":
+    if P.exposure_dataset == "food":
+        print(f"exposure food")
         food_exposure = datasets.Food101(DATA_PATH, split='train', download=True, transform=tiny_transform)
         train_loader = DataLoader(food_exposure, batch_size=batch_size, shuffle=True)
     elif P.dataset == "MVTecAD":
