@@ -27,7 +27,7 @@ from medmnist import INFO, Evaluator
 DATA_PATH = './data/'
 IMAGENET_PATH = './data/ImageNet'
 
-
+IMAGENET30_SUPERCLASS = list(range(30))
 CIFAR10_SUPERCLASS = list(range(10))  # one class
 IMAGENET_SUPERCLASS = list(range(30))  # one class
 TUMOR_BRAIN_SUPERCLASS = list(range(2))
@@ -1093,6 +1093,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
 
 
 def get_superclass_list(dataset):
+    if dataset == 'imagenet30':
+        return IMAGENET30_SUPERCLASS
     if dataset=='svhn-10' or  dataset=='svhn-10-corruption':
         return SVHN_SUPERCLASS
     elif dataset == 'cifar10-corruption':
