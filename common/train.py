@@ -48,8 +48,8 @@ else:
 P.ood_layer = P.ood_layer[0]
 
 ### Initialize dataset ###
-if P.image_size==32:
-    image_size_ = (32, 32, 3)
+if P.image_size==32 or P.image_size == 64:
+    image_size_ = (P.image_size, P.image_size, 3)
 else:
     image_size_ = (224, 224, 3)
 
