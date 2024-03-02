@@ -80,6 +80,7 @@ print("number of normal train set:", len(train_set))
 kwargs = {'pin_memory': False, 'num_workers': 4}
 
 train_loader = DataLoader(train_set, shuffle=True, batch_size=P.batch_size, **kwargs)
+print('next(iter(train_loader))[0][0].shape: {}'.format(next(iter(train_loader))[0][0].shape))
 test_loader = DataLoader(test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
 
 print("len train_set", len(train_set))

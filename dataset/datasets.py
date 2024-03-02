@@ -1028,7 +1028,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
     elif dataset == 'imagenet30':
-        image_size = (224, 224, 3)
+        image_size = (64, 64, 3)
         n_classes = 30
         train_dir = os.path.join(IMAGENET_PATH, 'one_class_train')
         test_dir = os.path.join(IMAGENET_PATH, 'one_class_test')
