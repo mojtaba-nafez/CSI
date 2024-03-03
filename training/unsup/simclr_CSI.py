@@ -47,7 +47,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
 
         data_time.update(time.time() - check)
         check = time.time()
-
+        if len(exposure_images) != len(images):
+            continue
         ### SimCLR loss ###
         if P.dataset != 'imagenet':
             batch_size = images.size(0)
