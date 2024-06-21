@@ -37,7 +37,6 @@ MVTecAD_SUPERCLASS = list(range(2))
 HEAD_CT_SUPERCLASS = list(range(2))
 ART_BENCH_SUPERCLASS = list(range(10))
 MVTEC_HV_SUPERCLASS = list(range(2))
-breastmnist_SUPERCLASS = list(range(2))
 CIFAR100_SUPERCLASS = list(range(20))
 UCSD_SUPERCLASS = list(range(2))
 CIFAR10_CORRUPTION_SUPERCLASS = list(range(10))
@@ -149,7 +148,7 @@ def mvtecad_dataset(P, category, root = "./mvtec_anomaly_detection", image_size=
 def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                             base_path = './tiny-imagenet-200', fake_root="./fake_mvtecad", root="./mvtec_anomaly_detection" ,count=-1, cls_list=None, labels=None):
     categories = ['toothbrush', 'zipper', 'transistor', 'tile', 'grid', 'wood', 'pill', 'bottle', 'capsule', 'metal_nut', 'hazelnut', 'screw', 'carpet', 'leather', 'cable']
-    if P.dataset=='high-variational-brain-tumor' or P.dataset=='head-ct' or P.dataset=='breastmnist' or  P.dataset=='mnist' or P.dataset=='fashion-mnist':
+    if P.dataset=='high-variational-brain-tumor' or P.dataset=='head-ct' or  P.dataset=='mnist' or P.dataset=='fashion-mnist':
         tiny_transform = transforms.Compose([
                 transforms.Resize((image_size[0], image_size[1])),
                 transforms.Grayscale(num_output_channels=1),
@@ -243,7 +242,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
         print("number of exposure:", len(exposureset))
         train_loader = DataLoader(exposureset, batch_size = batch_size, shuffle=True)
     else:
-        if P.dataset=='breastmnist' or P.dataset=='mnist' or P.dataset=='fashion-mnist':
+        if P.dataset=='mnist' or P.dataset=='fashion-mnist':
             train_transform_cutpasted = transforms.Compose([
                 transforms.Resize((image_size[0], image_size[1])),
                 transforms.Grayscale(num_output_channels=1),
@@ -473,35 +472,6 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
     return train_loader
 
 
-def get_breastmnist_test(normal_class_indx, path, transform):
-    data_flag = 'breastmnist'
-    BATCH_SIZE = 64
-    download = True
-    info = INFO[data_flag]
-    task = info['task']
-    n_channels = info['n_channels']
-    n_classes = len(info['label'])
-    DataClass = getattr(medmnist, info['python_class'])
-
-    # load the data
-    test_dataset = DataClass(split='test', transform=transform, download=download)
-    test_dataset.labels = test_dataset.labels.squeeze()
-    return test_dataset
-    
-
-def get_breastmnist_train(anomaly_class_indx, path, transform):
-    data_flag = 'breastmnist'
-    download = True
-    info = INFO[data_flag]
-    task = info['task']
-    n_channels = info['n_channels']
-    n_classes = len(info['label'])
-    DataClass = getattr(medmnist, info['python_class'])
-    train_dataset = DataClass(split='train', transform=transform, download=download)
-    train_dataset.labels = train_dataset.labels.squeeze()
-    return train_dataset
-
-
 def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=False, eval=False, train_transform_cutpasted=None, labels=None):
     if dataset in ['imagenet', 'cub', 'stanford_dogs', 'flowers102',
                    'places365', 'food_101', 'caltech_256', 'dtd', 'pets']:
@@ -653,20 +623,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = HEAD_CT_DATASET(image_path=test_image, labels=test_label, transform=test_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
-    elif dataset == 'breastmnist':
-        n_classes = 2
-        transform = transforms.Compose([
-            transforms.Resize((image_size[0], image_size[1])),
-            transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-        ])
-        test_set = get_breastmnist_test(normal_class_indx=P.one_class_idx, path='./data/', transform=transform)
-        if train_transform_cutpasted:
-            train_set = get_breastmnist_train(anomaly_class_indx=P.one_class_idx, path='./data/', transform=train_transform_cutpasted)
-        else:
-            train_set = get_breastmnist_train(anomaly_class_indx=P.one_class_idx, path='./data/', transform=transform)
-        print("train_set shapes: ", train_set[0][0].shape)
-        print("test_set shapes: ", test_set[0][0].shape)
+   
     elif dataset == 'WBC':
         n_classes = 2
         data_path_good_train ="./CELL_MIR"
@@ -1329,8 +1286,6 @@ def get_superclass_list(dataset):
         return DTD_SUPERCLASS
     elif dataset == "WBC":
         return WBC_SUPERCLASS
-    elif dataset == 'breastmnist':
-        return breastmnist_SUPERCLASS
     elif dataset == 'MVTecAD':
         return MVTecAD_SUPERCLASS
     elif dataset == 'ArtBench':
