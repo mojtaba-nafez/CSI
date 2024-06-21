@@ -149,7 +149,7 @@ def mvtecad_dataset(P, category, root = "./mvtec_anomaly_detection", image_size=
 def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                             base_path = './tiny-imagenet-200', fake_root="./fake_mvtecad", root="./mvtec_anomaly_detection" ,count=-1, cls_list=None, labels=None):
     categories = ['toothbrush', 'zipper', 'transistor', 'tile', 'grid', 'wood', 'pill', 'bottle', 'capsule', 'metal_nut', 'hazelnut', 'screw', 'carpet', 'leather', 'cable']
-    if P.dataset=='high-variational-brain-tumor' or P.dataset=='head-ct' or P.dataset=='breastmnist' or  P.dataset=='mnist' or P.dataset=='fashion-mnist' or P.dataset=='Tomor_Detection':
+    if P.dataset=='high-variational-brain-tumor' or P.dataset=='head-ct' or P.dataset=='breastmnist' or  P.dataset=='mnist' or P.dataset=='fashion-mnist':
         tiny_transform = transforms.Compose([
                 transforms.Resize((image_size[0], image_size[1])),
                 transforms.Grayscale(num_output_channels=1),
@@ -258,14 +258,6 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
                 transforms.Grayscale(num_output_channels=3),
                 transforms.RandomRotation((90, 270)),
                 High_CutPasteUnion(),
-            ])
-        elif P.dataset=='Tomor_Detection':
-            train_transform_cutpasted = transforms.Compose([
-                transforms.Resize((image_size[0], image_size[1])),
-                transforms.Grayscale(num_output_channels=1),
-                transforms.Grayscale(num_output_channels=3),
-                transforms.RandomRotation((90, 270)),
-                CutPasteNormal(transform = transforms.Compose([transforms.ToTensor(),])),
             ])
         elif P.dataset=='dtd' or P.dataset=='cub-birds':
             train_transform_cutpasted = transforms.Compose([
@@ -447,19 +439,7 @@ def get_exposure_dataloader(P, batch_size = 64, image_size=(224, 224, 3),
             if len(train_ds_fmnist_fake) > 0:
                 print("number of fake data:", len(train_ds_fmnist_fake), "shape:", train_ds_fmnist_fake[0][0].shape)
             exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_fmnist_fake, imagenet_exposure])
-        elif P.dataset=="Tomor_Detection":
-            fake_transform = transforms.Compose([
-                transforms.Resize((image_size[0],image_size[1])),
-                transforms.Grayscale(num_output_channels=1),
-                transforms.Grayscale(num_output_channels=3),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor()
-            ])            
-            train_ds_tumor_detection_fake = AdaptiveExposure(root='./AdaptiveExposure/', transform=fake_transform, count=fake_count)
-            if len(train_ds_tumor_detection_fake) > 0:
-                print("number of fake data:", len(train_ds_tumor_detection_fake), "shape:", train_ds_tumor_detection_fake[0][0].shape)
-            exposureset = torch.utils.data.ConcatDataset([cutpast_train_set, train_ds_tumor_detection_fake, imagenet_exposure])
-        
+       
         elif P.dataset=="head-ct":
             fake_transform = transforms.Compose([
                 transforms.Resize((image_size[0],image_size[1])),
@@ -575,19 +555,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = UCSDDataset(root="./", is_normal=False, transform=transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
-    elif dataset == 'Tomor_Detection':
-        n_classes = 2
-        transform = transforms.Compose([
-            transforms.Resize((image_size[0], image_size[1])),
-            transforms.ToTensor(),
-        ])
-        if train_transform_cutpasted:
-            train_set = TumorDetection(transform=train_transform_cutpasted, train=True)
-        else:
-            train_set = TumorDetection(transform=transform, train=True)
-        test_set = TumorDetection(transform=transform, train=False)
-        print("train_set shapes: ", train_set[0][0].shape)
-        print("test_set shapes: ", test_set[0][0].shape)
+    
     elif dataset == 'cifar10-versus-100':
         n_classes = 2
         train_transform = transforms.Compose([
@@ -1042,107 +1010,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
     
-    elif dataset == 'high-variational-brain-tumor':
-        if eval:
-            head_ct_cnt = -1
-            tumor_detection_cnt = None
-            brain_mri_cnt = -1
-        else:
-            head_ct_cnt = 2000
-            tumor_detection_cnt = 2000
-            brain_mri_cnt = 2000
-        
-        n_classes = 2
-        train_transform = transforms.Compose([
-            transforms.Resize((image_size[0], image_size[1])),
-            # transforms.CenterCrop(224),
-            # transforms.Grayscale(num_output_channels=1),
-            # transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-        ])
-        test_transform = transforms.Compose([
-            transforms.Resize((image_size[0], image_size[1])),
-            # transforms.CenterCrop(224),
-            # transforms.Grayscale(num_output_channels=1),
-            # transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-        ])
-        import pandas as pd
-        labels_df = pd.read_csv('./head-ct/labels.csv')
-        labels_ = np.array(labels_df[' hemorrhage'].tolist())
-        images = np.array(sorted(glob('./head-ct/head_ct/head_ct/*.png')))
-        np.random.seed  (1225)
-        indicies = np.random.permutation(100)
-        train_true_idx, test_true_idx = indicies[:75]+ 100, indicies[75:]+ 100
-        train_false_idx, test_false_idx = indicies[:75], indicies[75:]
-        train_idx, test_idx = train_true_idx, np.concatenate((test_true_idx, test_false_idx, train_false_idx))
-
-        train_image, train_label = images[train_idx], labels_[train_idx]
-        test_image, test_label = images[test_idx], labels_[test_idx]
-
-        print("train_image.shape, test_image.shape: ", train_image.shape, test_image.shape)
-        print("train_label.shape, test_label.shape: ", train_label.shape, test_label.shape)
-        if train_transform_cutpasted:
-            train_transform_cutpasted = transforms.Compose([
-                        transforms.Resize((image_size[0], image_size[1])),
-                        transforms.RandomApply(torch.nn.ModuleList([
-                            transforms.RandomRotation((90, 270)),
-                        ]), p=0.3),
-                        High_CutPasteUnion(),
-                    ])
-            head_ct_train_set = HEAD_CT_DATASET(image_path=list(train_image), labels=list(train_label), transform=train_transform_cutpasted, count=head_ct_cnt)
-        else:
-            head_ct_train_set = HEAD_CT_DATASET(image_path=list(train_image), labels=list(train_label), transform=train_transform, count=head_ct_cnt)
-        head_ct_test_set = HEAD_CT_DATASET(image_path=test_image, labels=test_label, transform=test_transform)
-      
-
-        n_classes = 2
-        transform = transforms.Compose([
-            transforms.Resize((image_size[0], image_size[1])),
-            transforms.ToTensor(),
-        ])
-        if train_transform_cutpasted:
-            train_transform_cutpasted = transforms.Compose([
-                    transforms.Resize((image_size[0], image_size[1])),
-                    High_CutPasteUnion(),
-                ])
-            tumor_detc_train_set = TumorDetection(transform=train_transform_cutpasted, train=True, count=tumor_detection_cnt)
-        else:
-            tumor_detc_train_set = TumorDetection(transform=transform, train=True, count=tumor_detection_cnt)
-        tumor_detc_test_set = TumorDetection(transform=transform, train=False)
-        
-
-        normal_files = sorted(glob('./brain_tumor_dataset/no/*'))
-        test_normal = normal_files[:25]
-        train_normal = normal_files[25:]
-        abnormal_files = sorted(glob('./brain_tumor_dataset/yes/*'))
-
-        train_path = train_normal
-        train_label = [0]*len(train_normal)
-        test_path = test_normal + abnormal_files
-        test_label = [0]*len(test_normal)  + [1]*len(abnormal_files)
-
-        transform = transforms.Compose([
-            transforms.Resize((image_size[0], image_size[1])),
-            transforms.ToTensor(),
-        ])
-        if train_transform_cutpasted:
-            train_transform_cutpasted =  transforms.Compose([
-                transforms.Resize((image_size[0], image_size[1])),
-                High_CutPasteUnion(),
-            ])
-            BrainMRI_train_set = BrainMRI(image_path=train_path, labels=train_label, transform=train_transform_cutpasted, count=brain_mri_cnt)
-        else:
-            BrainMRI_train_set = BrainMRI(image_path=train_path, labels=train_label, transform=transform, count=brain_mri_cnt)
-
-        BrainMRI_test_set = BrainMRI(image_path=test_path, labels=test_label, transform=transform)
-
-        train_set = torch.utils.data.ConcatDataset([BrainMRI_train_set, tumor_detc_train_set, head_ct_train_set])
-        test_set = torch.utils.data.ConcatDataset([BrainMRI_test_set, tumor_detc_test_set, head_ct_test_set])
-
-        print("train_set shapes: ", train_set[0][0].shape)
-        print("test_set shapes: ", test_set[0][0].shape)
-        print("len(test_set), len(train_set): ", len(test_set), len(train_set))
     elif dataset == 'ISIC2018':
         n_classes = 2
         train_path = glob('./ISIC_DATASET/dataset/train/NORMAL/*')
@@ -1464,8 +1331,6 @@ def get_superclass_list(dataset):
         return WBC_SUPERCLASS
     elif dataset == 'breastmnist':
         return breastmnist_SUPERCLASS
-    elif dataset=='Tomor_Detection' or dataset=='high-variational-brain-tumor':
-        return TUMOR_BRAIN_SUPERCLASS
     elif dataset == 'MVTecAD':
         return MVTecAD_SUPERCLASS
     elif dataset == 'ArtBench':
