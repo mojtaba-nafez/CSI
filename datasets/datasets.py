@@ -20,9 +20,6 @@ import cv2
 from datasets.custom_datasets import *
 from torch.utils.data import ConcatDataset
 
-import medmnist
-from medmnist import INFO, Evaluator
-
 DATA_PATH = './data/'
 IMAGENET_PATH = './data/ImageNet'
 
