@@ -21,7 +21,7 @@ device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 P.multi_gpu = False
 
 image_size_ = (P.image_size, P.image_size, 3)
-train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size_, labels=P.normal_label)
+train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, download=True, image_size=image_size_, labels=[P.normal_label])
 P.image_size = image_size
 P.n_classes = n_classes
 print("full test set:", len(test_set))
@@ -32,8 +32,8 @@ if P.dataset=='cub-birds' or P.dataset=='ISIC2018' or P.dataset=='high-variation
     train_set = set_dataset_count(train_set, count=P.main_count)
     test_set = get_subclass_dataset(P, test_set, classes=[0])
 else:
-    train_set = get_subclass_dataset(P, train_set, classes=P.normal_label, count=P.main_count)
-    test_set = get_subclass_dataset(P, test_set, classes=P.normal_label)
+    train_set = get_subclass_dataset(P, train_set, classes=[P.normal_label], count=P.main_count)
+    test_set = get_subclass_dataset(P, test_set, classes=[P.normal_label])
         
 print("number of normal test set:", len(test_set))
 print("number of normal train set:", len(train_set))
@@ -60,7 +60,7 @@ for ood in anomaly_labels:
     ood_test_loader[ood] = DataLoader(ood_test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
     print("Unique labels(ood_test_loader):", get_loader_unique_label(ood_test_loader[ood]))
  
-train_exposure_loader = get_exposure_dataloader(P=P, batch_size=P.batch_size, count=len(train_set), image_size=image_size_, cls_list=P.normal_label)
+train_exposure_loader = get_exposure_dataloader(P=P, batch_size=P.batch_size, count=len(train_set), image_size=image_size_, cls_list=[P.normal_label])
 print("exposure loader batches, train loader batchs", len(train_exposure_loader), len(train_loader))
 ### Initialize model ###
 
