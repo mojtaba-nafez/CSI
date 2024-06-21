@@ -6,7 +6,6 @@ from models.wide_resnet import wide_resnet34_5
 import models.transform_layers as TL
 from models.vit import VIT_Pretrain, DINO_Pretrain, R50_VIT_Pretrain
 from models.clip import Clip_R50_Pretrain, Clip_VIT_Pretrain
-from models.vit_FITYMI import VIT_Pretrain_FITYMI
 
 def get_simclr_augmentation(P, image_size):
 
@@ -66,8 +65,6 @@ def get_classifier(mode, n_classes=10, activation='relu', std=1.0, mean=0.0, noi
         classifier = ResNet18(num_classes=n_classes, activation=activation)
     elif mode == 'resnet18-corruption':
         classifier = Pretrain_ResNet18_Corruption_Model(num_classes=n_classes, std=std, mean=mean, noise_scale=noise_scale, probability=noist_probability)
-    elif mode == "vit_fitymi":
-        classifier = VIT_Pretrain_FITYMI(num_classes=n_classes)
     elif mode == "pretrain-wide-resnet":
         classifier = Pretrain_Wide_ResNet_Model(num_classes=n_classes)
     elif mode == "dino":
