@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from common.common import parse_args
 import models.classifier as C
 
-from datasets import set_dataset_count, mvtecad_dataset, get_dataset, get_superclass_list, get_subclass_dataset
+from datasets import set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
 from utils_.utils import get_loader_unique_label
 
 P = parse_args()
@@ -39,10 +39,7 @@ if P.dataset == 'imagenet' and ood_eval:
 
 image_size_ = (P.image_size, P.image_size, 3)
 
-if P.dataset=="MVTecAD":
-    train_set, test_set, image_size, n_classes = mvtecad_dataset(P=P, category=P.one_class_idx, root = "./mvtec_anomaly_detection",  image_size=image_size_)
-else:
-    train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=True, download=True, image_size=image_size_, labels=normal_labels)
+train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=True, download=True, image_size=image_size_, labels=normal_labels)
 P.image_size = image_size
 P.n_classes = n_classes
 
@@ -51,12 +48,9 @@ print("full train set:", len(train_set))
 
 
 full_test_set = deepcopy(test_set)  # test set of full classes
-if P.dataset=='cub-birds' or P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-eval' or P.dataset=='ISIC2018' or P.dataset=='high-variational-brain-tumor' or P.dataset=='mvtec-high-var-corruption' or P.dataset=='mvtec-high-var' or P.dataset=="MVTecAD" or P.dataset=="WBC" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
+if P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-eval' or P.dataset=='ISIC2018' or P.dataset=='mvtecad' or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
     train_set = set_dataset_count(train_set, count=P.main_count)
-    if P.dataset=="WBC":
-        test_set = get_subclass_dataset(P, test_set, classes=normal_labels)
-    else:
-        test_set = get_subclass_dataset(P, test_set, classes=[0])
+    test_set = get_subclass_dataset(P, test_set, classes=[0])
 else:
     train_set = get_subclass_dataset(P, train_set, classes=normal_labels, count=P.main_count)
     test_set = get_subclass_dataset(P, test_set, classes=normal_labels)
@@ -78,7 +72,7 @@ print("Unique labels(train_loader):", get_loader_unique_label(train_loader))
 
 
 P.ood_dataset = anomaly_labels
-if  P.dataset=='cub-birds' or P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-eval' or P.dataset=='ISIC2018' or P.dataset=='high-variational-brain-tumor' or P.dataset=='WBC' or P.dataset=='mvtec-high-var-corruption' or P.dataset=="MVTecAD" or P.dataset=="mvtec-high-var" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
+if P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-eval' or P.dataset=='ISIC2018' or P.dataset=="mvtecad" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
     P.ood_dataset = [1]
 print("P.ood_dataset",  P.ood_dataset)
 
