@@ -53,6 +53,8 @@ def sparse2coarse(targets):
 CLASS_NAMES = ['toothbrush', 'zipper', 'transistor', 'tile', 'grid', 'wood', 'pill', 'bottle', 'capsule', 'metal_nut', 'hazelnut', 'screw', 'carpet', 'leather', 'cable']
 
 def get_transform(image_size=None):
+    if image_size:  # use pre-specified image size
+
         train_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
             transforms.RandomHorizontalFlip(),
