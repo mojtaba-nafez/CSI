@@ -14,7 +14,7 @@ if P.normal_class is not None:
 if P.suffix is not None:
     fname += f'_{P.suffix}'
 
-logger = Logger(fname, ask=not resume, local_rank=P.local_rank)
+logger = Logger(fname, ask=not resume)
 logger.log(P)
 logger.log(model)
 

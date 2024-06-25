@@ -34,7 +34,6 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
 
     check = time.time()
     print("len(loader): ", len(loader))
-    print("cl_no_hflip=", P.cl_no_hflip)
     
     for n, (images, labels) in enumerate(loader):
         model.train()

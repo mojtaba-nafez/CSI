@@ -46,22 +46,15 @@ def parse_args(default=False):
                         default=32, type=int)
     parser.add_argument('--eval_steps', help='',
                         default=20, type=int) 
-                 
-    parser.add_argument('--fake_data_percent', help='',
-                        default=0.0, type=float)
-    parser.add_argument('--cutpast_data_percent', help='',
-                        default=0.0, type=float)
-    parser.add_argument('--main_count', help='count of normal data',
+
+    parser.add_argument('--normal_data_count', help='count of normal data',
                         default=-1, type=int)
     parser.add_argument('--activation_function', help='activation_function for resnet from scratch model.(note this argument is used just in resent18 from scratch)',
                         choices=['relu', 'gelu'], default="relu", type=str)
     parser.add_argument('--model', help='Model',
-                        choices=['clip_vit', 'clip_r50', 'R50ViT', 'dino', 'conv_next', 'pretrain-wide-resnet', 'resnet18-corruption', 'pretrain-resnet152-corruption', 'pretrain-resnet152', 'vit', 'resnet18', 'resnet18_imagenet', 'pretrain-resnet18', 'wide_resnet34_5'], default="resnet18", type=str)
+                        choices=['pretrain-wide-resnet', 'resnet18_imagenet', 'pretrain-resnet18'], default="pretrain-resnet18", type=str)
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
                         default=128, type=int)
-
-    parser.add_argument("--local_rank", type=int,
-                        default=0, help='Local rank for distributed learning')
     parser.add_argument('--resume_path', help='Path to the resume checkpoint',
                         default=None, type=str)
     parser.add_argument('--load_path', help='Path to the loading checkpoint',
@@ -70,8 +63,6 @@ def parse_args(default=False):
                         action='store_true')
     parser.add_argument('--suffix', help='Suffix for the log dir',
                         default=None, type=str)
-    parser.add_argument('--error_step', help='Epoch steps to compute errors',
-                        default=5, type=int)
 
     ##### Training Configurations #####
     parser.add_argument('--epochs', help='Epochs',
@@ -105,20 +96,13 @@ def parse_args(default=False):
 
     parser.add_argument("--ood_samples", help='number of samples to compute OOD score',
                         default=1, type=int)
-    parser.add_argument("--ood_batch_size", help='batch size to compute OOD score',
-                        default=100, type=int)
     parser.add_argument("--resize_factor", help='resize scale is sampled from [resize_factor, 1.0]',
                         default=0.08, type=float)
     parser.add_argument("--cl_no_hflip", help='activate to not used hflip in contrastive augmentaion.',
                         action='store_true')
     parser.add_argument("--print_score", help='print quantiles of ood score',
                         action='store_true')
-    parser.add_argument("--print_3_score", help='print quantiles of ood score',
-                        action='store_true')
-    parser.add_argument("--save_score", help='save ood score for plotting histogram',
-                        action='store_true')
     parser.add_argument('--timer', default=None, type=int)
-
     parser.add_argument('--freezing_layer', help='Freezing Layer',
                         default=133, type=int)
     if default:
