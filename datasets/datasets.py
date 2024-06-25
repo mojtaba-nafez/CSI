@@ -113,7 +113,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
     if dataset in ['imagenet']:
         if eval:
             train_transform, test_transform = get_simclr_eval_transform_imagenet(P.ood_samples,
-                                                                                 P.resize_factor, P.resize_fix)
+                                                                P.resize_factor, P.resize_fix)
+
         else:
             train_transform, test_transform = get_transform_imagenet()
     else:

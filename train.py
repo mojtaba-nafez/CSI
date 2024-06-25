@@ -61,6 +61,7 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--dataset", str(P.dataset),
             "--model", str(P.model),
             "--print_score",
+            "--resize_fix",
             "--ood_samples", "10",
             "--resize_factor", str(0.54),
             "--resize_fix",
