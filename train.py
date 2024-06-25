@@ -4,7 +4,7 @@ from utils.utils import save_linear_checkpoint
 import os
 from common.train import *
 import time
-from train.unsup.simclr_CSI import train
+from training.simclr_CSI import train
 
 start_time = time.time()
 
