@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
 import torchvision.transforms.functional as TF
+from torchvision import transforms
 
 if torch.__version__ >= '1.4.0':
     kwargs = {'align_corners': False}
@@ -374,11 +375,11 @@ class ColorJitterLayer(nn.Module):
     def transform(self, inputs):
         # Shuffle transform
         if np.random.rand() > 0.5:
-            transforms = [self.adjust_contrast, self.adjust_hsv]
+            transforms_ = [self.adjust_contrast, self.adjust_hsv]
         else:
-            transforms = [self.adjust_hsv, self.adjust_contrast]
+            transforms_ = [self.adjust_hsv, self.adjust_contrast]
 
-        for t in transforms:
+        for t in transforms_:
             inputs = t(inputs)
 
         return inputs
