@@ -1,7 +1,6 @@
 import time
 import itertools
 
-import diffdist.functional as distops
 import numpy as np
 import torch
 import torch.distributed as dist

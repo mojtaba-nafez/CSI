@@ -1,25 +1,9 @@
 import torch
 import torch.distributed as dist
-import diffdist.functional as distops
 
 
 def get_similarity_matrix(outputs, chunk=2, multi_gpu=False):
-    '''
-        Compute similarity matrix
-        - outputs: (B', d) tensor for B' = B * chunk
-        - sim_matrix: (B', B') tensor
-    '''
-
-    if multi_gpu:
-        outputs_gathered = []
-        for out in outputs.chunk(chunk):
-            gather_t = [torch.empty_like(out) for _ in range(dist.get_world_size())]
-            gather_t = torch.cat(distops.all_gather(gather_t, out))
-            outputs_gathered.append(gather_t)
-        outputs = torch.cat(outputs_gathered)
-
     sim_matrix = torch.mm(outputs, outputs.t())  # (B', d), (d, B') -> (B', B')
-
     return sim_matrix
 
 
@@ -51,10 +35,6 @@ def Supervised_NT_xent(sim_matrix, labels, temperature=0.5, chunk=2, eps=1e-8, m
     '''
 
     device = sim_matrix.device
-
-    if multi_gpu:
-        gather_t = [torch.empty_like(labels) for _ in range(dist.get_world_size())]
-        labels = torch.cat(distops.all_gather(gather_t, labels))
     labels = labels.repeat(2)
 
     logits_max, _ = torch.max(sim_matrix, dim=1, keepdim=True)
