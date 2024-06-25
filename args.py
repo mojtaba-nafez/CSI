@@ -68,9 +68,6 @@ def parse_args(default=False):
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
                         default=128, type=int)
 
-    parser.add_argument('--shift_trans_type', help='shifting transformation type', default='none',
-                        choices=['rotation', 'cutperm', 'none'], type=str)
-
     parser.add_argument("--local_rank", type=int,
                         default=0, help='Local rank for distributed learning')
     parser.add_argument('--resume_path', help='Path to the resume checkpoint',
