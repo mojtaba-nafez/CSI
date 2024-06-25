@@ -40,17 +40,6 @@ def parse_args(default=False):
     
     parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
                         action='store_true')
-    parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
-                        default=50, type=int)
-    parser.add_argument('--image_size', help='',
-                        default=32, type=int)
-    parser.add_argument('--eval_steps', help='',
-                        default=20, type=int) 
-
-    parser.add_argument('--normal_data_count', help='count of normal data',
-                        default=-1, type=int)
-    parser.add_argument('--activation_function', help='activation_function for resnet from scratch model.(note this argument is used just in resent18 from scratch)',
-                        choices=['relu', 'gelu'], default="relu", type=str)
     parser.add_argument('--model', help='Model',
                         choices=['pretrain-wide-resnet', 'resnet18_imagenet', 'pretrain-resnet18'], default="pretrain-resnet18", type=str)
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
@@ -83,6 +72,17 @@ def parse_args(default=False):
                         default=128, type=int)
     parser.add_argument('--test_batch_size', help='Batch size for test loader',
                         default=100, type=int)
+    parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
+                        default=50, type=int)
+    parser.add_argument('--image_size', help='',
+                        default=32, type=int)
+    parser.add_argument('--eval_steps', help='',
+                        default=20, type=int) 
+
+    parser.add_argument('--normal_data_count', help='count of normal data',
+                        default=-1, type=int)
+    parser.add_argument('--activation_function', help='activation_function for resnet from scratch model.(note this argument is used just in resent18 from scratch)',
+                        choices=['relu', 'gelu'], default="relu", type=str)
 
     ##### Objective Configurations #####
     parser.add_argument('--sim_lambda', help='Weight for SimCLR loss',

@@ -5,13 +5,13 @@ def parse_args(default=False):
     """Command-line argument parser for training."""
 
     parser = ArgumentParser(description='Pytorch implementation of Unode')
-
+    
     parser.add_argument('--dataset', help='Dataset',
                         choices=['cifar100-vs-x', 'cifar10-vs-x', 'ISIC2018', 'svhn-10-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'cifar10-corruption', 'mnist-corruption', 'mvtecad','head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10'],
                         default="cifar10", type=str)
-    parser.add_argument('--outlier_dataset', help='',
+    parser.add_argument('--outlier_dataset', help='outlier of cifar100-vs-x or cifar10-vs-x setup',
                             default="mnist",choices=['imagenet30', 'mnist', 'svhn', 'fashion-mnist'] ,type=str)
-    parser.add_argument('--normal_class', help='None: multi-class, Not None: one-class',
+    parser.add_argument('--normal_class', help='normal class of dataset',
                         default=0, type=int)
     parser.add_argument('--cifar_corruption_data', help='',
                         default="./CIFAR-10-C/defocus_blur.npy", type=str)
@@ -37,35 +37,13 @@ def parse_args(default=False):
                             "zigzag"
                         ],
                         default="brightness", type=str)
-                
-    parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
-                        default=50, type=int)
-    parser.add_argument('--image_size', help='None: multi-class, Not None: one-class',
-                        default=32, type=int)
-    parser.add_argument('--eval_steps', help='None: multi-class, Not None: one-class',
-                        default=20, type=int) 
-
-    parser.add_argument('--noise_mean', help='',
-                        default=0.0, type=float)
-    parser.add_argument('--noise_std', help='',
-                        default=1.0, type=float)
-    parser.add_argument('--noise_scale', help='',
-                        default=0.1, type=float)
-    parser.add_argument('--noist_probability', help='',
-                        default=0.5, type=float)                        
-    parser.add_argument('--fake_data_percent', help='',
-                        default=0.0, type=float)
-    parser.add_argument('--cutpast_data_percent', help='',
-                        default=0.0, type=float)
-    parser.add_argument('--normal_data_count', help='count of normal data',
-                        default=-1, type=int)
-    parser.add_argument('--activation_function', help='activation_function for resnet from scratch model.(note this argument is used just in resent18 from scratch)',
-                        choices=['relu', 'gelu'], default="relu", type=str)
+    
+    parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
+                        action='store_true')
     parser.add_argument('--model', help='Model',
-                        choices=['clip_vit', 'clip_r50', 'R50ViT', 'dino', 'conv_next', 'pretrain-wide-resnet', 'resnet18-corruption', 'pretrain-resnet152-corruption', 'pretrain-resnet152', 'vit', 'resnet18', 'resnet18_imagenet', 'pretrain-resnet18', 'wide_resnet34_5'], default="resnet18", type=str)
+                        choices=['pretrain-wide-resnet', 'resnet18_imagenet', 'pretrain-resnet18'], default="pretrain-resnet18", type=str)
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
                         default=128, type=int)
-
     parser.add_argument('--resume_path', help='Path to the resume checkpoint',
                         default=None, type=str)
     parser.add_argument('--load_path', help='Path to the loading checkpoint',
@@ -94,6 +72,17 @@ def parse_args(default=False):
                         default=128, type=int)
     parser.add_argument('--test_batch_size', help='Batch size for test loader',
                         default=100, type=int)
+    parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
+                        default=50, type=int)
+    parser.add_argument('--image_size', help='',
+                        default=32, type=int)
+    parser.add_argument('--eval_steps', help='',
+                        default=20, type=int) 
+
+    parser.add_argument('--normal_data_count', help='count of normal data',
+                        default=-1, type=int)
+    parser.add_argument('--activation_function', help='activation_function for resnet from scratch model.(note this argument is used just in resent18 from scratch)',
+                        choices=['relu', 'gelu'], default="relu", type=str)
 
     ##### Objective Configurations #####
     parser.add_argument('--sim_lambda', help='Weight for SimCLR loss',
@@ -113,12 +102,7 @@ def parse_args(default=False):
                         action='store_true')
     parser.add_argument("--print_score", help='print quantiles of ood score',
                         action='store_true')
-    parser.add_argument("--print_3_score", help='print quantiles of ood score',
-                        action='store_true')
-    parser.add_argument("--save_score", help='save ood score for plotting histogram',
-                        action='store_true')
     parser.add_argument('--timer', default=None, type=int)
-
     parser.add_argument('--freezing_layer', help='Freezing Layer',
                         default=133, type=int)
     if default:
