@@ -58,7 +58,6 @@ for epoch in range(start_epoch, P.epochs + 1):
 
         arguments_to_pass = [
             "--image_size", str(P.image_size[0]),
-            "--mode", "ood_pre",
             "--dataset", str(P.dataset),
             "--model", str(P.model),
             "--shift_trans_type", "rotation",
