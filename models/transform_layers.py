@@ -433,6 +433,7 @@ class NormalizeLayer(nn.Module):
 
 
 
+
 class CutPasteLayer(torch.nn.Module):
     def __init__(self, width=[7,40], height=[10,40]):
         super(CutPasteLayer, self).__init__()
@@ -444,7 +445,8 @@ class CutPasteLayer(torch.nn.Module):
             transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
             transforms.RandomHorizontalFlip(),
         ])
-    def apply_cp(self, x):
+
+    def apply_normal_cp(self, x):
         batch_size, channels, height, width = x.size()
         for i in range(batch_size):
             cut_w = int(random.uniform(int(0.1*width), int(0.35*width)))
@@ -469,7 +471,37 @@ class CutPasteLayer(torch.nn.Module):
             mask_rotated = TF.rotate(mask_rotated, angle)
             x[i] = x[i]*(1-mask_rotated) + img_mask_rotated*(mask_rotated)
         return x
+    
+    def apply_scar_cp(self, x):
+        batch_size, channels, height, width = x.size()
+        for i in range(batch_size):
+            cut_w = int(random.uniform(3, int(0.15*width)))
+            cut_h = int(random.uniform(10, int(0.4*height)))
+
+            angle = random.uniform(0, 360)
+
+            from_location_h = int(random.uniform(0, height - cut_h-1))
+            from_location_w = int(random.uniform(0, width - cut_w-1))
+            
+            to_location_h = int(random.uniform(0, height - cut_h-1))
+            to_location_w = int(random.uniform(0, width - cut_w-1))
+            
+            img_mask_rotated = torch.zeros(3, height, width).to(self.device)
+            #r = random.uniform(0, 1)
+            img_mask_rotated[:, to_location_h:to_location_h + cut_h,  to_location_w:to_location_w + cut_w] = x[i, :, from_location_h:from_location_h + cut_h, from_location_w:from_location_w + cut_w].clone()
+            img_mask_rotated = TF.rotate(img_mask_rotated, angle).to(self.device)
+            # img_mask_rotated = self.transform_(img_mask_rotated.unsqueeze(0).cpu()).squeeze()
+                
+            mask_rotated = torch.zeros(3, height, width).to(self.device)
+            mask_rotated[:, to_location_h:to_location_h + cut_h,  to_location_w:to_location_w + cut_w] = 1
+            mask_rotated = TF.rotate(mask_rotated, angle)
+            x[i] = x[i]*(1-mask_rotated) + img_mask_rotated*(mask_rotated)
+        return x
 
     def forward(self, x):
         x_ = x.clone()
-        return self.apply_cp(x_)
+        r = random.uniform(0, 1)
+        if r < 0.5:
+            return self.apply_normal_cp(x_)
+        else:
+            return self.apply_scar_cp(x_)
