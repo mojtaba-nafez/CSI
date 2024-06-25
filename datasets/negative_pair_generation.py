@@ -38,6 +38,7 @@ class NegativePairGenerator:
     def apply_cutpaste(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
+        print("cutpast")
         return self.cutpaste_shift(img)
 
     def create_negative_pair(self, batch_image):   
