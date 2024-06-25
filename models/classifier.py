@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 from models.resnet_pretrain import Pretrain_Wide_ResNet_Model, Pretrain_ResNet18_Model
-from models.custom_resnet import resnet18, resnet50
+from models.custom_resnet import resnet18
 import models.transform_layers as TL
 
 def get_simclr_augmentation(P, image_size):
@@ -31,66 +31,20 @@ def get_simclr_augmentation(P, image_size):
     return transform
 
 
-def get_shift_module(P, eval=False):
-    P.shift_trans_type = 'rotation'
-    if P.shift_trans_type == 'rotation':
-        shift_transform = TL.Rotation()
-        K_shift = 4
-    elif P.shift_trans_type == 'cutperm':
-        shift_transform = TL.CutPerm()
-        K_shift = 4
-    else:
-        shift_transform = nn.Identity()
-        K_shift = 1
-
-    if not eval and not ('sup' in P.mode):
-        assert P.batch_size == int(128/K_shift)
-
-    return shift_transform, K_shift
-
-
-def get_shift_classifer(model, K_shift):
-
-    model.shift_cls_layer = nn.Linear(model.last_dim, K_shift)
-
+def get_shift_classifer(model, shift_head_neuron):
+    model.shift_cls_layer = nn.Linear(model.last_dim, shift_head_neuron)
     return model
 
 
 def get_classifier(mode, n_classes=10, activation='relu', std=1.0, mean=0.0, noise_scale=0.1, noist_probability=0.5, freezing_layer=133):
     if mode == 'resnet18':
         classifier = ResNet18(num_classes=n_classes, activation=activation)
-    elif mode == 'resnet18-corruption':
-        classifier = Pretrain_ResNet18_Corruption_Model(num_classes=n_classes, std=std, mean=mean, noise_scale=noise_scale, probability=noist_probability)
     elif mode == "pretrain-wide-resnet":
         classifier = Pretrain_Wide_ResNet_Model(num_classes=n_classes)
-    elif mode == "dino":
-        classifier = DINO_Pretrain(num_classes=n_classes, freezing_layer=freezing_layer)
-    elif mode == 'clip_r50':
-        classifier = Clip_R50_Pretrain(num_classes=n_classes, freezing_layer=freezing_layer)
-    elif mode == 'clip_vit':
-        classifier = Clip_VIT_Pretrain(num_classes=n_classes, freezing_layer=freezing_layer)
-    elif mode == "R50ViT":
-        classifier = R50_VIT_Pretrain(num_classes=n_classes, freezing_layer=freezing_layer)
-    elif mode == "vit":
-        classifier = VIT_Pretrain(num_classes=n_classes, freezing_layer=freezing_layer)
-    elif mode == 'pretrain-resnet152-corruption':
-        classifier = Pretrain_ResNet152_Corruption_Model(num_classes=n_classes)
-    elif mode =='pretrain-resnet152':
-        classifier = Pretrain_ResNet152_Model(num_classes=n_classes)
     elif mode =='pretrain-resnet18':
         classifier = Pretrain_ResNet18_Model(num_classes=n_classes)
-    elif mode == 'resnet34':
-        classifier = ResNet34(num_classes=n_classes)
-    elif mode == 'resnet50':
-        classifier = ResNet50(num_classes=n_classes)
     elif mode == 'resnet18_imagenet':
         classifier = resnet18(num_classes=n_classes)
-    elif mode == 'resnet50_imagenet':
-        classifier = resnet50(num_classes=n_classes)
-    elif mode == 'wide_resnet34_5':
-        classifier = wide_resnet34_5(num_classes=n_classes)
-    elif mode == 'conv_next':
-        classifier = Pretrain_ConvNext_Model(num_classes=n_classes)
     else:
         raise NotImplementedError()
 
