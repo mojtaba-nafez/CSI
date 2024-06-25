@@ -68,9 +68,6 @@ def parse_args(default=False):
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
                         default=128, type=int)
 
-    parser.add_argument('--shift_trans_type', help='shifting transformation type', default='none',
-                        choices=['rotation', 'cutperm', 'none'], type=str)
-
     parser.add_argument("--local_rank", type=int,
                         default=0, help='Local rank for distributed learning')
     parser.add_argument('--resume_path', help='Path to the resume checkpoint',
@@ -114,17 +111,12 @@ def parse_args(default=False):
     parser.add_argument("--ood_dataset", help='Datasets for OOD detection',
                         default=None, nargs="*", type=str)
 
-    parser.add_argument("--ood_layer", help='layer for OOD scores',
-                        choices=['penultimate', 'simclr', 'shift'],
-                        default=['simclr', 'shift'], nargs="+", type=str)
     parser.add_argument("--ood_samples", help='number of samples to compute OOD score',
                         default=1, type=int)
     parser.add_argument("--ood_batch_size", help='batch size to compute OOD score',
                         default=100, type=int)
     parser.add_argument("--resize_factor", help='resize scale is sampled from [resize_factor, 1.0]',
                         default=0.08, type=float)
-    parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
-                        action='store_true')
     parser.add_argument("--cl_no_hflip", help='activate to not used hflip in contrastive augmentaion.',
                         action='store_true')
     parser.add_argument("--print_score", help='print quantiles of ood score',
