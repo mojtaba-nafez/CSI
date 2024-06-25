@@ -2,13 +2,15 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import random
+import models.transform_layers as TL
+from datasets.cutpast_transformation import *
 
 class NegativePairGenerator:
     def __init__(self, probabilities = {'rotation': 0.04, 'cutperm': 0.06, 'cutout': 0.1, 'cutpaste': 0.8}):
         self.probabilities = probabilities
         
-        self.rotation_shift = Rotation()
-        self.cutperm_shift = CutPerm()
+        self.rotation_shift = TL.Rotation()
+        self.cutperm_shift = TL.CutPerm()
         self.cutpaste_shift = CutPasteUnion()
         self.aug_to_func = {'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
 
