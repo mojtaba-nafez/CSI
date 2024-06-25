@@ -43,7 +43,6 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         check = time.time()
         
         negative_pair = neg_pair_gen.create_negative_pair(images)
-        print(negative_pair.shape, images.shape, images.dtype, negative_pair.dtype)
         ### SimCLR loss ###
         if P.dataset != 'imagenet':
             batch_size = images.size(0)
