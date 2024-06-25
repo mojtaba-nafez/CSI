@@ -73,6 +73,7 @@ def initialize_model(P, device):
 
 def main():
     P, anomaly_labels, device = initialize()
+    P.ood_dataset = anomaly_labels
     train_set, test_set, full_test_set = prepare_datasets(P)
     train_loader, test_loader = prepare_dataloaders(train_set, test_set, P)
     
@@ -82,7 +83,6 @@ def main():
     print("Unique labels(train_loader):", get_loader_unique_label(train_loader))
     
     kwargs = {'pin_memory': False, 'num_workers': 4}
-    P.ood_dataset = anomaly_labels
     ood_test_loader = prepare_ood_loaders(P, full_test_set, kwargs)
 
     model, simclr_aug, criterion = initialize_model(P, device)
