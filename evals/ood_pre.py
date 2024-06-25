@@ -17,14 +17,8 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     auroc_dict = dict()
 
     base_path = os.path.split(P.load_path)[0]  # checkpoint directory
+    prefix = os.path.join(base_path, f'feats_{P.ood_samples}_resize_factor_{resize_factor}')
 
-    prefix = f'{P.ood_samples}'
-    if P.resize_fix:
-        prefix += f'_resize_fix_{P.resize_factor}'
-    else:
-        prefix += f'_resize_range_{P.resize_factor}'
-
-    prefix = os.path.join(base_path, f'feats_{prefix}')
     kwargs = {
         'simclr_aug': simclr_aug,
         'sample_num': P.ood_samples,
@@ -42,12 +36,11 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     f_sim = [feats_train['simclr'].mean(dim=1)]
     f_shi = [feats_train['shift'].mean(dim=1)]
 
-    P.weight_sim = []
-    P.weight_shi = []
+ 
     sim_norm = f_sim[0].norm(dim=1)
     shi_mean = f_shi[0][:, 0]
-    P.weight_sim.append(1 / sim_norm.mean().item())
-    P.weight_shi.append(1 / shi_mean.mean().item())
+    P.weight_sim = 1 / sim_norm.mean().item()
+    P.weight_shi = 1 / shi_mean.mean().item()
     
     print(f'weight_sim:\t' + '\t'.join(map('{:.4f}'.format, P.weight_sim)))
     print(f'weight_shi:\t' + '\t'.join(map('{:.4f}'.format, P.weight_shi)))
@@ -92,13 +85,11 @@ def get_scores(P, feats_dict):
     # compute scores
     scores = []
     for f_sim, f_shi in zip(feats_sim, feats_shi):
-        f_sim = [f.mean(dim=0, keepdim=True) for f in f_sim.chunk(P.K_shift)]  # list of (1, d)
-        f_shi = [f.mean(dim=0, keepdim=True) for f in f_shi.chunk(P.K_shift)]  # list of (1, 4)
+        f_sim = f_sim.mean(dim=0, keepdim=True)  # list of (1, d)
+        f_shi = f_shi.mean(dim=0, keepdim=True)  # list of (1, 4)
         score = 0
-        for shi in range(P.K_shift):
-            score += (f_sim[shi] * P.axis[shi]).sum(dim=1).max().item() * P.weight_sim[shi]
-            score += f_shi[shi][:, shi].item() * P.weight_shi[shi]
-        score = score / P.K_shift
+        score += (f_sim * P.axis[0]).sum(dim=1).max().item() * P.weight_sim
+        score += f_shi[:, 0].item() * P.weight_shi
         scores.append(score)
     scores = torch.tensor(scores)
 
