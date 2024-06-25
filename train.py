@@ -60,7 +60,6 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--image_size", str(P.image_size[0]),
             "--dataset", str(P.dataset),
             "--model", str(P.model),
-            "--shift_trans_type", "rotation",
             "--print_score",
             "--ood_samples", "10",
             "--resize_factor", str(0.54),
