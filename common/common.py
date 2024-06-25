@@ -65,8 +65,6 @@ def parse_args(default=False):
                         choices=['relu', 'gelu'], default="relu", type=str)
     parser.add_argument('--model', help='Model',
                         choices=['clip_vit', 'clip_r50', 'R50ViT', 'dino', 'conv_next', 'pretrain-wide-resnet', 'resnet18-corruption', 'pretrain-resnet152-corruption', 'pretrain-resnet152', 'vit', 'resnet18', 'resnet18_imagenet', 'pretrain-resnet18', 'wide_resnet34_5'], default="resnet18", type=str)
-    parser.add_argument('--mode', help='Training mode',
-                        default='simclr', type=str)
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
                         default=128, type=int)
 

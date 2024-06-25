@@ -47,9 +47,6 @@ def get_shift_module(P, eval=False):
         shift_transform = nn.Identity()
         K_shift = 1
 
-    if not eval and not ('sup' in P.mode):
-        assert P.batch_size == int(128/K_shift)
-
     return shift_transform, K_shift
 
 
