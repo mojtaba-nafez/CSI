@@ -32,24 +32,6 @@ def get_simclr_augmentation(P, image_size):
     return transform
 
 
-def get_shift_module(P, eval=False):
-
-    if P.shift_trans_type == 'rotation':
-        shift_transform = TL.Rotation()
-        K_shift = 4
-    elif P.shift_trans_type == 'cutperm':
-        shift_transform = TL.CutPerm()
-        K_shift = 4
-    else:
-        shift_transform = nn.Identity()
-        K_shift = 1
-
-    if not eval and not ('sup' in P.mode):
-        assert P.batch_size == int(128/K_shift)
-
-    return shift_transform, K_shift
-
-
 def get_shift_classifer(model, K_shift):
 
     model.shift_cls_layer = nn.Linear(model.last_dim, K_shift)
