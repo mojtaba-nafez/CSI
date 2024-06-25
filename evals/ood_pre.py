@@ -142,12 +142,7 @@ def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
         feats_batch = {layer: [] for layer in layers}  # initialize: empty list
         for seed in range(sample_num):
             set_random_seed(seed)
-
-            if P.K_shift > 1:
-                x_t = torch.cat([P.shift_trans(hflip(x), k) for k in range(P.K_shift)])
-            else:
-                x_t = x # No shifting: SimCLR
-            x_t = simclr_aug(x_t)
+            x_t = simclr_aug(x)
 
             # compute augmented features
             with torch.no_grad():
@@ -158,7 +153,7 @@ def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
             for layer in layers:
                 feats = output_aux[layer].cpu()
                 if imagenet is False:
-                    feats_batch[layer] += feats.chunk(P.K_shift)
+                    feats_batch[layer] += feats.chunk(1)
                 else:
                     feats_batch[layer] += [feats]  # (B, d) cpu tensor
 
@@ -182,7 +177,7 @@ def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
         # Convert [1,2,3,4, 1,2,3,4] -> [1,1, 2,2, 3,3, 4,4]
         for key, val in feats_all.items():
             N, T, d = val.size()  # T = K * T'
-            val = val.view(N, -1, P.K_shift, d)  # (N, T', K, d)
+            val = val.view(N, -1, 1, d)  # (N, T', K, d)
             val = val.transpose(2, 1)  # (N, 4, T', d)
             val = val.reshape(N, T, d)  # (N, T, d)
             feats_all[key] = val
