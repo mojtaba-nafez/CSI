@@ -31,7 +31,7 @@ class NegativePairGenerator:
         mask_size = (np.random.randint(h // 6, h // 4), np.random.randint(w // 6, w // 4))
         mask_x = random.randint(0, h - mask_size[0])
         mask_y = random.randint(0, w - mask_size[1])
-        image[:, mask_x:mask_x + mask_size[0], mask_y:mask_y + mask_size[1]] = 0
+        image[:, mask_x:mask_x + mask_size[0], mask_y:mask_y + mask_size[1]] = 0.0
         return image
     
     def apply_cutpaste(self, img):
