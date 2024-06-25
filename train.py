@@ -43,7 +43,7 @@ for epoch in range(start_epoch, P.epochs + 1):
         for param in model.parameters():
             param.requires_grad = True
 
-    train(P, epoch, model, criterion, optimizer, scheduler_warmup, train_loader, train_exposure_loader=train_exposure_loader, logger=logger, **kwargs)
+    train(P, epoch, model, criterion, optimizer, scheduler_warmup, train_loader, logger=logger, **kwargs)
 
     model.eval()
     save_states = model.state_dict()
