@@ -70,7 +70,7 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--resize_fix", 
             "--one_class_idx" , str(P.one_class_idx),
             "--load_path", str(P.load_path),
-            "--normal_labels", str(P.normal_labels),
+            "--normal_label", str(P.normal_label),
             "--noise_scale",str(0.0),
             "--noist_probability", str(0.0),
             '--activation_function', str(P.activation_function)

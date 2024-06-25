@@ -14,7 +14,7 @@ def setup(mode, P):
 
     if P.suffix is not None:
         fname += f'_{P.suffix}'
-    fname += P.normal_labels
+    fname += P.normal_label
     return train, fname
 
 

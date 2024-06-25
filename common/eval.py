@@ -12,13 +12,9 @@ from utils_.utils import get_loader_unique_lget_loader_unique_labelabel
 
 P = parse_args()
 
-normal_labels = None
-if P.normal_labels:
-    normal_labels = [int(num) for num in P.normal_labels.split(',')]
-    print("normal_labels: ", normal_labels)
 
 cls_list = get_superclass_list(P.dataset)
-anomaly_labels = [elem for elem in cls_list if elem not in normal_labels]
+anomaly_labels = [elem for elem in cls_list if elem not in P.normal_label]
 
 ### Set torch device ###
 
@@ -39,7 +35,7 @@ if P.dataset == 'imagenet' and ood_eval:
 
 image_size_ = (P.image_size, P.image_size, 3)
 
-train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=True, download=True, image_size=image_size_, labels=normal_labels)
+train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=True, download=True, image_size=image_size_, labels=[P.normal_label])
 P.image_size = image_size
 P.n_classes = n_classes
 
@@ -52,8 +48,8 @@ if P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-e
     train_set = set_dataset_count(train_set, count=P.main_count)
     test_set = get_subclass_dataset(P, test_set, classes=[0])
 else:
-    train_set = get_subclass_dataset(P, train_set, classes=normal_labels, count=P.main_count)
-    test_set = get_subclass_dataset(P, test_set, classes=normal_labels)
+    train_set = get_subclass_dataset(P, train_set, classes=[P.normal_label], count=P.main_count)
+    test_set = get_subclass_dataset(P, test_set, classes=[P.normal_label])
         
 print("number of normal test set:", len(test_set))
 print("number of normal train set:", len(train_set))
