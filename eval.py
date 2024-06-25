@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from copy import deepcopy
 
-from common.common import parse_args
+from args import parse_args
 import models.classifier as C
 from datasets import set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
 from utils.utils import get_loader_unique_label

@@ -12,7 +12,7 @@ from utils.utils import (
     Logger, save_checkpoint, save_linear_checkpoint,
     load_checkpoint, get_loader_unique_label, count_parameters
 )
-from common.common import parse_args
+from args import parse_args
 import models.classifier as C
 from datasets import (
     set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
