@@ -9,8 +9,8 @@ from training.simclr_CSI import train
 start_time = time.time()
 
 fname = f'unode_{P.dataset}_{P.model}'
-if P.normal_label is not None:
-    fname += f'_one_class_{P.normal_label}'
+if P.normal_class is not None:
+    fname += f'_one_class_{P.normal_class}'
 if P.suffix is not None:
     fname += f'_{P.suffix}'
 
@@ -66,7 +66,7 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--resize_factor", str(0.54),
             "--one_class_idx" , str(P.one_class_idx),
             "--load_path", str(P.load_path),
-            "--normal_label", str(P.normal_label),
+            "--normal_class", str(P.normal_class),
             "--noise_scale",str(0.0),
             "--noist_probability", str(0.0),
             '--activation_function', str(P.activation_function)

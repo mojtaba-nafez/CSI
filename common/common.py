@@ -5,13 +5,13 @@ def parse_args(default=False):
     """Command-line argument parser for training."""
 
     parser = ArgumentParser(description='Pytorch implementation of Unode')
-
+    
     parser.add_argument('--dataset', help='Dataset',
                         choices=['cifar100-vs-x', 'cifar10-vs-x', 'ISIC2018', 'svhn-10-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'cifar10-corruption', 'mnist-corruption', 'mvtecad','head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10'],
                         default="cifar10", type=str)
     parser.add_argument('--outlier_dataset', help='',
-                            default="mnist",choices=['imagenet30', 'mnist', 'svhn', 'fashion-mnist'] ,type=str)
-    parser.add_argument('--normal_label', help='normal class of dataset',
+                            default="mnist",choices=['imagenet30', 'mnist', 'svhn', 'fashion-mnist'] ,type=str, help='outlier of cifar100-vs-x or cifar10-vs-x setup')
+    parser.add_argument('--normal_class', help='normal class of dataset',
                         default=0, type=int)
     parser.add_argument('--cifar_corruption_data', help='',
                         default="./CIFAR-10-C/defocus_blur.npy", type=str)
@@ -37,7 +37,9 @@ def parse_args(default=False):
                             "zigzag"
                         ],
                         default="brightness", type=str)
-                
+    
+    parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
+                        action='store_true')
     parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
                         default=None, type=int)
     parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',

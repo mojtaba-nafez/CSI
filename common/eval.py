@@ -14,7 +14,7 @@ P = parse_args()
 
 
 cls_list = get_superclass_list(P.dataset)
-anomaly_labels = [elem for elem in cls_list if elem not in [P.normal_label]]
+anomaly_labels = [elem for elem in cls_list if elem not in [P.normal_class]]
 
 ### Set torch device ###
 
@@ -33,7 +33,7 @@ if P.dataset == 'imagenet':
 
 image_size_ = (P.image_size, P.image_size, 3)
 
-train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=True, download=True, image_size=image_size_, labels=[P.normal_label])
+train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=True, download=True, image_size=image_size_, labels=[P.normal_class])
 P.image_size = image_size
 P.n_classes = n_classes
 
@@ -42,8 +42,8 @@ if P.dataset=='cifar10-vs-x' or P.dataset=='cifar100-vs-x' or P.dataset=='ISIC20
     train_set = set_dataset_count(train_set, count=P.main_count)
     test_set = get_subclass_dataset(P, test_set, classes=[0])
 else:
-    train_set = get_subclass_dataset(P, train_set, classes=[P.normal_label], count=P.main_count)
-    test_set = get_subclass_dataset(P, test_set, classes=[P.normal_label])
+    train_set = get_subclass_dataset(P, train_set, classes=[P.normal_class], count=P.main_count)
+    test_set = get_subclass_dataset(P, test_set, classes=[P.normal_class])
         
 print("number of normal test set:", len(test_set))
 print("number of normal train set:", len(train_set))

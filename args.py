@@ -11,7 +11,7 @@ def parse_args(default=False):
                         default="cifar10", type=str)
     parser.add_argument('--outlier_dataset', help='',
                             default="mnist",choices=['imagenet30', 'mnist', 'svhn', 'fashion-mnist'] ,type=str)
-    parser.add_argument('--normal_label', help='normal class of dataset',
+    parser.add_argument('--normal_class', help='None: multi-class, Not None: one-class',
                         default=0, type=int)
     parser.add_argument('--cifar_corruption_data', help='',
                         default="./CIFAR-10-C/defocus_blur.npy", type=str)
@@ -38,7 +38,7 @@ def parse_args(default=False):
                         ],
                         default="brightness", type=str)
                 
-    parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
+    parser.add_argument('--one_class_idx', help='',
                         default=None, type=int)
     parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
                         default=50, type=int)
