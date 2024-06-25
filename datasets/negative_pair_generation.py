@@ -11,7 +11,7 @@ class NegativePairGenerator:
         
         self.rotation_shift = TL.Rotation()
         self.cutperm_shift = TL.CutPerm()
-        self.cutpaste_shift = CutPasteUnion()
+        self.cutpaste_shift = TL.CutPasteLayer()
         self.aug_to_func = {'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
 
     def apply_rotation(self, img):
@@ -32,14 +32,12 @@ class NegativePairGenerator:
         mask_x = random.randint(0, h - mask_size[0])
         mask_y = random.randint(0, w - mask_size[1])
         image[:, mask_x:mask_x + mask_size[0], mask_y:mask_y + mask_size[1]] = 0.0
-        print("cutout")
         return image
     
     def apply_cutpaste(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
-        print("cutpast")
-        return self.cutpaste_shift(img)
+        return self.cutpaste_shift(img.unsqueeze(0)).squeeze()
 
     def create_negative_pair(self, batch_image):   
         augs = list(self.probabilities.keys())

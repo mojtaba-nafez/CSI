@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
+import torchvision.transforms.functional as TF
 
 if torch.__version__ >= '1.4.0':
     kwargs = {'align_corners': False}
@@ -427,3 +428,45 @@ class NormalizeLayer(nn.Module):
     def forward(self, inputs):
         return (inputs - 0.5) / 0.5
 
+
+
+class CutPasteLayer(torch.nn.Module):
+    def __init__(self, width=[7,40], height=[10,40]):
+        super(CutPasteLayer, self).__init__()
+        self.device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
+        
+        self.transform_ = transforms.Compose([
+            transforms.ColorJitter(brightness=0.8, contrast=0.8, saturation=0.8, hue=0.2),
+            transforms.RandomGrayscale(p=0.1),
+            transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
+            transforms.RandomHorizontalFlip(),
+        ])
+    def scar(self, x):
+        batch_size, channels, height, width = x.size()
+        for i in range(batch_size):
+            cut_w = int(random.uniform(int(0.1*width), int(0.35*width)))
+            cut_h = int(random.uniform(int(0.1*height), int(0.35*height)))
+
+            angle = random.uniform(0, 360)
+
+            from_location_h = int(random.uniform(0, height - cut_h-1))
+            from_location_w = int(random.uniform(0, width - cut_w-1))
+            
+            to_location_h = int(random.uniform(0, height - cut_h-1))
+            to_location_w = int(random.uniform(0, width - cut_w-1))
+            
+            img_mask_rotated = torch.zeros(3, height, width).to(self.device)
+            #r = random.uniform(0, 1)
+            img_mask_rotated[:, to_location_h:to_location_h + cut_h,  to_location_w:to_location_w + cut_w] = x[i, :, from_location_h:from_location_h + cut_h, from_location_w:from_location_w + cut_w].clone()
+            img_mask_rotated = TF.rotate(img_mask_rotated, angle)
+            # img_mask_rotated = self.transform_(img_mask_rotated.unsqueeze(0).cpu()).squeeze().to(self.device)
+                
+            mask_rotated = torch.zeros(3, height, width).to(self.device)
+            mask_rotated[:, to_location_h:to_location_h + cut_h,  to_location_w:to_location_w + cut_w] = 1
+            mask_rotated = TF.rotate(mask_rotated, angle)
+            x[i] = x[i]*(1-mask_rotated) + img_mask_rotated*(mask_rotated)
+        return x
+
+    def forward(self, x):
+        x_ = x.clone()
+        return self.scar(x_)
