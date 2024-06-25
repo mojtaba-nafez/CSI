@@ -40,13 +40,11 @@ def parse_args(default=False):
     
     parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
                         action='store_true')
-    parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
-                        default=None, type=int)
     parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
                         default=50, type=int)
-    parser.add_argument('--image_size', help='None: multi-class, Not None: one-class',
+    parser.add_argument('--image_size', help='',
                         default=32, type=int)
-    parser.add_argument('--save_step', help='None: multi-class, Not None: one-class',
+    parser.add_argument('--eval_steps', help='',
                         default=20, type=int) 
 
     parser.add_argument('--noise_mean', help='',

@@ -50,7 +50,7 @@ for epoch in range(start_epoch, P.epochs + 1):
     model.eval()
     save_states = model.state_dict()
     save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)    
-    if (epoch % P.save_step == 0):
+    if (epoch % P.eval_steps == 0):
         torch.cuda.empty_cache()
         from evals.ood_pre import eval_ood_detection
         P.load_path = logger.logdir + '/last.model'
