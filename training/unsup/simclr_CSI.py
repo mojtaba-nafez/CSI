@@ -4,6 +4,7 @@ import torch.optim
 
 import models.transform_layers as TL
 from training.contrastive_loss import get_similarity_matrix, NT_xent
+from dataset.negative_pair_generation import NegativePairGenerator
 from utils_.utils import AverageMeter, normalize
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
@@ -23,6 +24,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     else:
         log_ = logger.log
 
+    neg_pair_gen = NegativePairGenerator()
+
     batch_time = AverageMeter()
     data_time = AverageMeter()
 
@@ -32,39 +35,34 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, train_exposu
     losses['shift'] = AverageMeter()
 
     check = time.time()
-    train_exposure_loader_iterator = iter(train_exposure_loader)
-    print("len(train_exposure_loader_iterator), len(loader): ", len(train_exposure_loader_iterator), len(loader))
+    print("len(loader): ", len(loader))
     print("cl_no_hflip=", P.cl_no_hflip)
+    
     for n, (images, labels) in enumerate(loader):
-        try:
-            exposure_images, _ = next(train_exposure_loader_iterator)
-        except StopIteration:
-            train_exposure_loader_iterator = iter(train_exposure_loader)
-            exposure_images, _ = next(train_exposure_loader_iterator)
-        # print(exposure_images.shape, images.shape, labels.shape)
         model.train()
         count = n * P.n_gpus  # number of trained samples
-
         data_time.update(time.time() - check)
         check = time.time()
+        
+        negative_pair = neg_pair_gen.create_negative_pair(train)
 
         ### SimCLR loss ###
         if P.dataset != 'imagenet':
             batch_size = images.size(0)
             images = images.to(device)
-            exposure_images = exposure_images.to(device)
+            negative_pair = negative_pair.to(device)
             if P.cl_no_hflip:
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
                 images1, images2 = hflip(images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
-            exposure_images1, exposure_images2 = hflip(exposure_images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
+            negative_pair1, negative_pair2 = hflip(negative_pair.repeat(2, 1, 1, 1)).chunk(2)  # hflip
         else:
             batch_size = images[0].size(0)
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
         
-        images1 = torch.cat([images1, exposure_images1])
-        images2 = torch.cat([images2, exposure_images2])
+        images1 = torch.cat([images1, negative_pair1])
+        images2 = torch.cat([images2, negative_pair2])
         #images1 = torch.cat([P.shift_trans(images1, k) for k in range(P.K_shift)])
         #images2 = torch.cat([P.shift_trans(images2, k) for k in range(P.K_shift)])
         #shift_labels = torch.cat([torch.ones_like(labels) * k for k in range(P.K_shift)], 0)  # B -> 4B

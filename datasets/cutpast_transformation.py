@@ -1,20 +1,13 @@
 import random
 import math
 from torchvision import transforms
+from torchvision.transforms.functional import to_pil_image, pil_to_tensor
 import torch 
-
-def cut_paste_collate_fn(batch):
-    # cutPaste return 2 tuples of tuples we convert them into a list of tuples
-    img_types = list(zip(*batch))
-#     print(list(zip(*batch)))
-    return [torch.stack(imgs) for imgs in img_types]
-    
 
 class CutPaste(object):
     """Base class for both cutpaste variants with common operations"""
     def __init__(self, colorJitter=0.1, transform=None):
         self.transform = transform
-        
         if colorJitter is None:
             self.colorJitter = None
         else:
@@ -127,41 +120,9 @@ class CutPasteUnion(object):
         self.scar = CutPasteScar(**kwags)
     
     def __call__(self, img):
+        img = to_pil_image(img)
         r = random.uniform(0, 1)
         if r < 0.5:
-            return self.normal(img)
+            return pil_to_tensor(self.normal(img))
         else:
-            return self.scar(img)
-
-class CutPaste3Way(object):
-    def __init__(self, **kwags):
-        self.normal = CutPasteNormal(**kwags)
-        self.scar = CutPasteScar(**kwags)
-    
-    def __call__(self, img):
-        org, cutpaste_normal = self.normal(img)
-        _, cutpaste_scar = self.scar(img)
-        
-        return org, cutpaste_normal, cutpaste_scar
-
-class High_CutPasteUnion(object):
-    def __init__(self, **kwags):
-      kwags1={
-        "width":[25,45],
-        "height":[25,45],
-        "transform": transforms.Compose([transforms.ToTensor(),])  
-      }
-      kwags2={
-        "area_ratio":[0.1,0.2],
-        "aspect_ratio":0.4, 
-        "transform": transforms.Compose([transforms.ToTensor(),])  
-      }
-      self.scar = CutPasteScar(**kwags1)
-      self.normal = CutPasteNormal(**kwags2)
-    
-    def __call__(self, img):
-        r = random.uniform(0, 1)
-        if r < 0.5:
-            return self.normal(img)
-        else:
-            return self.scar(img)
+            return pil_to_tensor(self.scar(img))

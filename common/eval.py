@@ -8,7 +8,7 @@ from common.common import parse_args
 import models.classifier as C
 
 from datasets import set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
-from utils_.utils import get_loader_unique_label
+from utils_.utils import get_loader_unique_lget_loader_unique_labelabel
 
 P = parse_args()
 

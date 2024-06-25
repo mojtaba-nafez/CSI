@@ -59,10 +59,7 @@ for ood in anomaly_labels:
     print(f"testset anomaly(class {ood}):", len(ood_test_set))
     ood_test_loader[ood] = DataLoader(ood_test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
     print("Unique labels(ood_test_loader):", get_loader_unique_label(ood_test_loader[ood]))
- 
-train_exposure_loader = get_exposure_dataloader(P=P, batch_size=P.batch_size, count=len(train_set), image_size=image_size_, cls_list=[P.normal_label])
-print("exposure loader batches, train loader batchs", len(train_exposure_loader), len(train_loader))
-### Initialize model ###
+
 
 simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)
 P.shift_trans, P.K_shift = C.get_shift_module(P, eval=True)
