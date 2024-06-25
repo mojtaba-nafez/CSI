@@ -114,8 +114,6 @@ def parse_args(default=False):
     parser.add_argument("--ood_dataset", help='Datasets for OOD detection',
                         default=None, nargs="*", type=str)
 
-    parser.add_argument("--ood_layer", help='layer for OOD scores',
-                        choices=['penultimate', 'simclr', 'shift'],
                         default=['simclr', 'shift'], nargs="+", type=str)
     parser.add_argument("--ood_samples", help='number of samples to compute OOD score',
                         default=1, type=int)

@@ -22,7 +22,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     kwargs = {
         'simclr_aug': simclr_aug,
         'sample_num': P.ood_samples,
-        'layers': P.ood_layer,
+        'layers': ('simclr', 'shift'),
     }
 
     print('Pre-compute global statistics...')
