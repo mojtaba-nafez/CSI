@@ -95,65 +95,6 @@ class MVTecDataset(Dataset):
     def __len__(self):
         return len(self.image_files)
 
-class MVTecDataset_Cutpasted(Dataset):
-    def __init__(self, root, category, transform=None, train=True, count=-1):
-        self.transform = transform
-        self.image_files = []
-        print("category MVTecDataset_Cutpasted:", category)
-        if train:
-            self.image_files = glob(os.path.join(root, category, "train", "good", "*.png"))
-        else:
-            image_files = glob(os.path.join(root, category, "test", "*", "*.png"))
-            normal_image_files = glob(os.path.join(root, category, "test", "good", "*.png"))
-            anomaly_image_files = list(set(image_files) - set(normal_image_files))
-            self.image_files = image_files
-        if count!=-1:
-            if count<len(self.image_files):
-                self.image_files = self.image_files[:count]
-            else:
-                t = len(self.image_files)
-                for i in range(count-t):
-                    self.image_files.append(random.choice(self.image_files[:t]))
-        self.image_files.sort(key=lambda y: y.lower())
-        self.train = train
-    def __getitem__(self, index):
-        image_file = self.image_files[index]
-        image = Image.open(image_file)
-        image = image.convert('RGB')
-        if self.transform is not None:
-            image = self.transform(image)
-        return image, -1
-
-    def __len__(self):
-        return len(self.image_files)
-    
-
-class HEAD_CT_DATASET(Dataset):
-    def __init__(self, image_path, labels, transform=None, count=-1):
-        self.transform = transform
-        self.image_files = image_path
-        self.labels = labels
-        if count != -1:
-            if count<len(self.image_files):
-                self.image_files = self.image_files[:count]
-                self.labels = self.labels[:count]
-            else:
-                t = len(self.image_files)
-                for i in range(count-t):
-                    self.image_files.append(random.choice(self.image_files[:t]))
-                    self.labels.append(random.choice(self.labels[:t]))
-
-    def __getitem__(self, index):
-        image_file = self.image_files[index]
-        image = Image.open(image_file)
-        image = image.convert('RGB')
-        if self.transform is not None:
-            image = self.transform(image)
-        return image, self.labels[index]
-    
-    def __len__(self):
-        return len(self.image_files)
-
 import torch
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
@@ -239,7 +180,7 @@ class MNIST_CORRUPTION(Dataset):
         return image, label
    
 
-class ISIC2018(Dataset):
+class Custome_Dataset(Dataset):
     def __init__(self, image_path, labels, transform=None, count=-1):
         self.transform = transform
         self.image_files = image_path
@@ -282,23 +223,3 @@ class ImageNet30_Dataset(Dataset):
 
     def __len__(self):
         return len(self.image_files)
-
-
-class Custom_Dataset(Dataset):
-    def __init__(self, image_path, targets, transform=None):
-        self.transform = transform
-        self.image_files = image_path
-        self.targets = targets
-        
-    def __getitem__(self, index):
-        image_file = self.image_files[index]
-        image = Image.open(image_file)
-        image = image.convert('RGB')
-        if self.transform is not None:
-            image = self.transform(image)
-        return image, self.targets[index]
-
-    def __len__(self):
-        return len(self.image_files)
-        
-

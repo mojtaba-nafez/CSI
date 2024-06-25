@@ -203,8 +203,8 @@ def get_dataset(P, dataset, image_size=(32, 32, 3), download=False, eval=False, 
         print("train_image.shape, test_image.shape: ", train_image.shape, test_image.shape)
         print("train_label.shape, test_label.shape: ", train_label.shape, test_label.shape)
         
-        train_set = HEAD_CT_DATASET(image_path=train_image, labels=train_label, transform=d_transform)
-        test_set = HEAD_CT_DATASET(image_path=test_image, labels=test_label, transform=d_transform)
+        train_set = Custome_Dataset(image_path=train_image, labels=train_label, transform=d_transform)
+        test_set = Custome_Dataset(image_path=test_image, labels=test_label, transform=d_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
    
@@ -363,8 +363,8 @@ def get_dataset(P, dataset, image_size=(32, 32, 3), download=False, eval=False, 
             transforms.Resize((image_size[0], image_size[1])),
             transforms.ToTensor(),
         ])
-        train_set = ISIC2018(image_path=train_path, labels=train_label, transform=transform)
-        test_set = ISIC2018(image_path=test_path, labels=test_label, transform=transform)
+        train_set = Custome_Dataset(image_path=train_path, labels=train_label, transform=transform)
+        test_set = Custome_Dataset(image_path=test_path, labels=test_label, transform=transform)
 
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
