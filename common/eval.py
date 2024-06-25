@@ -80,12 +80,9 @@ print("train_set:", len(train_set))
 ### Initialize model ###
 
 simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)
-P.shift_trans, P.K_shift = C.get_shift_module(P, eval=True)
-P.shift_trans = P.shift_trans.to(device)
 
-P.K_shift = 2
 model = C.get_classifier(P.model, n_classes=P.n_classes, activation=P.activation_function, mean=P.noise_mean, std=P.noise_std, noise_scale=P.noise_scale, noist_probability=P.noist_probability).to(device)
-model = C.get_shift_classifer(model, P.K_shift).to(device)
+model = C.get_shift_classifer(model, 2).to(device)
 criterion = nn.CrossEntropyLoss().to(device)
 
 if P.load_path is not None:

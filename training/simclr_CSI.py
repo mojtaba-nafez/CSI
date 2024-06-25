@@ -16,9 +16,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
 
     assert simclr_aug is not None
     assert P.sim_lambda == 1.0  # to avoid mistake
-    P.K_shift = 2
-    assert P.K_shift > 1
-
+   
     if logger is None:
         log_ = print
     else:
