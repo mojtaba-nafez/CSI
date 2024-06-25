@@ -8,10 +8,7 @@ import time
 
 start_time = time.time()
 
-if 'sup' in P.mode:
-    from training.sup import setup
-else:
-    from training.unsup import setup
+from training.unsup import setup
     
 train, fname = setup(P.mode, P)
 
