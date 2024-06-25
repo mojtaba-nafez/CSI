@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 from models.resnet_pretrain import Pretrain_Wide_ResNet_Model, Pretrain_ResNet18_Model
-from models.custom_resent import resnet18, resnet50
+from models.custom_resnet import resnet18, resnet50
 import models.transform_layers as TL
 
 def get_simclr_augmentation(P, image_size):
