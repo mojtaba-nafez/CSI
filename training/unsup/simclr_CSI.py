@@ -40,7 +40,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
     
     for n, (images, labels) in enumerate(loader):
         model.train()
-        count = n * P.n_gpus  # number of trained samples
+        count = n  # number of trained samples
         data_time.update(time.time() - check)
         check = time.time()
         
