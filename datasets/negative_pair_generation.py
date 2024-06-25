@@ -6,7 +6,7 @@ import models.transform_layers as TL
 from datasets.cutpast_transformation import *
 
 class NegativePairGenerator:
-    def __init__(self, probabilities = {'rotation': 0.04, 'cutperm': 0.06, 'cutout': 0.1, 'cutpaste': 0.8}):
+    def __init__(self, probabilities = {'rotation': 0.0, 'cutperm': 0.1, 'cutout': 0.1, 'cutpaste': 0.8}):
         self.probabilities = probabilities
         
         self.rotation_shift = TL.Rotation()
