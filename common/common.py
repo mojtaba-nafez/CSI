@@ -89,6 +89,11 @@ def parse_args(default=False):
                         default=1.0, type=float)
     parser.add_argument('--temperature', help='Temperature for similarity',
                         default=0.5, type=float)
+    parser.add_argument('--timer', default=None, type=int)
+    parser.add_argument('--freezing_layer', help='Freezing Layer',
+                        default=133, type=int)
+    parser.add_argument("--cl_no_hflip", help='activate to not used hflip in contrastive augmentaion.',
+                        action='store_true')
 
     ##### Evaluation Configurations #####
     parser.add_argument("--ood_dataset", help='Datasets for OOD detection',
@@ -98,13 +103,14 @@ def parse_args(default=False):
                         default=1, type=int)
     parser.add_argument("--resize_factor", help='resize scale is sampled from [resize_factor, 1.0]',
                         default=0.08, type=float)
-    parser.add_argument("--cl_no_hflip", help='activate to not used hflip in contrastive augmentaion.',
-                        action='store_true')
     parser.add_argument("--print_score", help='print quantiles of ood score',
                         action='store_true')
-    parser.add_argument('--timer', default=None, type=int)
-    parser.add_argument('--freezing_layer', help='Freezing Layer',
-                        default=133, type=int)
+    parser.add_argument('--noise_mean', help='',
+                        default=0.0, type=float)
+    parser.add_argument('--noise_std', help='',
+                        default=1.0, type=float)
+    parser.add_argument('--noise_scale', help='',
+                        default=0.0, type=float)
     if default:
         return parser.parse_args('')  # empty string
     else:

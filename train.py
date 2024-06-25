@@ -66,8 +66,6 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--resize_factor", str(0.54),
             "--load_path", str(P.load_path),
             "--normal_class", str(P.normal_class),
-            "--noise_scale",str(0.0),
-            "--noist_probability", str(0.0),
             '--activation_function', str(P.activation_function)
         ]
 
