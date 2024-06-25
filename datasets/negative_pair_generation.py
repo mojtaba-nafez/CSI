@@ -3,7 +3,6 @@ import torch
 import torch.nn.functional as F
 import random
 import models.transform_layers as TL
-from datasets.cutpast_transformation import *
 
 class NegativePairGenerator:
     def __init__(self, probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}):

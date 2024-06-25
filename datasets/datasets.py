@@ -8,7 +8,6 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import ImageFolder
 
 from utils.utils import set_random_seed
-from datasets.cutpast_transformation import *
 from PIL import Image
 from glob import glob
 import random
@@ -109,7 +108,7 @@ def get_transform_imagenet():
 
 
 
-def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=False, eval=False, train_transform_cutpasted=None, labels=None):
+def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=False, eval=False, labels=None):
     if dataset in ['imagenet']:
         if eval:
             train_transform, test_transform = get_simclr_eval_transform_imagenet(P.ood_samples,
@@ -122,10 +121,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
 
     if dataset == 'cifar10':
         n_classes = 10
-        if train_transform_cutpasted:
-            train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform_cutpasted)
-        else:
-            train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
+        
+        train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
         test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
@@ -142,10 +139,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.Resize((32, 32)),
             transforms.ToTensor(),
         ])
-        if train_transform_cutpasted:
-            train_set = datasets.CIFAR10('./data', train=True, download=True, transform=train_transform_cutpasted)
-        else:
-            train_set = datasets.CIFAR10('./data', train=True, download=True, transform=train_transform)
+        train_set = datasets.CIFAR10('./data', train=True, download=True, transform=train_transform)
 
         for i in range(len(train_set)):
             train_set.targets[i] = 0
@@ -172,10 +166,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.Resize((32, 32)),
             transforms.ToTensor(),
         ])
-        if train_transform_cutpasted:
-            train_set = datasets.CIFAR100('./data', train=True, download=True, transform=train_transform_cutpasted)
-        else:
-            train_set = datasets.CIFAR100('./data', train=True, download=True, transform=train_transform)
+        train_set = datasets.CIFAR100('./data', train=True, download=True, transform=train_transform)
 
         for i in range(len(train_set)):
             train_set.targets[i] = 0
@@ -221,10 +212,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
 
         print("train_image.shape, test_image.shape: ", train_image.shape, test_image.shape)
         print("train_label.shape, test_label.shape: ", train_label.shape, test_label.shape)
-        if train_transform_cutpasted:
-            train_set = HEAD_CT_DATASET(image_path=train_image, labels=train_label, transform=train_transform_cutpasted)
-        else:
-            train_set = HEAD_CT_DATASET(image_path=train_image, labels=train_label, transform=train_transform)
+        
+        train_set = HEAD_CT_DATASET(image_path=train_image, labels=train_label, transform=train_transform)
         test_set = HEAD_CT_DATASET(image_path=test_image, labels=test_label, transform=test_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
@@ -246,10 +235,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
                 transforms.ToTensor(),
             ])
         for class_idx in labels:
-            if train_transform_cutpasted:
-                train_dataset.append(MVTecDataset_Cutpasted(root=root, train=True, category=CLASS_NAMES[class_idx], transform=train_transform_cutpasted, count=-1))
-            else:
-                train_dataset.append(MVTecDataset(root=root, train=True, category=CLASS_NAMES[class_idx], transform=train_transform, count=-1))
+            train_dataset.append(MVTecDataset(root=root, train=True, category=CLASS_NAMES[class_idx], transform=train_transform, count=-1))
             test_dataset.append(MVTecDataset(root=root, train=False, category=CLASS_NAMES[class_idx], transform=test_transform, count=-1))
 
         train_set = ConcatDataset(train_dataset)
@@ -273,10 +259,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
         ])
-        if train_transform_cutpasted:
-            train_set = datasets.FashionMNIST(DATA_PATH, train=True, download=download, transform=train_transform_cutpasted)
-        else:
-            train_set = datasets.FashionMNIST(DATA_PATH, train=True, download=download, transform=train_transform)
+        train_set = datasets.FashionMNIST(DATA_PATH, train=True, download=download, transform=train_transform)
         test_set = datasets.FashionMNIST(DATA_PATH, train=False, download=download, transform=test_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
@@ -284,10 +267,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
     elif dataset == 'cifar100':
         # image_size = (32, 32, 3)
         n_classes = 100
-        if train_transform_cutpasted:
-            train_set = datasets.CIFAR100(DATA_PATH, train=True, download=download, transform=train_transform_cutpasted)
-        else:
-            train_set = datasets.CIFAR100(DATA_PATH, train=True, download=download, transform=train_transform)
+    
+        train_set = datasets.CIFAR100(DATA_PATH, train=True, download=download, transform=train_transform)
         test_set = datasets.CIFAR100(DATA_PATH, train=False, download=download, transform=test_transform)
         test_set.targets = sparse2coarse(test_set.targets)
         train_set.targets = sparse2coarse(train_set.targets)
@@ -307,10 +288,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
         ])
-        if train_transform_cutpasted:
-            train_set = datasets.MNIST(DATA_PATH, train=True, download=download, transform=train_transform_cutpasted)
-        else:
-            train_set = datasets.MNIST(DATA_PATH, train=True, download=download, transform=train_transform)
+        
+        train_set = datasets.MNIST(DATA_PATH, train=True, download=download, transform=train_transform)
         test_set = datasets.MNIST(DATA_PATH, train=False, download=download, transform=test_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
@@ -357,10 +336,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.Resize((image_size[0], image_size[1])),
             transforms.ToTensor(),
         ])
-        if train_transform_cutpasted:
-            train_set = datasets.SVHN(DATA_PATH, split='train', download=download, transform=train_transform_cutpasted)
-        else:
-            train_set = datasets.SVHN(DATA_PATH, split='train', download=download, transform=transform)
+        train_set = datasets.SVHN(DATA_PATH, split='train', download=download, transform=transform)
         test_set = datasets.SVHN(DATA_PATH, split='test', download=download, transform=transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
@@ -405,17 +381,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.Resize((image_size[0], image_size[1])),
             transforms.ToTensor(),
         ])
-        if train_transform_cutpasted:
-            train_transform_cutpasted = transforms.Compose([
-                transforms.Resize((image_size[0], image_size[1])),
-                CutPasteUnion(),
-                CutPasteUnion(transform = transforms.Compose([transforms.ToTensor(),])),
-            ])
-
-            train_set = ISIC2018(image_path=train_path, labels=train_label, transform=train_transform_cutpasted)
-        else:
-            train_set = ISIC2018(image_path=train_path, labels=train_label, transform=transform)
-
+        train_set = ISIC2018(image_path=train_path, labels=train_label, transform=transform)
         test_set = ISIC2018(image_path=test_path, labels=test_label, transform=transform)
 
         print("train_set shapes: ", train_set[0][0].shape)
