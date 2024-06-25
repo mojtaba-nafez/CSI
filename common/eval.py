@@ -38,7 +38,7 @@ P.image_size = image_size
 P.n_classes = n_classes
 
 full_test_set = deepcopy(test_set)
-if P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-eval' or P.dataset=='ISIC2018' or P.dataset=='mvtecad' or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
+if P.dataset=='cifar10-vs-x' or P.dataset=='cifar100-vs-x' or P.dataset=='ISIC2018' or P.dataset=='mvtecad' or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
     train_set = set_dataset_count(train_set, count=P.main_count)
     test_set = get_subclass_dataset(P, test_set, classes=[0])
 else:
@@ -62,7 +62,7 @@ print("Unique labels(train_loader):", get_loader_unique_label(train_loader))
 
 
 P.ood_dataset = anomaly_labels
-if P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-eval' or P.dataset=='ISIC2018' or P.dataset=="mvtecad" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
+if P.dataset=='cifar10-vs-x' or P.dataset=='cifar100-vs-x' or P.dataset=='ISIC2018' or P.dataset=="mvtecad" or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
     P.ood_dataset = [1]
 print("P.ood_dataset",  P.ood_dataset)
 

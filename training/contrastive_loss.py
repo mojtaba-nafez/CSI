@@ -1,5 +1,4 @@
 import torch
-import torch.distributed as dist
 
 
 def get_similarity_matrix(outputs, chunk=2, multi_gpu=False):

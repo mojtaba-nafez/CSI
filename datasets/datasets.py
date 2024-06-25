@@ -108,12 +108,10 @@ def get_transform_imagenet():
 
 
 
-def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=False, eval=False, labels=None):
+def get_dataset(P, dataset, image_size=(32, 32, 3), download=False, eval=False, labels=None):
     if dataset in ['imagenet']:
         if eval:
-            train_transform, test_transform = get_simclr_eval_transform_imagenet(P.ood_samples,
-                                                                P.resize_factor, P.resize_fix)
-
+            train_transform, test_transform = get_simclr_eval_transform_imagenet(P.ood_samples, P.resize_factor, P.resize_fix)
         else:
             train_transform, test_transform = get_transform_imagenet()
     else:
@@ -161,7 +159,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
         ])
-
         transform = transforms.Compose([
             transforms.Resize((32, 32)),
             transforms.ToTensor(),
@@ -183,14 +180,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         
     elif dataset == 'head-ct':
         n_classes = 2
-        train_transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.Grayscale(num_output_channels=1),
-            transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-        ])
-        test_transform = transforms.Compose([
+        d_transform = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.Grayscale(num_output_channels=1),
@@ -213,8 +203,8 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("train_image.shape, test_image.shape: ", train_image.shape, test_image.shape)
         print("train_label.shape, test_label.shape: ", train_label.shape, test_label.shape)
         
-        train_set = HEAD_CT_DATASET(image_path=train_image, labels=train_label, transform=train_transform)
-        test_set = HEAD_CT_DATASET(image_path=test_image, labels=test_label, transform=test_transform)
+        train_set = HEAD_CT_DATASET(image_path=train_image, labels=train_label, transform=d_transform)
+        test_set = HEAD_CT_DATASET(image_path=test_image, labels=test_label, transform=d_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
    
@@ -265,7 +255,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("test_set shapes: ", test_set[0][0].shape)
     
     elif dataset == 'cifar100':
-        # image_size = (32, 32, 3)
         n_classes = 100
     
         train_set = datasets.CIFAR100(DATA_PATH, train=True, download=download, transform=train_transform)
@@ -276,21 +265,15 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
     elif dataset == 'mnist':
-        # image_size = (32, 32, 1)
         n_classes = 10
-        train_transform = transforms.Compose([
-            transforms.Resize((image_size[0], image_size[1])),
-            transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-        ])
-        test_transform = transforms.Compose([
+        d_transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
         ])
         
-        train_set = datasets.MNIST(DATA_PATH, train=True, download=download, transform=train_transform)
-        test_set = datasets.MNIST(DATA_PATH, train=False, download=download, transform=test_transform)
+        train_set = datasets.MNIST(DATA_PATH, train=True, download=download, transform=d_transform)
+        test_set = datasets.MNIST(DATA_PATH, train=False, download=download, transform=d_transform)
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
     elif dataset=='cifar10-corruption':
@@ -330,7 +313,6 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("test_set shapes: ", test_set[0][0].shape)
         
     elif dataset == 'svhn-10':
-        # image_size = (32, 32, 3)
         n_classes = 10
         transform = transforms.Compose([
             transforms.Resize((image_size[0], image_size[1])),
@@ -387,7 +369,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
         print("len(test_set), len(train_set): ", len(test_set), len(train_set))
-    elif dataset == 'cifar100-versus-other-eval':
+    elif dataset == 'cifar100-vs-x':
         n_classes = 2
         cifar_transform = transforms.Compose([
                 transforms.Resize((32, 32)),
@@ -437,7 +419,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         print("test_set shapes: ", test_set[0][0].shape)
 
 
-    elif dataset == 'cifar10-versus-other-eval':
+    elif dataset == 'cifar10-vs-x':
         n_classes = 2
         cifar_transform = transforms.Compose([
                 transforms.Resize((32, 32)),
@@ -485,11 +467,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
         test_set = torch.utils.data.ConcatDataset([anomaly_testset, normal_testset]) 
         print("train_set shapes: ", train_set[0][0].shape)
         print("test_set shapes: ", test_set[0][0].shape)
-    
-    elif dataset == 'svhn':
-        assert test_only and image_size is not None
-        test_set = datasets.SVHN(DATA_PATH, split='test', download=download, transform=test_transform)
-
+   
     elif dataset == 'imagenet':
         image_size = (224, 224, 3)
         n_classes = 30
@@ -503,10 +481,7 @@ def get_dataset(P, dataset, test_only=False, image_size=(32, 32, 3), download=Fa
     else:
         raise NotImplementedError()
 
-    if test_only:
-        return test_set
-    else:
-        return train_set, test_set, image_size, n_classes
+    return train_set, test_set, image_size, n_classes
 
 
 def get_superclass_list(dataset):
@@ -521,7 +496,7 @@ def get_superclass_list(dataset):
     elif dataset == 'cifar100-versus-10':
         return CIFAR10_VER_CIFAR100_SUPERCLASS
         return ART_BENCH_SUPERCLASS
-    elif dataset=='head-ct' or dataset=='cifar100-versus-other-eval' or dataset=='cifar10-versus-other-eval':
+    elif dataset=='head-ct' or dataset=='cifar100-vs-x' or dataset=='cifar10-vs-x':
         return HEAD_CT_SUPERCLASS
     elif dataset == 'mvtecad':
         return MVTEC_HV_SUPERCLASS
