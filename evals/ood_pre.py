@@ -17,7 +17,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     auroc_dict = dict()
 
     base_path = os.path.split(P.load_path)[0]  # checkpoint directory
-    prefix = os.path.join(base_path, f'feats_{P.ood_samples}_resize_factor_{resize_factor}')
+    prefix = os.path.join(base_path, f'feats_{P.ood_samples}_resize_factor_{P.resize_factor}')
 
     kwargs = {
         'simclr_aug': simclr_aug,
