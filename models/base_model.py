@@ -37,6 +37,10 @@ class BaseModel(nn.Module, metaclass=ABCMeta):
             _return_aux = True
             _aux['shift'] = self.shift_cls_layer(features)
 
+        if joint:
+            _return_aux = True
+            _aux['joint'] = self.joint_distribution_layer(features)
+
         if _return_aux:
             return output, _aux
 
