@@ -14,7 +14,7 @@ P = parse_args()
 
 
 cls_list = get_superclass_list(P.dataset)
-anomaly_labels = [elem for elem in cls_list if elem not in P.normal_label]
+anomaly_labels = [elem for elem in cls_list if elem not in [P.normal_label]]
 
 ### Set torch device ###
 
