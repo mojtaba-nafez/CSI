@@ -37,7 +37,8 @@ def parse_args(default=False):
                             "zigzag"
                         ],
                         default="brightness", type=str)
-                
+    parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
+                        action='store_true')
     parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
                         default=None, type=int)
     parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
