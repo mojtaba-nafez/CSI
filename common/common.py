@@ -9,8 +9,8 @@ def parse_args(default=False):
     parser.add_argument('--dataset', help='Dataset',
                         choices=['cifar100-vs-x', 'cifar10-vs-x', 'ISIC2018', 'svhn-10-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'cifar10-corruption', 'mnist-corruption', 'mvtecad','head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10'],
                         default="cifar10", type=str)
-    parser.add_argument('--outlier_dataset', help='',
-                            default="mnist",choices=['imagenet30', 'mnist', 'svhn', 'fashion-mnist'] ,type=str, help='outlier of cifar100-vs-x or cifar10-vs-x setup')
+    parser.add_argument('--outlier_dataset', help='outlier of cifar100-vs-x or cifar10-vs-x setup',
+                            default="mnist",choices=['imagenet30', 'mnist', 'svhn', 'fashion-mnist'] ,type=str)
     parser.add_argument('--normal_class', help='normal class of dataset',
                         default=0, type=int)
     parser.add_argument('--cifar_corruption_data', help='',
