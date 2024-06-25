@@ -467,6 +467,7 @@ class CutPasteLayer(torch.nn.Module):
             mask_rotated = torch.zeros(3, height, width).to(self.device)
             mask_rotated[:, to_location_h:to_location_h + cut_h,  to_location_w:to_location_w + cut_w] = 1
             mask_rotated = TF.rotate(mask_rotated, angle)
+            print(x[i].is_cuda, mask_rotated.is_cuda, img_mask_rotated.is_cuda)
             x[i] = x[i]*(1-mask_rotated) + img_mask_rotated*(mask_rotated)
         return x
 
