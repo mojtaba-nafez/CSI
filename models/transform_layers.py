@@ -461,8 +461,8 @@ class CutPasteLayer(torch.nn.Module):
             img_mask_rotated = torch.zeros(3, height, width).to(self.device)
             #r = random.uniform(0, 1)
             img_mask_rotated[:, to_location_h:to_location_h + cut_h,  to_location_w:to_location_w + cut_w] = x[i, :, from_location_h:from_location_h + cut_h, from_location_w:from_location_w + cut_w].clone()
-            img_mask_rotated = TF.rotate(img_mask_rotated, angle)
-            # img_mask_rotated = self.transform_(img_mask_rotated.unsqueeze(0).cpu()).squeeze().to(self.device)
+            img_mask_rotated = TF.rotate(img_mask_rotated, angle).to(self.device)
+            # img_mask_rotated = self.transform_(img_mask_rotated.unsqueeze(0).cpu()).squeeze()
                 
             mask_rotated = torch.zeros(3, height, width).to(self.device)
             mask_rotated[:, to_location_h:to_location_h + cut_h,  to_location_w:to_location_w + cut_w] = 1
