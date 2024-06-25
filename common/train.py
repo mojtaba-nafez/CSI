@@ -63,7 +63,7 @@ for ood in anomaly_labels:
 
 simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)
 
-model = C.get_classifier(P.model, n_classes=P.n_classes, activation=P.activation_function, mean=P.noise_mean, std=P.noise_std, noise_scale=P.noise_scale, noist_probability=P.noist_probability, freezing_layer=P.freezing_layer).to(device)
+model = C.get_classifier(P.model, n_classes=P.n_classes, activation=P.activation_function, freezing_layer=P.freezing_layer).to(device)
 model = C.get_shift_classifer(model, 2).to(device)
 
 criterion = nn.CrossEntropyLoss().to(device)

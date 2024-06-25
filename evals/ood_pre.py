@@ -54,16 +54,16 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     print(f'Compute OOD scores...')
     scores_id = get_scores(P, feats_id).numpy()
     scores_ood = dict()
-    if P.one_class_idx is not None:
+    if P.normal_class is not None:
         one_class_score = []
 
     for ood, feats in feats_ood.items():
         scores_ood[ood] = get_scores(P, feats).numpy()
         auroc_dict[ood]= get_auroc(scores_id, scores_ood[ood])
-        if P.one_class_idx is not None:
+        if P.normal_class is not None:
             one_class_score.append(scores_ood[ood])
 
-    if P.one_class_idx is not None:
+    if P.normal_class is not None:
         one_class_score = np.concatenate(one_class_score)
         one_class_total = get_auroc(scores_id, one_class_score)
         print(f'One_class_real_mean: {one_class_total}')

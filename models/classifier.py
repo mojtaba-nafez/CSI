@@ -37,7 +37,7 @@ def get_shift_classifer(model, shift_head_neuron):
     return model
 
 
-def get_classifier(mode, n_classes=10, activation='relu', std=1.0, mean=0.0, noise_scale=0.1, noist_probability=0.5, freezing_layer=133):
+def get_classifier(mode, n_classes=10, activation='relu', freezing_layer=133):
     if mode == 'resnet18':
         classifier = ResNet18(num_classes=n_classes, activation=activation)
     elif mode == "pretrain-wide-resnet":
