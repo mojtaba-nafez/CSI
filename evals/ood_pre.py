@@ -14,7 +14,6 @@ hflip = TL.HorizontalFlipLayer().to(device)
 
 
 def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simclr_aug=None):
-    P.K_shift = 1
     auroc_dict = dict()
 
     base_path = os.path.split(P.load_path)[0]  # checkpoint directory
@@ -26,7 +25,6 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
         prefix += f'_resize_range_{P.resize_factor}'
 
     prefix = os.path.join(base_path, f'feats_{prefix}')
-
     kwargs = {
         'simclr_aug': simclr_aug,
         'sample_num': P.ood_samples,
@@ -37,25 +35,19 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     feats_train = get_features(P, f'{P.dataset}_train', model, train_loader, prefix=prefix, **kwargs)  # (M, T, d)
 
     P.axis = []
-    for f in feats_train['simclr'].chunk(P.K_shift, dim=1):
-        axis = f.mean(dim=1)  # (M, d)
-        P.axis.append(normalize(axis, dim=1).to(device))
+    axis = feats_train['simclr'].mean(dim=1)
+    P.axis.append(normalize(axis, dim=1).to(device))
     print('axis size: ' + ' '.join(map(lambda x: str(len(x)), P.axis)))
 
-    f_sim = [f.mean(dim=1) for f in feats_train['simclr'].chunk(P.K_shift, dim=1)]  # list of (M, d)
-    f_shi = [f.mean(dim=1) for f in feats_train['shift'].chunk(P.K_shift, dim=1)]  # list of (M, 4)
+    f_sim = [feats_train['simclr'].mean(dim=1)]
+    f_shi = [feats_train['shift'].mean(dim=1)]
 
-    weight_sim = []
-    weight_shi = []
-    for shi in range(P.K_shift):
-        sim_norm = f_sim[shi].norm(dim=1)  # (M)
-        shi_mean = f_shi[shi][:, shi]  # (M)
-        weight_sim.append(1 / sim_norm.mean().item())
-        weight_shi.append(1 / shi_mean.mean().item())
-
-
-    P.weight_sim = weight_sim
-    P.weight_shi = weight_shi
+    P.weight_sim = []
+    P.weight_shi = []
+    sim_norm = f_sim[0].norm(dim=1)
+    shi_mean = f_shi[0][:, 0]
+    P.weight_sim.append(1 / sim_norm.mean().item())
+    P.weight_shi.append(1 / shi_mean.mean().item())
     
     print(f'weight_sim:\t' + '\t'.join(map('{:.4f}'.format, P.weight_sim)))
     print(f'weight_shi:\t' + '\t'.join(map('{:.4f}'.format, P.weight_shi)))
@@ -64,10 +56,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     feats_id = get_features(P, P.dataset, model, id_loader, prefix=prefix, **kwargs)  # (N, T, d)
     feats_ood = dict()
     for ood, ood_loader in ood_loaders.items():
-        if ood == 'interp':
-            feats_ood[ood] = get_features(P, ood, model, id_loader, interp=True, prefix=prefix, **kwargs)
-        else:
-            feats_ood[ood] = get_features(P, ood, model, ood_loader, prefix=prefix, **kwargs)
+        feats_ood[ood] = get_features(P, ood, model, ood_loader, prefix=prefix, **kwargs)
 
     print(f'Compute OOD scores...')
     scores_id = get_scores(P, feats_id).numpy()
@@ -117,7 +106,7 @@ def get_scores(P, feats_dict):
     return scores.cpu()
 
 
-def get_features(P, data_name, model, loader, interp=False, prefix='',
+def get_features(P, data_name, model, loader, prefix='',
                  simclr_aug=None, sample_num=1, layers=('simclr', 'shift')):
 
     if not isinstance(layers, (list, tuple)):
@@ -126,7 +115,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
     feats_dict = dict()
     left = [layer for layer in layers if layer not in feats_dict.keys()]
     if len(left) > 0:
-        _feats_dict = _get_features(P, model, loader, interp, P.dataset == 'imagenet',
+        _feats_dict = _get_features(P, model, loader, P.dataset == 'imagenet',
                                     simclr_aug, sample_num, layers=left)
 
         for layer, feats in _feats_dict.items():
@@ -137,7 +126,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
     return feats_dict
 
 
-def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=None,
+def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
                   sample_num=1, layers=('simclr', 'shift')):
 
     if not isinstance(layers, (list, tuple)):
@@ -153,11 +142,6 @@ def _get_features(P, model, loader, interp=False, imagenet=False, simclr_aug=Non
     model.eval()
     feats_all = {layer: [] for layer in layers}  # initialize: empty list
     for i, (x, _) in enumerate(loader):
-        if interp:
-            x_interp = (x + last) / 2 if i > 0 else x  # omit the first batch, assume batch sizes are equal
-            last = x  # save the last batch
-            x = x_interp  # use interp as current batch
-
         if imagenet is True:
             x = torch.cat(x[0], dim=0)  # augmented list of x
 

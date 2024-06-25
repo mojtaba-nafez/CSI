@@ -37,11 +37,7 @@ train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, e
 P.image_size = image_size
 P.n_classes = n_classes
 
-print("full test set:", len(test_set))
-print("full train set:", len(train_set))
-
-
-full_test_set = deepcopy(test_set)  # test set of full classes
+full_test_set = deepcopy(test_set)
 if P.dataset=='cifar10-versus-other-eval' or P.dataset=='cifar100-versus-other-eval' or P.dataset=='ISIC2018' or P.dataset=='mvtecad' or P.dataset=='cifar10-versus-100' or P.dataset=='cifar100-versus-10':
     train_set = set_dataset_count(train_set, count=P.main_count)
     test_set = get_subclass_dataset(P, test_set, classes=[0])
