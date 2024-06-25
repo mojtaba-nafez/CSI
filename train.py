@@ -1,16 +1,18 @@
-from utils_.utils import Logger
-from utils_.utils import save_checkpoint
-from utils_.utils import save_linear_checkpoint
+from utils.utils import Logger
+from utils.utils import save_checkpoint
+from utils.utils import save_linear_checkpoint
 import os
 from common.train import *
-from evals import test_classifier
 import time
+from train.unsup.simclr_CSI import train
 
 start_time = time.time()
 
-from training.unsup import setup
-    
-train, fname = setup(P.mode, P)
+fname = f'unode_{P.dataset}_{P.model}'
+if P.normal_label is not None:
+    fname += f'_one_class_{P.normal_label}'
+if P.suffix is not None:
+    fname += f'_{P.suffix}'
 
 logger = Logger(fname, ask=not resume, local_rank=P.local_rank)
 logger.log(P)
@@ -59,7 +61,6 @@ for epoch in range(start_epoch, P.epochs + 1):
             "--mode", "ood_pre",
             "--dataset", str(P.dataset),
             "--model", str(P.model),
-            "--ood_score", "CSI",
             "--shift_trans_type", "rotation",
             "--print_score",
             "--ood_samples", "10",

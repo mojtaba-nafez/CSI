@@ -10,6 +10,7 @@ import torch
 from matplotlib import pyplot as plt
 from tensorboardX import SummaryWriter
 from prettytable import PrettyTable
+from sklearn.metrics import roc_auc_score
 
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
@@ -23,6 +24,10 @@ def count_parameters(model):
     print(f"Total Trainable Params: {total_params}")
     return total_params
 
+def get_auroc(scores_id, scores_ood):
+    scores = np.concatenate([scores_id, scores_ood])
+    labels = np.concatenate([np.ones_like(scores_id), np.zeros_like(scores_ood)])
+    return roc_auc_score(labels, scores)
 
 class Logger(object):
     """Reference: https://gist.github.com/gyglim/1f8dfb1b5c82627ae3efcfbbadb9f514"""

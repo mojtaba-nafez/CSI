@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 def parse_args(default=False):
     """Command-line argument parser for training."""
 
-    parser = ArgumentParser(description='Pytorch implementation of CSI')
+    parser = ArgumentParser(description='Pytorch implementation of Unode')
 
     parser.add_argument('--dataset', help='Dataset',
                         choices=['cifar100-versus-other-eval', 'cifar10-versus-other-eval', 'ISIC2018', 'svhn-10-corruption', 'cifar100-corruption', 'cifar100-versus-10', 'cifar10-versus-100', 'cifar10-corruption', 'mnist-corruption', 'mvtecad','head-ct', 'fashion-mnist', 'mnist', 'cifar10', 'cifar100', 'imagenet', 'svhn-10'],
@@ -115,8 +115,7 @@ def parse_args(default=False):
     ##### Evaluation Configurations #####
     parser.add_argument("--ood_dataset", help='Datasets for OOD detection',
                         default=None, nargs="*", type=str)
-    parser.add_argument("--ood_score", help='score function for OOD detection',
-                        default=['norm_mean'], nargs="+", type=str)
+
     parser.add_argument("--ood_layer", help='layer for OOD scores',
                         choices=['penultimate', 'simclr', 'shift'],
                         default=['simclr', 'shift'], nargs="+", type=str)

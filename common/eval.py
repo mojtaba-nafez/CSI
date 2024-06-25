@@ -8,7 +8,7 @@ from common.common import parse_args
 import models.classifier as C
 
 from datasets import set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
-from utils_.utils import get_loader_unique_label
+from utils.utils import get_loader_unique_label
 
 P = parse_args()
 
@@ -27,9 +27,7 @@ if torch.cuda.is_available():
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
 ### Initialize dataset ###
-ood_eval = P.mode == 'ood_pre'
-
-if P.dataset == 'imagenet' and ood_eval:
+if P.dataset == 'imagenet':
     P.batch_size = 1
     P.test_batch_size = 1
 

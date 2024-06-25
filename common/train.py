@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from common.common import parse_args
 import models.classifier as C
 from datasets import set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
-from utils_.utils import load_checkpoint, get_loader_unique_label, count_parameters
+from utils.utils import load_checkpoint, get_loader_unique_label, count_parameters
 
 P = parse_args()
 cls_list = get_superclass_list(P.dataset)

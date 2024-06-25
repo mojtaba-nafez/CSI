@@ -5,7 +5,7 @@ import torch.optim
 import models.transform_layers as TL
 from training.contrastive_loss import get_similarity_matrix, NT_xent
 from datasets.negative_pair_generation import NegativePairGenerator
-from utils_.utils import AverageMeter, normalize
+from utils.utils import AverageMeter, normalize
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 hflip = TL.HorizontalFlipLayer().to(device)
@@ -63,9 +63,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         
         images1 = torch.cat([images1, negative_pair1])
         images2 = torch.cat([images2, negative_pair2])
-        #images1 = torch.cat([P.shift_trans(images1, k) for k in range(P.K_shift)])
-        #images2 = torch.cat([P.shift_trans(images2, k) for k in range(P.K_shift)])
-        #shift_labels = torch.cat([torch.ones_like(labels) * k for k in range(P.K_shift)], 0)  # B -> 4B
+       
         shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
         shift_labels = shift_labels.repeat(2)
         

@@ -7,21 +7,15 @@ import torch.nn.functional as F
 import numpy as np
 
 import models.transform_layers as TL
-from utils_.utils import set_random_seed, normalize
-from evals.evals import get_auroc
+from utils.utils import set_random_seed, normalize, get_auroc
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 hflip = TL.HorizontalFlipLayer().to(device)
 
 
-def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
+def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simclr_aug=None):
     P.K_shift = 1
     auroc_dict = dict()
-    for ood in ood_loaders.keys():
-        auroc_dict[ood] = dict()
-
-    assert len(ood_scores) == 1  # assume single ood_score for simplicity
-    ood_score = ood_scores[0]
 
     base_path = os.path.split(P.load_path)[0]  # checkpoint directory
 
@@ -59,15 +53,10 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
         weight_sim.append(1 / sim_norm.mean().item())
         weight_shi.append(1 / shi_mean.mean().item())
 
-    if ood_score == 'simclr':
-        P.weight_sim = [1]
-        P.weight_shi = [0]
-    elif ood_score == 'CSI':
-        P.weight_sim = weight_sim
-        P.weight_shi = weight_shi
-    else:
-        raise ValueError()
 
+    P.weight_sim = weight_sim
+    P.weight_shi = weight_shi
+    
     print(f'weight_sim:\t' + '\t'.join(map('{:.4f}'.format, P.weight_sim)))
     print(f'weight_shi:\t' + '\t'.join(map('{:.4f}'.format, P.weight_shi)))
 
@@ -80,15 +69,15 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
         else:
             feats_ood[ood] = get_features(P, ood, model, ood_loader, prefix=prefix, **kwargs)
 
-    print(f'Compute OOD scores... (score: {ood_score})')
-    scores_id = get_scores(P, feats_id, ood_score).numpy()
+    print(f'Compute OOD scores...')
+    scores_id = get_scores(P, feats_id).numpy()
     scores_ood = dict()
     if P.one_class_idx is not None:
         one_class_score = []
 
     for ood, feats in feats_ood.items():
-        scores_ood[ood] = get_scores(P, feats, ood_score).numpy()
-        auroc_dict[ood][ood_score] = get_auroc(scores_id, scores_ood[ood])
+        scores_ood[ood] = get_scores(P, feats).numpy()
+        auroc_dict[ood]= get_auroc(scores_id, scores_ood[ood])
         if P.one_class_idx is not None:
             one_class_score.append(scores_ood[ood])
 
@@ -105,7 +94,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loade
     return auroc_dict
 
 
-def get_scores(P, feats_dict, ood_score):
+def get_scores(P, feats_dict):
     # convert to gpu tensor
     feats_sim = feats_dict['simclr'].to(device)
     feats_shi = feats_dict['shift'].to(device)
@@ -134,14 +123,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
     if not isinstance(layers, (list, tuple)):
         layers = [layers]
 
-    # load pre-computed features if exists
     feats_dict = dict()
-    # for layer in layers:
-    #     path = prefix + f'_{data_name}_{layer}.pth'
-    #     if os.path.exists(path):
-    #         feats_dict[layer] = torch.load(path)
-
-    # pre-compute features and save to the path
     left = [layer for layer in layers if layer not in feats_dict.keys()]
     if len(left) > 0:
         _feats_dict = _get_features(P, model, loader, interp, P.dataset == 'imagenet',
@@ -150,7 +132,7 @@ def get_features(P, data_name, model, loader, interp=False, prefix='',
         for layer, feats in _feats_dict.items():
             path = prefix + f'_{data_name}_{layer}.pth'
             torch.save(_feats_dict[layer], path)
-            feats_dict[layer] = feats  # update value
+            feats_dict[layer] = feats 
 
     return feats_dict
 
