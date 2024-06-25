@@ -42,8 +42,8 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     P.weight_sim = 1 / sim_norm.mean().item()
     P.weight_shi = 1 / shi_mean.mean().item()
     
-    print(f'weight_sim:\t' + '\t'.join(map('{:.4f}'.format, P.weight_sim)))
-    print(f'weight_shi:\t' + '\t'.join(map('{:.4f}'.format, P.weight_shi)))
+    print(f'weight_sim: {P.weight_sim}')
+    print(f'weight_shi: {P.weight_shi}')
 
     print('Pre-compute features...')
     feats_id = get_features(P, P.dataset, model, id_loader, prefix=prefix, **kwargs)  # (N, T, d)
