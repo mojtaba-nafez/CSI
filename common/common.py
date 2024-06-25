@@ -120,8 +120,6 @@ def parse_args(default=False):
                         default=100, type=int)
     parser.add_argument("--resize_factor", help='resize scale is sampled from [resize_factor, 1.0]',
                         default=0.08, type=float)
-    parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
-                        action='store_true')
     parser.add_argument("--cl_no_hflip", help='activate to not used hflip in contrastive augmentaion.',
                         action='store_true')
     parser.add_argument("--print_score", help='print quantiles of ood score',
