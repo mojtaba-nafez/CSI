@@ -32,7 +32,7 @@ def get_simclr_augmentation(P, image_size):
 
 
 def get_shift_module(P, eval=False):
-
+    P.shift_trans_type = 'rotation'
     if P.shift_trans_type == 'rotation':
         shift_transform = TL.Rotation()
         K_shift = 4
