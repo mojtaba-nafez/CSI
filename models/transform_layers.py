@@ -444,9 +444,8 @@ class CutPasteLayer(torch.nn.Module):
             transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
             transforms.RandomHorizontalFlip(),
         ])
-    def scar(self, x):
+    def apply_cp(self, x):
         batch_size, channels, height, width = x.size()
-        x = x.to(self.device)
         for i in range(batch_size):
             cut_w = int(random.uniform(int(0.1*width), int(0.35*width)))
             cut_h = int(random.uniform(int(0.1*height), int(0.35*height)))
@@ -473,4 +472,4 @@ class CutPasteLayer(torch.nn.Module):
 
     def forward(self, x):
         x_ = x.clone()
-        return self.scar(x_)
+        return self.apply_cp(x_)

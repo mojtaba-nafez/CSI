@@ -13,6 +13,7 @@ class NegativePairGenerator:
         self.cutperm_shift = TL.CutPerm()
         self.cutpaste_shift = TL.CutPasteLayer()
         self.aug_to_func = {'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
+        self.device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
@@ -39,7 +40,8 @@ class NegativePairGenerator:
         # output:torch.rand(3, 224, 224)
         return self.cutpaste_shift(img.unsqueeze(0)).squeeze()
 
-    def create_negative_pair(self, batch_image):   
+    def create_negative_pair(self, batch_image):
+        batch_image = batch_image.to(self.device)   
         augs = list(self.probabilities.keys())
         probs = list(self.probabilities.values())            
         batch_transforms = np.random.choice(augs, size=batch_image.shape[0], p=probs)
