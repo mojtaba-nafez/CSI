@@ -32,13 +32,9 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     axis = feats_train['simclr'].mean(dim=1)
     P.axis.append(normalize(axis, dim=1).to(device))
     print('axis size: ' + ' '.join(map(lambda x: str(len(x)), P.axis)))
-
-    f_sim = [feats_train['simclr'].mean(dim=1)]
-    f_shi = [feats_train['shift'].mean(dim=1)]
-
  
-    sim_norm = f_sim[0].norm(dim=1)
-    shi_mean = f_shi[0][:, 0]
+    sim_norm = feats_train['simclr'].mean(dim=1).norm(dim=1)
+    shi_mean = feats_train['shift'].mean(dim=1)[:, 0]
     P.weight_sim = 1 / sim_norm.mean().item()
     P.weight_shi = 1 / shi_mean.mean().item()
     
@@ -120,12 +116,6 @@ def get_features(P, data_name, model, loader, prefix='',
 def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
                   sample_num=1, layers=('simclr', 'shift')):
 
-    if not isinstance(layers, (list, tuple)):
-        layers = [layers]
-
-    # check if arguments are valid
-    assert simclr_aug is not None
-
     if imagenet is True:  # assume batch_size = 1 for ImageNet
         sample_num = 1
 
@@ -135,9 +125,7 @@ def _get_features(P, model, loader, imagenet=False, simclr_aug=None,
     for i, (x, _) in enumerate(loader):
         if imagenet is True:
             x = torch.cat(x[0], dim=0)  # augmented list of x
-
         x = x.to(device)  # gpu tensor
-
         # compute features in one batch
         feats_batch = {layer: [] for layer in layers}  # initialize: empty list
         for seed in range(sample_num):

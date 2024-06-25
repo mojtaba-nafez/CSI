@@ -7,7 +7,7 @@ from common.common import parse_args
 import models.classifier as C
 from datasets import set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
 from utils.utils import get_loader_unique_label
-from evals.ood_pre import eval_ood_detection
+from evals.evaluation import eval_ood_detection
 
 def initialize():
     P = parse_args()

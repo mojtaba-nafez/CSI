@@ -17,7 +17,7 @@ import models.classifier as C
 from datasets import (
     set_dataset_count, get_dataset, get_superclass_list, get_subclass_dataset
 )
-from training.simclr_CSI import train
+from training.unode import train
 from training.scheduler import GradualWarmupScheduler
 
 def initialize():
