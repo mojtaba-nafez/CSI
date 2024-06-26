@@ -147,7 +147,7 @@ def train_model(P, model, criterion, optimizer, scheduler_warmup, train_loader, 
 
 def evaluate_model(P, logger):
     torch.cuda.empty_cache()
-    from evals.ood_pre import eval_ood_detection
+    from evals.evaluation import eval_ood_detection
     P.load_path = logger.logdir + '/last.model'
     import subprocess
 
