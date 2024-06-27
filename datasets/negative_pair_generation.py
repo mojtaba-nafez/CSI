@@ -23,7 +23,7 @@ class NegativePairGenerator:
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
-        return self.auto_aug(self.rotation_shift(img.unsqueeze(0), np.random.randint(1, 4))).squeeze()
+        return self.rotation_shift(self.auto_aug(img.unsqueeze(0)), np.random.randint(1, 4)).squeeze()
     
     def apply_cutperm(self, img):
         # input:torch.rand(3, 224, 224)
