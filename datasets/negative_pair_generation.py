@@ -12,7 +12,11 @@ class NegativePairGenerator:
         with open('./config.json', 'r') as json_file:
             self.probabilities = json.load(json_file)
 
-        self.auto_aug = transforms.AutoAugment()
+        self.auto_aug = transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.AutoAugment(),
+                transforms.ToTensor()
+            ])
 
         self.rotation_shift = TL.Rotation()
         self.cutperm_shift = TL.CutPerm()
@@ -23,7 +27,7 @@ class NegativePairGenerator:
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
-        img = self.auto_aug(img.unsqueeze(0))
+        img = self.auto_aug(img).unsqueeze(0)
         img = self.rotation_shift(img, np.random.randint(1, 4))
         return img.squeeze()
     
