@@ -7,6 +7,7 @@ import json
 from torchvision import datasets, transforms
 from glob import glob
 from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 
 
 class ImageNetExposure(Dataset):
@@ -81,7 +82,7 @@ class NegativePairGenerator:
     def create_negative_pair(self, batch_image):
         x, _ = next(iter(self.imagenet_exposure_loader))
         return x.to(self.device)
-        
+
         batch_image = batch_image.to(self.device)   
         augs = list(self.probabilities.keys())
         probs = list(self.probabilities.values())            
