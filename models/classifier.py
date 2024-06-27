@@ -44,7 +44,7 @@ def get_classifier(mode, n_classes=10, activation='relu', freezing_layer=133):
         classifier = Pretrain_Wide_ResNet_Model(num_classes=n_classes)
     elif mode == 'resnet18':
         classifier = ResNet18(num_classes=n_classes)
-    elif mode == 'ResNet':
+    elif mode == 'pretrain-resnet18':
         classifier = Pretrain_ResNet18_Model(num_classes=n_classes)
     elif mode == 'custome_resnet18':
         classifier = resnet18(num_classes=n_classes)
