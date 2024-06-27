@@ -51,7 +51,6 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
                 images1, images2 = hflip(images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
-                negative_pair1, negative_pair2 = hflip(negative_pair.repeat(2, 1, 1, 1)).chunk(2)  # hflip
             negative_pair1, negative_pair2 = negative_pair.repeat(2, 1, 1, 1).chunk(2)  # hflip
         else:
             batch_size = images[0].size(0)
