@@ -12,7 +12,7 @@ class NegativePairGenerator:
         with open('./config.json', 'r') as json_file:
             self.probabilities = json.load(json_file)
 
-        self.auto_aug = transforms.AutoAugment(),
+        self.auto_aug = transforms.AutoAugment()
 
         self.rotation_shift = TL.Rotation()
         self.cutperm_shift = TL.CutPerm()
