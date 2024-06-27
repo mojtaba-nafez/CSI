@@ -4,13 +4,16 @@ import torch.nn.functional as F
 import random
 import models.transform_layers as TL
 import json
+from torchvision import transforms
 
 class NegativePairGenerator:
     def __init__(self):
         # self.probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}
         with open('./config.json', 'r') as json_file:
             self.probabilities = json.load(json_file)
-        
+
+        self.auto_aug = transforms.AutoAugment(),
+
         self.rotation_shift = TL.Rotation()
         self.cutperm_shift = TL.CutPerm()
         self.cutpaste_shift = TL.CutPasteLayer()
@@ -20,7 +23,7 @@ class NegativePairGenerator:
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
-        return self.rotation_shift(img.unsqueeze(0), np.random.randint(1, 4)).squeeze()
+        return self.auto_aug(self.rotation_shift(img.unsqueeze(0), np.random.randint(1, 4))).squeeze()
     
     def apply_cutperm(self, img):
         # input:torch.rand(3, 224, 224)
