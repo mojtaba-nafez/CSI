@@ -43,7 +43,7 @@ class NegativePairGenerator:
         ])
         imagenet_exposure = ImageNetExposure(root='./tiny-imagenet-200', count=10000, transform=tiny_transform)
         self.imagenet_exposure_loader = DataLoader(imagenet_exposure, shuffle=True, batch_size=1024)
-
+        self.dgen = iter(self.imagenet_exposure_loader)
         # self.probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}
         with open('./config.json', 'r') as json_file:
             self.probabilities = json.load(json_file)
@@ -80,7 +80,11 @@ class NegativePairGenerator:
         return self.cutpaste_shift(img.unsqueeze(0)).squeeze()
 
     def create_negative_pair(self, batch_image):
-        x, _ = next(iter(self.imagenet_exposure_loader))
+        try:
+            x, _ = next(self.dgen)
+        except:
+            self.dgen = iter(self.imagenet_exposure_loader)
+            x, _ = next(self.dgen)
         return x.to(self.device)
 
         batch_image = batch_image.to(self.device)   
