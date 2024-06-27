@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from models.resnet_pretrain import Pretrain_Wide_ResNet_Model, Pretrain_ResNet18_Model
+from models.resnet_pretrain import Pretrain_Wide_ResNet_Model, Pretrain_ResNet18_Model, ResNet
 from models.custom_resnet import resnet18
 import models.transform_layers as TL
 
@@ -42,7 +42,9 @@ def get_classifier(mode, n_classes=10, activation='relu', freezing_layer=133):
         classifier = ResNet18(num_classes=n_classes, activation=activation)
     elif mode == "pretrain-wide-resnet":
         classifier = Pretrain_Wide_ResNet_Model(num_classes=n_classes)
-    elif mode =='pretrain-resnet18':
+    elif mode == 'resnet18':
+        classifier = ResNet(num_classes=n_classes)
+    elif mode == 'ResNet':
         classifier = Pretrain_ResNet18_Model(num_classes=n_classes)
     elif mode == 'custome_resnet18':
         classifier = resnet18(num_classes=n_classes)

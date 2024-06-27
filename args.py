@@ -41,7 +41,7 @@ def parse_args(default=False):
     parser.add_argument("--resize_fix", help='resize scale is fixed to resize_factor (not (resize_factor, 1.0])',
                         action='store_true')
     parser.add_argument('--model', help='Model',
-                        choices=['pretrain-wide-resnet', 'custome_resnet18', 'pretrain-resnet18'], default="pretrain-resnet18", type=str)
+                        choices=['resnet18', 'pretrain-wide-resnet', 'custome_resnet18', 'pretrain-resnet18'], default="pretrain-resnet18", type=str)
     parser.add_argument('--simclr_dim', help='Dimension of simclr layer',
                         default=128, type=int)
     parser.add_argument('--resume_path', help='Path to the resume checkpoint',
