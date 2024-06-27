@@ -3,10 +3,13 @@ import torch
 import torch.nn.functional as F
 import random
 import models.transform_layers as TL
+import json
 
 class NegativePairGenerator:
-    def __init__(self, probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}):
-        self.probabilities = probabilities
+    def __init__(self):
+        # self.probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}
+        with open('./config.json', 'r') as json_file:
+            self.probabilities = json.load(json_file)
         
         self.rotation_shift = TL.Rotation()
         self.cutperm_shift = TL.CutPerm()
