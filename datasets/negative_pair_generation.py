@@ -34,7 +34,7 @@ class NegativePairGenerator:
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
-        # img = self.auto_aug(img)
+        img = self.auto_aug(img)
         # img = self.elastic_aug(img)
         img = self.rotation_shift(img.unsqueeze(0), np.random.randint(1, 4))
         # img = self.rotation_shift(img.unsqueeze(0), 2)
@@ -43,6 +43,7 @@ class NegativePairGenerator:
     def apply_elastic(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
+        img = self.auto_aug(img)
         return self.elastic_aug(img).to(self.device)
         
     def apply_cutperm(self, img):

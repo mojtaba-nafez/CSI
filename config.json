@@ -1,7 +1,7 @@
 {
-    "rotation": 1.0,
+    "rotation": 0.9,
     "cutperm": 0.0,
     "cutout": 0.0,
     "cutpaste": 0.0,
-    "elastic": 0.0
+    "elastic": 0.1
 }
