@@ -8,7 +8,7 @@ from torchvision import datasets, transforms
 from glob import glob
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
-
+import os
 
 class ImageNetExposure(Dataset):
     def __init__(self, root, count, transform=None):
