@@ -17,11 +17,16 @@ class NegativePairGenerator:
                 transforms.AutoAugment(),
                 transforms.ToTensor()
             ])
+        self.elastic_aug = transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.ElasticTransform(alpha=200.0, sigma=7.0),
+                transforms.ToTensor()
+            ])
 
         self.rotation_shift = TL.Rotation()
         self.cutperm_shift = TL.CutPerm()
         self.cutpaste_shift = TL.CutPasteLayer()
-        self.aug_to_func = {'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
+        self.aug_to_func = {'elastic': self.apply_elastic, 'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
         self.device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
     def apply_rotation(self, img):
@@ -29,7 +34,12 @@ class NegativePairGenerator:
         # output:torch.rand(3, 224, 224)
         img = self.rotation_shift(self.auto_aug(img).unsqueeze(0), np.random.randint(1, 4))
         return img.squeeze().to(self.device)
-    
+
+    def apply_elastic(self, img):
+        # input:torch.rand(3, 224, 224)
+        # output:torch.rand(3, 224, 224)
+        return self.elastic_aug(img).to(self.device)
+        
     def apply_cutperm(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
