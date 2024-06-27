@@ -73,7 +73,7 @@ def parse_args(default=False):
     parser.add_argument('--test_batch_size', help='Batch size for test loader',
                         default=100, type=int)
     parser.add_argument('--unfreeze_pretrain_model_epoch', help='unfreeze_pretrain_model',
-                        default=50, type=int)
+                        default=100, type=int)
     parser.add_argument('--image_size', help='',
                         default=32, type=int)
     parser.add_argument('--eval_steps', help='',

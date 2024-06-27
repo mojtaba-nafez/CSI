@@ -1,6 +1,6 @@
 {
-    "rotation": 0.0,
-    "cutperm": 0.0,
-    "cutout": 0.01,
-    "cutpaste": 0.99
+    "rotation": 0.99,
+    "cutperm": 0.01,
+    "cutout": 0.0,
+    "cutpaste": 0.0
 }
