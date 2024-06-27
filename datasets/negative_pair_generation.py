@@ -29,13 +29,16 @@ class NegativePairGenerator:
         # output:torch.rand(3, 224, 224)
         img = self.auto_aug(img).unsqueeze(0)
         img = self.rotation_shift(img, np.random.randint(1, 4))
+        print("rotation", img.is_cuda())
         return img.squeeze()
     
     def apply_cutperm(self, img):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
-        return self.cutperm_shift(img.unsqueeze(0), np.random.randint(1, 4)).squeeze()
-
+        
+        img = self.cutperm_shift(img.unsqueeze(0), np.random.randint(1, 4)).squeeze()
+        print("cutperm", img.is_cuda())
+        return img
     def apply_cutout(self, image):
         # input:torch.rand(3, 224, 224)
         # output:torch.rand(3, 224, 224)
