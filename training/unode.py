@@ -41,12 +41,11 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         data_time.update(time.time() - check)
         check = time.time()
         
-        negative_pair = neg_pair_gen.create_negative_pair(images.clone())
         ### SimCLR loss ###
         if P.dataset != 'imagenet':
             batch_size = images.size(0)
             images = images.to(device)
-            if P.cl_no_hflip:
+            if P.no_hflip:
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
                 images1, images2 = hflip(images.repeat(2, 1, 1, 1)).chunk(2)  # hflip

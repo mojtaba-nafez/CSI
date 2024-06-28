@@ -92,7 +92,7 @@ def parse_args(default=False):
     parser.add_argument('--timer', default=None, type=int)
     parser.add_argument('--freezing_layer', help='Freezing Layer',
                         default=133, type=int)
-    parser.add_argument("--cl_no_hflip", help='activate to not used hflip in contrastive augmentaion.',
+    parser.add_argument("--no_hflip", help='activate to not used hflip in contrastive augmentaion.',
                         action='store_true')
 
     ##### Evaluation Configurations #####
