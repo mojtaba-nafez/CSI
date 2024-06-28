@@ -20,8 +20,9 @@ def make_model_gradient(model, action):
     for param in model.parameters():
         param.requires_grad = action
 
-def eval_ood_detection(P, model, id_loader, ood_loaders, ood_scores, train_loader=None, simclr_aug=None):
+def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simclr_aug=None):
     P.K_shift = 1
+    ood_scores = ['CSI']
     P.PGD_constant = 2.5
     P.alpha = (P.PGD_constant * P.eps) / P.steps
     
