@@ -56,11 +56,12 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
             batch_size = images[0].size(0)
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
-        
+        images1 = torch.cat([images1.clone(), neg_pair_gen.create_negative_pair(images1.clone())])
+        images2 = torch.cat([images2.clone(), neg_pair_gen.create_negative_pair(images2.clone())])
         # images1 = torch.cat([rotation_shift(images1), neg_pair_gen.create_negative_pair(images1.clone())])
         # images2 = torch.cat([rotation_shift(images2), neg_pair_gen.create_negative_pair(images2.clone())])
-        images1 = torch.cat([rotation_shift(images1, np.random.randint(1, 4) if k else k) for k in range(2)])
-        images2 = torch.cat([rotation_shift(images2, np.random.randint(1, 4) if k else k) for k in range(2)])
+        # images1 = torch.cat([rotation_shift(images1, np.random.randint(1, 4) if k else k) for k in range(2)])
+        # images2 = torch.cat([rotation_shift(images2, np.random.randint(1, 4) if k else k) for k in range(2)])
         
         shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
         shift_labels = shift_labels.repeat(2)
