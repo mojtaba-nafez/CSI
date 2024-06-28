@@ -177,6 +177,7 @@ def evaluate_model(P, logger):
 
 def main():
     P, anomaly_labels, device = initialize()
+    print("anomaly_labels: ", anomaly_labels)
     train_set, test_set, full_test_set = prepare_datasets(P)
     train_loader, test_loader = prepare_dataloaders(train_set, test_set, P)
     
