@@ -46,19 +46,17 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         if P.dataset != 'imagenet':
             batch_size = images.size(0)
             images = images.to(device)
-            negative_pair = negative_pair.to(device)
             if P.cl_no_hflip:
                 images1, images2 = images.repeat(2, 1, 1, 1).chunk(2)  # hflip
             else:
                 images1, images2 = hflip(images.repeat(2, 1, 1, 1)).chunk(2)  # hflip
-            negative_pair1, negative_pair2 = negative_pair.repeat(2, 1, 1, 1).chunk(2)  # hflip
         else:
             batch_size = images[0].size(0)
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
         
-        images1 = torch.cat([images1, negative_pair1])
-        images2 = torch.cat([images2, negative_pair2])
+        images1 = torch.cat([images1, neg_pair_gen.create_negative_pair(images1.clone())])
+        images2 = torch.cat([images2, neg_pair_gen.create_negative_pair(images2.clone())])
        
         shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
         shift_labels = shift_labels.repeat(2)
