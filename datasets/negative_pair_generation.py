@@ -11,7 +11,7 @@ class NegativePairGenerator:
         # self.probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}
         with open('./config.json', 'r') as json_file:
             self.probabilities = json.load(json_file)
-
+        self.device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
         self.auto_aug = transforms.Compose([
                 transforms.ToPILImage(),
                 transforms.AutoAugment(),
@@ -28,8 +28,11 @@ class NegativePairGenerator:
         self.rotation_shift = TL.Rotation()
         self.cutperm_shift = TL.CutPerm()
         self.cutpaste_shift = TL.CutPasteLayer()
+        self.rotation_shift = self.rotation_shift.to(self.device)
+        self.cutperm_shift = self.cutperm_shift.to(self.device)
+        self.cutpaste_shift = self.cutpaste_shift.to(self.device)
+
         self.aug_to_func = {'elastic': self.apply_elastic, 'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
-        self.device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
