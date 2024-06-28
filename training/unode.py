@@ -6,6 +6,7 @@ import models.transform_layers as TL
 from training.contrastive_loss import get_similarity_matrix, NT_xent
 from datasets.negative_pair_generation import NegativePairGenerator
 from utils.utils import AverageMeter, normalize
+import numpy as np
 
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 hflip = TL.HorizontalFlipLayer().to(device)
