@@ -35,6 +35,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
     check = time.time()
     print("len(loader): ", len(loader))
     rotation_shift = TL.Rotation()
+    rotation_shift = rotation_shift.to(device)
 
     for n, (images, labels) in enumerate(loader):
         model.train()
@@ -55,9 +56,11 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
             images1, images2 = images[0].to(device), images[1].to(device)
         labels = labels.to(device)
         
-        images1 = torch.cat([rotation_shift(images1), neg_pair_gen.create_negative_pair(images1.clone())])
-        images2 = torch.cat([rotation_shift(images2), neg_pair_gen.create_negative_pair(images2.clone())])
-       
+        # images1 = torch.cat([rotation_shift(images1), neg_pair_gen.create_negative_pair(images1.clone())])
+        # images2 = torch.cat([rotation_shift(images2), neg_pair_gen.create_negative_pair(images2.clone())])
+        images1 = torch.cat([rotation_shift(images1, np.random.randint(1, 4) if k else k) for k in range(2)])
+        images2 = torch.cat([rotation_shift(images2, np.random.randint(1, 4) if k else k) for k in range(2)])
+        
         shift_labels = torch.cat([torch.ones_like(labels), torch.zeros_like(labels)], 0)  # B -> 4B
         shift_labels = shift_labels.repeat(2)
         
