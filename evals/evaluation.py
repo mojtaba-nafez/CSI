@@ -23,7 +23,7 @@ def make_model_gradient(model, action):
 def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simclr_aug=None):
     P.K_shift = 1
     ood_scores = ['CSI']
-    
+    P.ood_layer = ['simclr', 'shift']
     
 
 
