@@ -24,7 +24,7 @@ def eval_ood_detection(P, model, id_loader, ood_loaders, train_loader=None, simc
     P.K_shift = 1
     ood_scores = ['CSI']
     P.ood_layer = ['simclr', 'shift']
-    
+    P.one_class_idx = P.normal_class
 
 
     auroc_dict = dict()
