@@ -5,6 +5,7 @@ import random
 import models.transform_layers as TL
 import json
 from torchvision import transforms
+import numpy as np
 
 class NegativePairGenerator:
     def __init__(self):
