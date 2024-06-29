@@ -51,7 +51,7 @@ class NegativePairGenerator:
 
     def apply_mixup(self, img):
         print(img.shape)
-        print(self.mixup_dataset[0].shape)
+        print(self.mixup_dataset[0][0].shape)
         print(len(self.mixup_dataset))
         try:
             mixed_img, _ = next(self.mixup_iter)
