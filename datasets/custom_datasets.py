@@ -214,6 +214,7 @@ class ImageNet30_Dataset(Dataset):
 class ImageNetMixUp(Dataset):
     def __init__(self, root, count, transform=None):
         self.download_data()
+        print("download completed!")
         self.transform = transform
         image_files = glob(os.path.join(root, 'train', "*", "images", "*.JPEG"))
         if count==-1:
@@ -235,7 +236,7 @@ class ImageNetMixUp(Dataset):
     def __len__(self):
         return len(self.image_files)
     
-    def download_data(self, url='http://cs231n.stanford.edu/tiny-imagenet-200.zip', data_dir='tiny-imagenet-200'):
+    def download_data(self, url='http://cs231n.stanford.edu/tiny-imagenet-200.zip', data_dir='./tiny-imagenet-200'):
         if not os.path.exists(data_dir):
             # Download the dataset
             zip_path = 'tiny-imagenet-200.zip'
