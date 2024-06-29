@@ -29,11 +29,9 @@ def initialize():
     return P, anomaly_labels, device
 
 def prepare_datasets(P):
-    image_size_ = (P.image_size, P.image_size, 3)
     train_set, test_set, image_size, n_classes = get_dataset(
-        P, dataset=P.dataset, download=True, image_size=image_size_, labels=[P.normal_class]
+        P, dataset=P.dataset, download=True, image_size= (P.image_size, P.image_size, 3), labels=[P.normal_class]
     )
-    P.image_size = image_size
     P.n_classes = n_classes
 
     full_test_set = deepcopy(test_set)  # test set of full classes
