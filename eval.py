@@ -26,6 +26,7 @@ def prepare_datasets(P):
     train_set, test_set, image_size, n_classes = get_dataset(
         P, dataset=P.dataset, eval=True, download=True, image_size=(P.image_size, P.image_size, 3), labels=[P.normal_class]
     )
+    P.image_size = image_size
     P.n_classes = n_classes
 
     full_test_set = deepcopy(test_set)
