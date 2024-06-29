@@ -2,33 +2,20 @@ import os
 
 import numpy as np
 import torch
-from torch.utils.data.dataset import Subset
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, Dataset
+from torchvision import transforms
+from torch.utils.data import Dataset
 
 from utils.utils import set_random_seed
 from PIL import Image
 from glob import glob
-import pickle
 import random
-import rasterio
-import re
-from torchvision.datasets.folder import default_loader
-
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import cv2
 import torchvision
-import subprocess
-from tqdm import tqdm
 import requests
 import shutil 
 from PIL import Image
-import shutil
 import random
 import zipfile
-import time
+
 
 CLASS_NAMES = ['toothbrush', 'zipper', 'transistor', 'tile', 'grid', 'wood', 'pill', 'bottle', 'capsule', 'metal_nut', 'hazelnut', 'screw', 'carpet', 'leather', 'cable']
 DATA_PATH = './data/'
@@ -97,7 +84,7 @@ class MVTecDataset(Dataset):
 
 import torch
 from torchvision import transforms
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import numpy as np
 from PIL import Image
 
@@ -223,3 +210,44 @@ class ImageNet30_Dataset(Dataset):
 
     def __len__(self):
         return len(self.image_files)
+
+class ImageNetMixUp(Dataset):
+    def __init__(self, root, count, transform=None):
+        self.download_data()
+        self.transform = transform
+        image_files = glob(os.path.join(root, 'train', "*", "images", "*.JPEG"))
+        if count==-1:
+            final_length = len(image_files)
+        else:
+            random.shuffle(image_files)
+            final_length = min(len(image_files), count)
+        self.image_files = image_files[:final_length]
+        self.image_files.sort(key=lambda y: y.lower())
+
+    def __getitem__(self, index):
+        image_file = self.image_files[index]
+        image = Image.open(image_file)
+        image = image.convert('RGB')
+        if self.transform is not None:
+            image = self.transform(image)
+        return image, -1
+
+    def __len__(self):
+        return len(self.image_files)
+    
+    def download_data(self, url='http://cs231n.stanford.edu/tiny-imagenet-200.zip', data_dir='tiny-imagenet-200'):
+        if not os.path.exists(data_dir):
+            # Download the dataset
+            zip_path = 'tiny-imagenet-200.zip'
+            with requests.get(url, stream=True) as r:
+                r.raise_for_status()
+                with open(zip_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+            
+            # Extract the dataset
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall()
+            
+            # Clean up the zip file
+            os.remove(zip_path)

@@ -6,9 +6,10 @@ import models.transform_layers as TL
 import json
 from torchvision import transforms
 import numpy as np
+from datasets.custome_datasets import ImageNetMixUp
 
 class NegativePairGenerator:
-    def __init__(self):
+    def __init__(self, P):
         # self.probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}
         with open('./config.json', 'r') as json_file:
             self.probabilities = json.load(json_file)
@@ -32,8 +33,28 @@ class NegativePairGenerator:
         self.rotation_shift = self.rotation_shift.to(self.device)
         self.cutperm_shift = self.cutperm_shift.to(self.device)
         self.cutpaste_shift = self.cutpaste_shift.to(self.device)
+        
+        trans = transforms.Compose([
+                transforms.Resize((P.imaage_size, P.imaage_size)),
+                transforms.AutoAugment(),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor()
+        ])
+        mixup_dataset = ImageNetMixUp(root='./tiny-imagenet-200', P.normal_data_count, transform=trans)
+        self.mixup_loader = DataLoader(mixup_dataset, shuffle=True, batch_size=P.batch_size)
+        self.mixup_iter = iter(self.self.mixup_loader)
 
-        self.aug_to_func = {'elastic': self.apply_elastic, 'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
+
+        self.aug_to_func = {'mixup': self.apply_mixup, 'elastic': self.apply_elastic, 'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
+
+    def apply_mixup(self, image):
+        try:
+            mixed_img, _ = next(self.mixup_iter)
+        except:
+            self.mixup_iter = iter(self.mixup_loader)
+            mixed_img, _ = next(self.mixup_iter)
+        lam = torch.tensor(random.uniform(0.5, 0.8))
+        return lam * image + (1 - lam) * mixed_img
 
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
