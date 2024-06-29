@@ -6,7 +6,7 @@ import models.transform_layers as TL
 import json
 from torchvision import transforms
 import numpy as np
-from datasets.custome_datasets import ImageNetMixUp
+from datasets.custom_datasets import ImageNetMixUp
 
 class NegativePairGenerator:
     def __init__(self, P):
