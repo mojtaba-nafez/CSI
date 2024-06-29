@@ -35,7 +35,7 @@ class NegativePairGenerator:
         self.cutpaste_shift = self.cutpaste_shift.to(self.device)
         
         trans = transforms.Compose([
-                transforms.Resize((P.imaage_size, P.imaage_size)),
+                transforms.Resize((P.image_size, P.image_size)),
                 transforms.AutoAugment(),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
