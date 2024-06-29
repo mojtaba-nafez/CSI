@@ -34,7 +34,6 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
     losses['shift'] = AverageMeter()
 
     check = time.time()
-    print("len(loader): ", len(loader))
     
     for n, (images, labels) in enumerate(loader):
         model.train()

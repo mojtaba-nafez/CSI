@@ -213,7 +213,6 @@ class ImageNet30_Dataset(Dataset):
 
 class ImageNetMixUp(Dataset):
     def __init__(self, root, transform=None):
-        print("Preparing ...")
         self.download_data()
         self.transform = transform
         self.image_files = glob(os.path.join(root, 'train', "*", "images", "*.JPEG"))
