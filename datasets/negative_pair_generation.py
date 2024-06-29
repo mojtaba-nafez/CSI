@@ -43,7 +43,7 @@ class NegativePairGenerator:
                 transforms.ToTensor()
         ])
         mixup_dataset = ImageNetMixUp(root='./tiny-imagenet-200', count=P.normal_data_count, transform=trans)
-        self.mixup_loader = DataLoader(mixup_dataset, shuffle=True, batch_size=P.batch_size)
+        self.mixup_loader = DataLoader(mixup_dataset, shuffle=True, batch_size=1)
         self.mixup_iter = iter(self.mixup_loader)
 
 
