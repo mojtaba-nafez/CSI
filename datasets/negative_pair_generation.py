@@ -42,23 +42,13 @@ class NegativePairGenerator:
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
         ])
-        self.mixup_dataset = ImageNetMixUp(root='./tiny-imagenet-200', count=P.normal_data_count, transform=trans)
-        self.mixup_loader = DataLoader(self.mixup_dataset, shuffle=True, batch_size=1)
-        self.mixup_iter = iter(self.mixup_loader)
-
-
+        self.mixup_dataset = ImageNetMixUp(root='./tiny-imagenet-200', transform=trans)
+        self.len = len(self.mixup_dataset)
         self.aug_to_func = {'mixup': self.apply_mixup, 'elastic': self.apply_elastic, 'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
 
     def apply_mixup(self, img):
-        print(img.shape)
-        print(self.mixup_dataset[0][0].shape)
-        print(len(self.mixup_dataset))
-        try:
-            mixed_img, _ = next(self.mixup_iter)
-        except:
-            self.mixup_iter = iter(self.mixup_loader)
-            mixed_img, _ = next(self.mixup_iter)
-        mixed_img = mixed_img.to(self.device)
+        idx = random.randint(0, self.len)
+        mixed_img = self.mixup_dataset[][0].to(self.device)
         lam = torch.tensor(random.uniform(0.4, 0.8)).to(self.device)
         return lam * img + (1 - lam) * mixed_img
 
