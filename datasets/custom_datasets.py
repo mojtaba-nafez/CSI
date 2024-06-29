@@ -212,7 +212,7 @@ class ImageNet30_Dataset(Dataset):
         return len(self.image_files)
 
 class ImageNetMixUp(Dataset):
-    def __init__(self, root, count=None, transform=None):
+    def __init__(self, root, transform=None):
         self.download_data()
         print("download completed!")
         self.transform = transform
