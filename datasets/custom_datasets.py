@@ -212,17 +212,11 @@ class ImageNet30_Dataset(Dataset):
         return len(self.image_files)
 
 class ImageNetMixUp(Dataset):
-    def __init__(self, root, count, transform=None):
+    def __init__(self, root, count=None, transform=None):
         self.download_data()
         print("download completed!")
         self.transform = transform
-        image_files = glob(os.path.join(root, 'train', "*", "images", "*.JPEG"))
-        if count==-1:
-            final_length = len(image_files)
-        else:
-            random.shuffle(image_files)
-            final_length = min(len(image_files), count)
-        self.image_files = image_files[:final_length]
+        self.image_files = glob(os.path.join(root, 'train', "*", "images", "*.JPEG"))
         self.image_files.sort(key=lambda y: y.lower())
 
     def __getitem__(self, index):
