@@ -50,9 +50,7 @@ class NegativePairGenerator:
         idx = random.randint(0, self.len)
         mixed_img = self.mixup_dataset[idx][0].to(self.device)
         lam = torch.tensor(random.uniform(0.4, 0.8)).to(self.device)
-        output = lam * img + (1 - lam) * mixed_img
-        print(output.shape)
-        return output
+        return lam * img + (1 - lam) * mixed_img
 
     def apply_rotation(self, img):
         # input:torch.rand(3, 224, 224)
