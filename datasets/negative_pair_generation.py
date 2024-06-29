@@ -44,7 +44,7 @@ class NegativePairGenerator:
         ])
         mixup_dataset = ImageNetMixUp(root='./tiny-imagenet-200', count=P.normal_data_count, transform=trans)
         self.mixup_loader = DataLoader(mixup_dataset, shuffle=True, batch_size=P.batch_size)
-        self.mixup_iter = iter(self.self.mixup_loader)
+        self.mixup_iter = iter(self.mixup_loader)
 
 
         self.aug_to_func = {'mixup': self.apply_mixup, 'elastic': self.apply_elastic, 'rotation': self.apply_rotation, 'cutperm': self.apply_cutperm, 'cutout': self.apply_cutout, 'cutpaste': self.apply_cutpaste}
