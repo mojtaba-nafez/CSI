@@ -49,7 +49,7 @@ class NegativePairGenerator:
     def apply_mixup(self, img):
         idx = random.randint(0, self.len-1)
         mixed_img = self.mixup_dataset[idx][0].to(self.device)
-        lam = torch.tensor(random.uniform(0.1, 0.4)).to(self.device)
+        lam = torch.tensor(random.uniform(0.1, 0.3)).to(self.device)
         # lam = torch.tensor(0).to(self.device)
         return lam * img + (1 - lam) * mixed_img
 
