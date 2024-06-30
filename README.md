@@ -20,49 +20,45 @@ and [MohammadHossein Rohban]().
 
 ### Datasets 
 
-For ImageNet-30, please download the following datasets to `~/data`.
+Dataset Download Link:
+
+* [MVTecAD](https://www.mvtec.com/company/research/datasets/mvtec-ad)
+* [ISIC2018](https://www.kaggle.com/datasets/maxjen/isic-task3-dataset)
 * [ImageNet-30-train](https://drive.google.com/file/d/1B5c39Fc3haOPzlehzmpTLz6xLtGyKEy4/view),
 [ImageNet-30-test](https://drive.google.com/file/d/13xzVuQMEhSnBRZr-YaaO08coLU2dxAUq/view)
 
 ## 2. Training
 
-### Unlabeled one-class & multi-class 
-To train unlabeled one-class & multi-class models in the paper, run this command:
+To train our models, run this command:
 
 ```train
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 train.py --dataset <DATASET> --model <NETWORK> --mode simclr_CSI --shift_trans_type rotation --batch_size 32 --one_class_idx <One-Class-Index>
+python train.py --model $model --epochs $epochs --eval_steps $eval_steps --normal_class $normal_class --normal_data_count $normal_data_count --image_size $image_size --dataset $dataset --batch_size $batch_size --outlier_dataset $outlier_dataset
 ```
 
-> Option --one_class_idx denotes the in-distribution of one-class training.
-> For multi-class training, set --one_class_idx as None.
-> To run SimCLR simply change --mode to simclr.
-> Total batch size should be 512 = 4 (GPU) * 32 (--batch_size option) * 4 (cardinality of shifted transformation set). 
+* The option `--normal_class` denotes the in-distribution for one-class training.
 
-### Unlabeled multi-class
-To train labeled multi-class model (confidence calibrated classifier) in the paper, run this 
+* For multi-class training, set `--outlier_dataset` as the OOD target dataset, and --dataset will be the determined ID dataset.
+
+> Note: The `config.json` file specifies the probability of each negative transformation used during training. This probability distribution is determined by the AutoAugOOD module in  `AutoAugOOD.ipynb` individually for each dataset and each normal class.
 
 ## 3. Evaluation
 
-We provide the checkpoint of the CSI pre-trained model. Download the checkpoint from the following link:
-- One-class CIFAR-10: [ResNet-18]()
-- One-class MVtecAD: [Wide-Res]()
-- multi-class CIFAR-10: [Wide-Res]()
-- multi-class MVtecAD: [Wide-Res]()
+We provide the checkpoint of the Unode pre-trained model. Download the checkpoint from the following link:
+- One-class CIFAR-10: [Wide-Res](https://drive.google.com/drive/folders/1Qcj0SC3IBl50Cdsb8X4hBiLpNHstlPFZ?usp=sharing)
+- One-class MVtecAD: [ResNet-18](https://drive.google.com/drive/folders/1--lOGcKV0LGbI_qV9DIt-ifUr-KYZOe6?usp=sharing)
 
-### Unlabeled one-class
-To evaluate my model on unlabeled one-class & multi-class out-of-distribution (OOD) detection setting, run this command:
+To evaluate our model, run this command:
 
 ```eval
-python eval.py --mode ood_pre --dataset <DATASET> --model <NETWORK> --ood_score CSI --shift_trans_type rotation --print_score --ood_samples 10 --resize_factor 0.54 --resize_fix --one_class_idx <One-Class-Index> --load_path <MODEL_PATH>
+python ./eval.py --normal_class $normal_class --image_size $image_size --dataset $dataset --model $model --print_score --ood_samples 10 --resize_factor 0.54 --resize_fix --load_path $load_path 
 ```
 
-> Option --one_class_idx denotes the in-distribution of one-class evaluation.
-> For multi-class evaluation, set --one_class_idx as None.
-> The resize_factor & resize fix option fix the cropping size of RandomResizedCrop().
-> For SimCLR evaluation, change --ood_score to simclr.
 
-### UnLabeled multi-class 
-To evaluate my model on labeled multi-class 
+* The option `--normal_class` denotes the in-distribution for one-class training.
+
+* For multi-class training, set `--outlier_dataset` as the OOD target dataset, and --dataset will be the determined ID dataset.
+
+* The resize_factor & resize fix option fix the cropping size of RandomResizedCrop().
 
 ## Citation
 ```
