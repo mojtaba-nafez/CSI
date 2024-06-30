@@ -44,7 +44,7 @@ python train.py --model $model --epochs $epochs --eval_steps $eval_steps --norma
 ## 3. Evaluation
 
 We provide the checkpoint of the Unode pre-trained model. Download the checkpoint from the following link:
-- One-class CIFAR-10: [Wide-Res](https://drive.google.com/drive/folders/1Qcj0SC3IBl50Cdsb8X4hBiLpNHstlPFZ?usp=sharing)
+- One-class CIFAR-10: [Wide-Res](https://drive.google.com/drive/folders/1-vmaK398GWxdyNJbXObeVyHYWzszT7GY?usp=sharing)
 - One-class MVtecAD: [ResNet-18](https://drive.google.com/drive/folders/1--lOGcKV0LGbI_qV9DIt-ifUr-KYZOe6?usp=sharing)
 
 To evaluate our model, run this command:
