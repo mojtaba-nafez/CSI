@@ -22,6 +22,8 @@ from training.scheduler import GradualWarmupScheduler
 
 def initialize():
     P = parse_args()
+    if P.dataset=='mnist' or P.dataset=='svhn-10':
+        P.no_hflip = True
     cls_list = get_superclass_list(P.dataset)
     anomaly_labels = [elem for elem in cls_list if elem not in [P.normal_class]]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
