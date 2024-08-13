@@ -112,6 +112,6 @@ def parse_args(default=False):
     parser.add_argument('--noise_scale', help='',
                         default=0.0, type=float)
     if default:
-        return parser.parse_args('')  # empty string
+        return parser.parse_args()  # empty string
     else:
         return parser.parse_args([])
