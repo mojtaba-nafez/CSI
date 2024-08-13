@@ -21,7 +21,7 @@ from training.unode import train
 from training.scheduler import GradualWarmupScheduler
 
 P = parse_args()
-print("----------------------------------------------------------")
+print("-----------------------------ffffffff-----------------------------")
 print(P)
 print("----------------------------------------------------------")
 
