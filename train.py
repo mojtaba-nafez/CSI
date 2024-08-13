@@ -20,6 +20,11 @@ from datasets import (
 from training.unode import train
 from training.scheduler import GradualWarmupScheduler
 
+P = parse_args()
+print("----------------------------------------------------------")
+print(P)
+print("----------------------------------------------------------")
+
 def initialize():
     P = parse_args()
     print("----------------------------------------------------------")
