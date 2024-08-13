@@ -20,16 +20,8 @@ from datasets import (
 from training.unode import train
 from training.scheduler import GradualWarmupScheduler
 
-P = parse_args()
-print("-----------------------------ffffffff-----------------------------")
-print(P)
-print("----------------------------------------------------------")
-
 def initialize():
     P = parse_args()
-    print("----------------------------------------------------------")
-    print(P)
-    print("----------------------------------------------------------")
     if P.dataset=='mnist' or P.dataset=='svhn-10':
         P.no_hflip = True
     cls_list = get_superclass_list(P.dataset)
