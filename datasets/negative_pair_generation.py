@@ -15,6 +15,12 @@ class NegativePairGenerator:
         # self.probabilities = {'rotation': 0.0, 'cutperm': 0.0, 'cutout': 0.01, 'cutpaste': 0.99}
         with open('./config.json', 'r') as json_file:
             self.probabilities = json.load(json_file)
+
+        try: 
+            self.probabilities = self.probabilities[P.dataset]
+        except:
+            self.probabilities = self.probabilities["other-dataset"]
+
         self.device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
         self.auto_aug = transforms.Compose([
                 transforms.ToPILImage(),
@@ -49,7 +55,7 @@ class NegativePairGenerator:
     def apply_mixup(self, img):
         idx = random.randint(0, self.len-1)
         mixed_img = self.mixup_dataset[idx][0].to(self.device)
-        lam = torch.tensor(random.uniform(0.1, 0.3)).to(self.device)
+        lam = torch.tensor(random.uniform(0.02, 0.1)).to(self.device)
         return lam * img + (1 - lam) * mixed_img
 
     def apply_rotation(self, img):
